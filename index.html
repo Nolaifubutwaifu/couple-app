@@ -362,6 +362,90 @@
                 </section>
               </div>
 
+              <!-- TAB: Date -->
+              <div id="tabDate" class="tab-content">
+
+                <!-- Start Screen -->
+                <section id="dateStart" class="date-screen">
+                  <section class="date-header">
+                    <p class="small-text">date night</p>
+                    <h2>Date Night.</h2>
+                    <p class="setup-description">Start a guided video date with your partner. You'll go through questions, challenges, and surprises together.</p>
+                  </section>
+                  <button type="button" id="dateStartBtn" class="date-start-btn">Start Date Night</button>
+                  <p id="dateStartMessage" class="status-message" aria-live="polite"></p>
+                </section>
+
+                <!-- Invite Screen -->
+                <section id="dateInvite" class="date-screen" style="display:none">
+                  <section class="date-header">
+                    <p class="small-text">incoming</p>
+                    <h2>Date Night invite!</h2>
+                    <p class="setup-description">Your partner wants to start a guided date. Ready to join?</p>
+                  </section>
+                  <div class="date-invite-actions">
+                    <button type="button" id="dateJoinBtn" class="date-start-btn">Join Date</button>
+                    <button type="button" id="dateDeclineBtn" class="game-action-btn">Decline</button>
+                  </div>
+                </section>
+
+                <!-- Active Screen -->
+                <section id="dateActive" class="date-screen" style="display:none">
+                  <div class="date-video-container">
+                    <video id="dateRemoteVideo" class="date-remote-video" autoplay playsinline></video>
+                    <video id="dateLocalVideo" class="date-local-video" autoplay playsinline muted></video>
+                    <div class="date-no-video" id="dateNoVideo">Camera off</div>
+                  </div>
+
+                  <div class="date-controls">
+                    <button type="button" id="dateMuteBtn" class="date-control-btn" title="Mute">🎤</button>
+                    <button type="button" id="dateCameraBtn" class="date-control-btn" title="Camera">📷</button>
+                    <button type="button" id="dateEndBtn" class="date-control-btn date-end-btn" title="End date">✕</button>
+                  </div>
+
+                  <div class="date-step-card" id="dateStepCard">
+                    <p class="date-step-progress" id="dateStepProgress">1 / 20</p>
+
+                    <div id="dateStepQuestion" class="date-step-body">
+                      <p class="date-step-text" id="dateStepText"></p>
+                    </div>
+
+                    <div id="dateStepChallenge" class="date-step-body" style="display:none">
+                      <p class="date-challenge-title" id="dateChallengeTitle"></p>
+                      <p class="date-challenge-desc" id="dateChallengeDesc"></p>
+                      <div class="date-timer" id="dateTimer" style="display:none">
+                        <span class="date-timer-value" id="dateTimerValue">60</span>
+                        <span class="date-timer-label">seconds</span>
+                      </div>
+                    </div>
+
+                    <div id="dateStepWYR" class="date-step-body" style="display:none">
+                      <p class="date-wyr-title">Would you rather...</p>
+                      <button type="button" class="date-wyr-option" id="dateWYROptionA"></button>
+                      <span class="date-wyr-or">or</span>
+                      <button type="button" class="date-wyr-option" id="dateWYROptionB"></button>
+                    </div>
+                  </div>
+
+                  <div class="date-nav-row">
+                    <button type="button" id="datePrevBtn" class="game-action-btn" disabled>Back</button>
+                    <button type="button" id="dateNextBtn" class="date-start-btn">Next</button>
+                  </div>
+                </section>
+
+                <!-- End Screen -->
+                <section id="dateEnd" class="date-screen" style="display:none">
+                  <section class="date-header">
+                    <p class="small-text">complete</p>
+                    <h2>Date Night complete!</h2>
+                    <p class="setup-description">That was lovely. You earned some hearts for spending quality time together.</p>
+                  </section>
+                  <p class="date-end-hearts">+5 ❤️</p>
+                  <button type="button" id="dateDoneBtn" class="date-start-btn">Done</button>
+                </section>
+
+              </div>
+
               <!-- Bottom Navigation -->
               <nav class="bottom-nav" id="bottomNav">
                 <button type="button" class="nav-tab nav-tab-active" data-tab="tabChat">
@@ -375,6 +459,10 @@
                 <button type="button" class="nav-tab" data-tab="tabExtras">
                   <span class="nav-icon">✦</span>
                   <span class="nav-label">Extras</span>
+                </button>
+                <button type="button" class="nav-tab" data-tab="tabDate">
+                  <span class="nav-icon">◐</span>
+                  <span class="nav-label">Date</span>
                 </button>
               </nav>
 

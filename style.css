@@ -1665,3 +1665,242 @@ h3 {
     font-size: 22px;
   }
 }
+
+/* ═══════════════════════════════════
+   DATE NIGHT TAB
+   ═══════════════════════════════════ */
+
+.date-screen {
+  margin-bottom: 20px;
+}
+
+.date-header {
+  margin-bottom: 24px;
+}
+
+.date-start-btn {
+  width: 100%;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.date-start-btn:hover {
+  opacity: 0.9;
+}
+
+.date-start-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.date-invite-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.date-video-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #111;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.date-remote-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.date-local-video {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 90px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,0.2);
+  z-index: 2;
+}
+
+.date-no-video {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.date-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.date-control-btn {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.date-control-btn:hover {
+  background: #2a2a2a;
+}
+
+.date-control-btn.muted {
+  background: #7f1d1d;
+}
+
+.date-end-btn {
+  background: #7f1d1d;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.date-end-btn:hover {
+  background: #991b1b;
+}
+
+.date-step-card {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 16px;
+  padding: 24px 20px;
+  margin-bottom: 16px;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+.date-step-progress {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.date-step-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.date-step-text {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  line-height: 1.5;
+  color: #f0f0f0;
+}
+
+.date-challenge-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ec4899;
+  margin-bottom: 10px;
+}
+
+.date-challenge-desc {
+  font-size: 15px;
+  color: #aaa;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.date-timer {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.date-timer-value {
+  font-size: 48px;
+  font-weight: 700;
+  color: #f0f0f0;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s;
+}
+
+.date-timer-value.warning {
+  color: #ef4444;
+}
+
+.date-timer-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.date-wyr-title {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 14px;
+}
+
+.date-wyr-option {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #333;
+  border-radius: 12px;
+  background: transparent;
+  color: #f0f0f0;
+  font-size: 15px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  text-align: center;
+}
+
+.date-wyr-option:hover {
+  border-color: #7c3aed;
+}
+
+.date-wyr-option.selected {
+  border-color: #7c3aed;
+  background: rgba(124, 58, 237, 0.15);
+}
+
+.date-wyr-or {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  color: #555;
+  margin: 8px 0;
+}
+
+.date-nav-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.date-end-hearts {
+  font-size: 36px;
+  text-align: center;
+  margin: 24px 0;
+}

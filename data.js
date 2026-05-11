@@ -426,6 +426,29 @@ export const fortuneCookies = [
   "Your love is the kind poets write about. Keep going."
 ];
 
+export const dateNightSteps = [
+  { type: "question", text: "What made you smile today?" },
+  { type: "question", text: "What's something new you learned about yourself this week?" },
+  { type: "question", text: "If we could teleport anywhere right now, where would you take me?" },
+  { type: "challenge", title: "Compliment Showdown", description: "Take turns giving each other compliments. You can't repeat one! Whoever runs out first loses.", timerSeconds: 60 },
+  { type: "question", text: "What's a song that reminds you of us?" },
+  { type: "question", text: "What's one thing about our relationship that makes you proud?" },
+  { type: "question", text: "What's the most spontaneous thing you've ever done for love?" },
+  { type: "wouldyourather", optionA: "Read each other's minds for a day", optionB: "Relive your favorite day together" },
+  { type: "question", text: "What's something small I do that means the world to you?" },
+  { type: "question", text: "If we wrote a book about us, what would the title be?" },
+  { type: "challenge", title: "Two Truths & a Lie", description: "Each of you says three things — two true, one false. Can your partner spot the lie?", timerSeconds: 90 },
+  { type: "question", text: "What's a fear you've overcome because of our relationship?" },
+  { type: "question", text: "What does home feel like to you?" },
+  { type: "wouldyourather", optionA: "Have a surprise date planned by your partner every month", optionB: "Plan one epic trip together every year" },
+  { type: "question", text: "What's one dream you haven't told anyone about?" },
+  { type: "question", text: "What moment between us do you replay in your head?" },
+  { type: "challenge", title: "Staring Contest", description: "Look into each other's eyes without laughing. First one to break loses!", timerSeconds: 30 },
+  { type: "question", text: "What do you think we'll be doing ten years from now?" },
+  { type: "question", text: "What's the bravest thing about your partner?" },
+  { type: "question", text: "What's one thing you want to say right now, no filter?" }
+];
+
 export const diceActivities = [
   "Cook together",
   "Watch a movie",
