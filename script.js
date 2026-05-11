@@ -913,19 +913,52 @@ var tttPartnerPresent = false;
 var memoryPartnerPresent = false;
 var myTttRole = null;
 var myMemoryRole = null;
+var tabId = Date.now().toString(36) + Math.random().toString(36).substring(2);
 
 function getGameRole(presenceState) {
-  var userIds = Object.keys(presenceState).sort();
-  if (userIds.length < 2 || !currentUser) return null;
-  return userIds[0] === currentUser.id ? "P1" : "P2";
+  var keys = Object.keys(presenceState);
+  if (keys.length < 2 || !currentUser) return null;
+
+  var entries = [];
+  keys.forEach(function (k) {
+    var arr = presenceState[k];
+    if (arr && arr.length > 0) {
+      entries.push({ key: k, user_id: arr[0].user_id || k });
+    }
+  });
+
+  var uniqueUserIds = [];
+  entries.forEach(function (e) {
+    if (uniqueUserIds.indexOf(e.user_id) === -1) uniqueUserIds.push(e.user_id);
+  });
+  uniqueUserIds.sort();
+
+  if (uniqueUserIds.length >= 2) {
+    return uniqueUserIds[0] === currentUser.id ? "P1" : "P2";
+  }
+
+  var sortedKeys = keys.slice().sort();
+  return sortedKeys[0] === tabId ? "P1" : "P2";
 }
 
 function joinGameChannel(gameType) {
   if (!currentCouple || !currentUser) return;
 
+  if (gameType === "tictactoe" && tttChannel) {
+    supabase.removeChannel(tttChannel);
+    tttChannel = null;
+  }
+  if (gameType === "memory" && memoryChannel) {
+    supabase.removeChannel(memoryChannel);
+    memoryChannel = null;
+  }
+
   var channelName = "game-" + gameType + "-" + currentCouple.id;
   var channel = supabase.channel(channelName, {
-    config: { presence: { key: currentUser.id } }
+    config: {
+      broadcast: { self: false, ack: false },
+      presence: { key: tabId }
+    }
   });
 
   if (gameType === "tictactoe") {
@@ -980,7 +1013,7 @@ function joinGameChannel(gameType) {
 
   channel.subscribe(function (status) {
     if (status === "SUBSCRIBED") {
-      channel.track({ user_id: currentUser.id });
+      channel.track({ user_id: currentUser.id, tab_id: tabId });
     }
   });
 }
