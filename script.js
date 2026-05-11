@@ -352,22 +352,23 @@ function renderSharedSpacePanel() {
     return;
   }
 
-  activeInviteCodeText.textContent = currentCouple.inviteCode;
+  var inviteCodeRow = document.querySelector(".invite-code-row");
 
   if (currentCouple.memberCount >= 2) {
-    const partnerName = currentCouple.partnerName || "your partner";
+    var partnerName = currentCouple.partnerName || "your partner";
 
     sharedSpaceTitle.textContent = "Connected with " + partnerName;
     sharedSpaceDescription.textContent = "This space is now private to the two of you.";
     coupleStatusText.textContent = "Connected";
-    copyInviteButton.textContent = "Full";
-    copyInviteButton.disabled = true;
+    inviteCodeRow.style.display = "none";
   } else {
+    activeInviteCodeText.textContent = currentCouple.inviteCode;
     sharedSpaceTitle.textContent = "Waiting for partner";
     sharedSpaceDescription.textContent = "Share your invite code so your partner can join this private space.";
     coupleStatusText.textContent = "Invite " + currentCouple.inviteCode;
     copyInviteButton.textContent = "Copy";
     copyInviteButton.disabled = false;
+    inviteCodeRow.style.display = "grid";
   }
 }
 
@@ -658,6 +659,37 @@ async function login() {
   setStatus(authMessage, "Logged in.", "success");
 }
 
+function isValidEmail(email) {
+  var pattern = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+  if (!pattern.test(email)) return false;
+
+  var domain = email.split("@")[1].toLowerCase();
+  var parts = domain.split(".");
+  var tld = parts[parts.length - 1];
+  if (tld.length < 2 || tld.length > 10) return false;
+  if (parts.length < 2) return false;
+  return true;
+}
+
+function validatePassword(password) {
+  if (password.length < 8) {
+    return "Password must be at least 8 characters.";
+  }
+  if (!/[A-Z]/.test(password)) {
+    return "Password needs at least one uppercase letter.";
+  }
+  if (!/[0-9]/.test(password)) {
+    return "Password needs at least one number.";
+  }
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password)) {
+    return "Password needs at least one special character (!@#$%^&* etc).";
+  }
+  if (!/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]+$/.test(password)) {
+    return "Password contains invalid characters.";
+  }
+  return null;
+}
+
 async function signup() {
   const fields = getAuthFields();
 
@@ -666,8 +698,14 @@ async function signup() {
     return;
   }
 
-  if (fields.password.length < 6) {
-    setStatus(authMessage, "Use a password with at least 6 characters.", "error");
+  if (!isValidEmail(fields.email)) {
+    setStatus(authMessage, "Enter a valid email address.", "error");
+    return;
+  }
+
+  var passwordError = validatePassword(fields.password);
+  if (passwordError) {
+    setStatus(authMessage, passwordError, "error");
     return;
   }
 
