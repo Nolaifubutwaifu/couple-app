@@ -27,12 +27,14 @@ create table if not exists public.messages (
   question_id text not null,
   sender_id uuid not null references public.profiles(id) on delete cascade,
   text text not null check (char_length(trim(text)) > 0),
+  image_url text,
   created_at timestamptz not null default now()
 );
 
 create index if not exists couple_members_user_id_idx on public.couple_members(user_id);
 create index if not exists messages_couple_question_created_idx on public.messages(couple_id, question_id, created_at);
 create index if not exists messages_sender_id_idx on public.messages(sender_id);
+create index if not exists messages_image_url_idx on public.messages(couple_id, created_at desc) where image_url is not null;
 
 alter table public.profiles enable row level security;
 alter table public.couples enable row level security;

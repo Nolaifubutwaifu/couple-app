@@ -136,10 +136,14 @@
                   <div class="direct-chat-messages" id="directChatMessages"></div>
 
                   <div class="direct-chat-input">
+                    <button id="directPhotoButton" type="button" class="direct-photo-btn" title="Send photo">
+                      <span>📷</span>
+                    </button>
                     <input id="directMessageInput" type="text" placeholder="Message...">
                     <button id="directSendButton" type="button" class="direct-send-btn">
                       <span>➤</span>
                     </button>
+                    <input type="file" id="directPhotoInput" accept="image/*" style="display:none">
                   </div>
                 </div>
 
@@ -403,6 +407,32 @@
                 </section>
               </div>
 
+              <!-- TAB: Gallery -->
+              <div id="tabGallery" class="tab-content">
+                <section class="gallery-header">
+                  <p class="small-text">memories</p>
+                  <h2>Our Memories.</h2>
+                  <p class="setup-description">All the photos you've shared together, in one place.</p>
+                </section>
+
+                <button type="button" id="galleryAddBtn" class="gallery-add-btn">
+                  <span>+</span> Add Photo
+                </button>
+
+                <div class="gallery-grid" id="galleryGrid">
+                  <p class="gallery-empty" id="galleryEmpty">No photos yet. Share your first photo in chat!</p>
+                </div>
+
+                <div class="gallery-viewer" id="galleryViewer" style="display:none">
+                  <button type="button" id="galleryViewerClose" class="gallery-viewer-close">&#10005;</button>
+                  <img id="galleryViewerImg" class="gallery-viewer-img" alt="">
+                  <div class="gallery-viewer-info">
+                    <span id="galleryViewerSender"></span>
+                    <span id="galleryViewerDate"></span>
+                  </div>
+                </div>
+              </div>
+
               <!-- TAB: Date -->
               <div id="tabDate" class="tab-content">
 
@@ -548,6 +578,10 @@
                   <span class="nav-icon">◐</span>
                   <span class="nav-label">Date</span>
                 </button>
+                <button type="button" class="nav-tab" data-tab="tabGallery">
+                  <span class="nav-icon">🖼</span>
+                  <span class="nav-label">Gallery</span>
+                </button>
                 <button type="button" class="nav-tab" data-tab="tabProfile">
                   <span class="nav-icon">⚙</span>
                   <span class="nav-label">Profile</span>
@@ -558,6 +592,32 @@
 
         </div>
     </section>
+
+    <!-- BeReal Camera Overlay -->
+    <div class="camera-overlay" id="cameraOverlay" style="display:none">
+      <div class="camera-container">
+        <div class="camera-header">
+          <button type="button" id="cameraCloseBtn" class="camera-close-btn">&#10005;</button>
+          <span class="camera-step-label" id="cameraStepLabel">Back camera</span>
+          <span></span>
+        </div>
+        <div class="camera-viewfinder">
+          <video id="cameraVideo" autoplay playsinline></video>
+          <canvas id="cameraCanvas" style="display:none"></canvas>
+          <div class="camera-pip" id="cameraPip" style="display:none">
+            <img id="cameraPipImg" alt="">
+          </div>
+        </div>
+        <div class="camera-controls">
+          <button type="button" id="cameraRetakeBtn" class="camera-retake-btn" style="display:none">Retake</button>
+          <button type="button" id="cameraCaptureBtn" class="camera-capture-btn"></button>
+          <button type="button" id="cameraSendBtn" class="camera-send-btn" style="display:none">Send</button>
+        </div>
+        <div class="camera-preview" id="cameraPreview" style="display:none">
+          <img id="cameraPreviewImg" alt="Preview">
+        </div>
+      </div>
+    </div>
 
     <!-- Milestone Celebration Overlay -->
     <div class="milestone-overlay" id="milestoneOverlay">

@@ -461,7 +461,7 @@ async function loadMessages() {
 
   const { data, error } = await supabase
     .from("messages")
-    .select("id, question_id, text, sender_id, created_at, profiles:sender_id(display_name)")
+    .select("id, question_id, text, image_url, sender_id, created_at, profiles:sender_id(display_name)")
     .eq("couple_id", coupleId)
     .order("created_at", { ascending: true });
 
@@ -488,6 +488,7 @@ async function loadMessages() {
 
   renderPromptExperience();
   renderDirectChat();
+  renderGallery();
 }
 
 function getSenderName(row) {
@@ -506,6 +507,7 @@ function formatMessageRow(row) {
   return {
     id: row.id,
     text: row.text,
+    imageUrl: row.image_url || null,
     sender: row.sender_id === currentUser.id ? "me" : "partner",
     senderName: row.sender_id === currentUser.id && currentProfile ? currentProfile.display_name : getSenderName(row),
     createdAt: row.created_at
@@ -850,7 +852,7 @@ async function sendMessage() {
       sender_id: currentUser.id,
       text: messageText
     })
-    .select("id, question_id, text, sender_id, created_at, profiles:sender_id(display_name)")
+    .select("id, question_id, text, image_url, sender_id, created_at, profiles:sender_id(display_name)")
     .single();
 
   sendButton.disabled = false;
@@ -2617,7 +2619,13 @@ function renderDirectChat() {
     var timeCls = isMe ? "direct-msg-time time-right" : "direct-msg-time";
     var timeStr = formatMessageTime(m.createdAt);
 
-    html += '<div class="direct-msg ' + cls + '">' + escapeHTML(m.text) + '</div>';
+    if (m.imageUrl) {
+      html += '<div class="direct-msg direct-msg-photo ' + cls + '">';
+      html += '<img src="' + escapeAttr(m.imageUrl) + '" alt="Photo" loading="lazy" data-full="' + escapeAttr(m.imageUrl) + '">';
+      html += '</div>';
+    } else {
+      html += '<div class="direct-msg ' + cls + '">' + escapeHTML(m.text) + '</div>';
+    }
     html += '<div class="' + timeCls + '">' + timeStr + '</div>';
   }
 
@@ -2639,6 +2647,10 @@ function escapeHTML(str) {
   var div = document.createElement("div");
   div.textContent = str;
   return div.innerHTML;
+}
+
+function escapeAttr(str) {
+  return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function updateDirectChatHeader() {
@@ -2672,7 +2684,7 @@ async function sendDirectMessage() {
       sender_id: currentUser.id,
       text: text
     })
-    .select("id, question_id, text, sender_id, created_at, profiles:sender_id(display_name)")
+    .select("id, question_id, text, image_url, sender_id, created_at, profiles:sender_id(display_name)")
     .single();
 
   directSendButton.disabled = false;
@@ -2699,6 +2711,431 @@ directMessageInput.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
     sendDirectMessage();
   }
+});
+
+directChatMessages.addEventListener("click", function (event) {
+  var img = event.target.closest(".direct-msg-photo img");
+  if (!img) return;
+  var fullUrl = img.getAttribute("data-full");
+  if (fullUrl) {
+    galleryViewerImg.src = fullUrl;
+    galleryViewerSender.textContent = "";
+    galleryViewerDate.textContent = "";
+    galleryViewer.style.display = "flex";
+  }
+});
+
+
+// ═══════════════════════════════════════════════
+// PHOTO MESSAGES
+// ═══════════════════════════════════════════════
+
+var directPhotoButton = document.getElementById("directPhotoButton");
+var directPhotoInput = document.getElementById("directPhotoInput");
+
+directPhotoButton.addEventListener("click", function () {
+  showPhotoOptions();
+});
+
+function showPhotoOptions() {
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    openCameraOverlay();
+  } else {
+    directPhotoInput.click();
+  }
+}
+
+directPhotoInput.addEventListener("change", async function () {
+  var file = directPhotoInput.files[0];
+  if (!file) return;
+  await uploadAndSendPhoto(file);
+  directPhotoInput.value = "";
+});
+
+async function compressImage(file, maxDimension) {
+  maxDimension = maxDimension || 1200;
+  return new Promise(function (resolve) {
+    var img = new Image();
+    img.onload = function () {
+      var w = img.width, h = img.height;
+      URL.revokeObjectURL(img.src);
+      if (w <= maxDimension && h <= maxDimension) {
+        resolve(file);
+        return;
+      }
+      var ratio = Math.min(maxDimension / w, maxDimension / h);
+      var nw = Math.round(w * ratio), nh = Math.round(h * ratio);
+      var canvas = document.createElement("canvas");
+      canvas.width = nw;
+      canvas.height = nh;
+      canvas.getContext("2d").drawImage(img, 0, 0, nw, nh);
+      canvas.toBlob(function (blob) { resolve(blob); }, "image/jpeg", 0.85);
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+async function uploadAndSendPhoto(fileOrBlob) {
+  if (!currentUser || !currentCouple) return;
+
+  directSendButton.disabled = true;
+  directPhotoButton.disabled = true;
+
+  var compressed = await compressImage(fileOrBlob);
+
+  var ext = "jpg";
+  if (fileOrBlob.name) {
+    var parts = fileOrBlob.name.split(".");
+    if (parts.length > 1) ext = parts.pop().toLowerCase();
+  }
+  var filename = currentUser.id + "_" + Date.now() + "." + ext;
+  var path = currentCouple.id + "/" + filename;
+
+  var uploadResult = await supabase.storage
+    .from("photos")
+    .upload(path, compressed, { contentType: compressed.type || "image/jpeg" });
+
+  if (uploadResult.error) {
+    setStatus(appStatusMessage, "Photo upload failed: " + uploadResult.error.message, "error");
+    directSendButton.disabled = false;
+    directPhotoButton.disabled = false;
+    return;
+  }
+
+  var urlResult = supabase.storage.from("photos").getPublicUrl(path);
+  var publicUrl = urlResult.data.publicUrl;
+
+  var result = await supabase
+    .from("messages")
+    .insert({
+      couple_id: currentCouple.id,
+      question_id: "direct",
+      sender_id: currentUser.id,
+      text: "[photo]",
+      image_url: publicUrl
+    })
+    .select("id, question_id, text, image_url, sender_id, created_at, profiles:sender_id(display_name)")
+    .single();
+
+  directSendButton.disabled = false;
+  directPhotoButton.disabled = false;
+
+  if (result.error) {
+    setStatus(appStatusMessage, getReadableError(result.error), "error");
+    return;
+  }
+
+  if (result.data) {
+    addOrReplaceMessage(result.data);
+    renderDirectChat();
+    renderGallery();
+  }
+
+  recordEngagement();
+  scheduleMessagesReload();
+}
+
+
+// ═══════════════════════════════════════════════
+// BEREAL CAMERA
+// ═══════════════════════════════════════════════
+
+var cameraOverlay = document.getElementById("cameraOverlay");
+var cameraVideo = document.getElementById("cameraVideo");
+var cameraCanvas = document.getElementById("cameraCanvas");
+var cameraPip = document.getElementById("cameraPip");
+var cameraPipImg = document.getElementById("cameraPipImg");
+var cameraCaptureBtn = document.getElementById("cameraCaptureBtn");
+var cameraCloseBtn = document.getElementById("cameraCloseBtn");
+var cameraRetakeBtn = document.getElementById("cameraRetakeBtn");
+var cameraSendBtn = document.getElementById("cameraSendBtn");
+var cameraStepLabel = document.getElementById("cameraStepLabel");
+var cameraPreview = document.getElementById("cameraPreview");
+var cameraPreviewImg = document.getElementById("cameraPreviewImg");
+
+var cameraStream = null;
+var backPhotoDataUrl = null;
+var frontPhotoDataUrl = null;
+var cameraPhase = "back";
+var hasMultipleCameras = false;
+
+async function openCameraOverlay() {
+  cameraOverlay.style.display = "flex";
+  cameraPhase = "back";
+  backPhotoDataUrl = null;
+  frontPhotoDataUrl = null;
+  cameraPip.style.display = "none";
+  cameraPreview.style.display = "none";
+  cameraRetakeBtn.style.display = "none";
+  cameraSendBtn.style.display = "none";
+  cameraCaptureBtn.style.display = "";
+  cameraVideo.style.display = "";
+  cameraStepLabel.textContent = "Back camera";
+
+  try {
+    var devices = await navigator.mediaDevices.enumerateDevices();
+    var videoInputs = devices.filter(function (d) { return d.kind === "videoinput"; });
+    hasMultipleCameras = videoInputs.length > 1;
+  } catch (e) {
+    hasMultipleCameras = false;
+  }
+
+  await startCamera("environment");
+}
+
+async function startCamera(facingMode) {
+  stopCamera();
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facingMode, width: { ideal: 1080 }, height: { ideal: 1440 } },
+      audio: false
+    });
+    cameraVideo.srcObject = cameraStream;
+    cameraVideo.style.display = "";
+  } catch (err) {
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      cameraVideo.srcObject = cameraStream;
+      cameraVideo.style.display = "";
+      hasMultipleCameras = false;
+    } catch (err2) {
+      closeCameraOverlay();
+      directPhotoInput.click();
+    }
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(function (track) { track.stop(); });
+    cameraStream = null;
+  }
+}
+
+function captureFrame() {
+  var w = cameraVideo.videoWidth;
+  var h = cameraVideo.videoHeight;
+  cameraCanvas.width = w;
+  cameraCanvas.height = h;
+  var ctx = cameraCanvas.getContext("2d");
+  ctx.drawImage(cameraVideo, 0, 0, w, h);
+  return cameraCanvas.toDataURL("image/jpeg", 0.85);
+}
+
+cameraCaptureBtn.addEventListener("click", async function () {
+  if (cameraPhase === "back") {
+    backPhotoDataUrl = captureFrame();
+
+    if (hasMultipleCameras) {
+      cameraPhase = "front";
+      cameraStepLabel.textContent = "Now your selfie!";
+      cameraPip.style.display = "";
+      cameraPipImg.src = backPhotoDataUrl;
+      await startCamera("user");
+    } else {
+      showCameraPreview(backPhotoDataUrl);
+    }
+  } else if (cameraPhase === "front") {
+    frontPhotoDataUrl = captureFrame();
+    var compositeDataUrl = await compositeBeReal(backPhotoDataUrl, frontPhotoDataUrl);
+    showCameraPreview(compositeDataUrl);
+  }
+});
+
+async function compositeBeReal(backDataUrl, frontDataUrl) {
+  return new Promise(function (resolve) {
+    var backImg = new Image();
+    backImg.onload = function () {
+      var frontImg = new Image();
+      frontImg.onload = function () {
+        var w = backImg.width;
+        var h = backImg.height;
+        cameraCanvas.width = w;
+        cameraCanvas.height = h;
+        var ctx = cameraCanvas.getContext("2d");
+
+        ctx.drawImage(backImg, 0, 0, w, h);
+
+        var pipW = Math.round(w * 0.28);
+        var pipH = Math.round(pipW * (frontImg.height / frontImg.width));
+        var pipX = Math.round(w * 0.03);
+        var pipY = Math.round(h * 0.03);
+        var pipR = Math.round(w * 0.02);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(pipX + pipR, pipY);
+        ctx.lineTo(pipX + pipW - pipR, pipY);
+        ctx.quadraticCurveTo(pipX + pipW, pipY, pipX + pipW, pipY + pipR);
+        ctx.lineTo(pipX + pipW, pipY + pipH - pipR);
+        ctx.quadraticCurveTo(pipX + pipW, pipY + pipH, pipX + pipW - pipR, pipY + pipH);
+        ctx.lineTo(pipX + pipR, pipY + pipH);
+        ctx.quadraticCurveTo(pipX, pipY + pipH, pipX, pipY + pipH - pipR);
+        ctx.lineTo(pipX, pipY + pipR);
+        ctx.quadraticCurveTo(pipX, pipY, pipX + pipR, pipY);
+        ctx.closePath();
+        ctx.clip();
+
+        ctx.translate(pipX + pipW, pipY);
+        ctx.scale(-1, 1);
+        ctx.drawImage(frontImg, 0, 0, pipW, pipH);
+        ctx.restore();
+
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(pipX + pipR, pipY);
+        ctx.lineTo(pipX + pipW - pipR, pipY);
+        ctx.quadraticCurveTo(pipX + pipW, pipY, pipX + pipW, pipY + pipR);
+        ctx.lineTo(pipX + pipW, pipY + pipH - pipR);
+        ctx.quadraticCurveTo(pipX + pipW, pipY + pipH, pipX + pipW - pipR, pipY + pipH);
+        ctx.lineTo(pipX + pipR, pipY + pipH);
+        ctx.quadraticCurveTo(pipX, pipY + pipH, pipX, pipY + pipH - pipR);
+        ctx.lineTo(pipX, pipY + pipR);
+        ctx.quadraticCurveTo(pipX, pipY, pipX + pipR, pipY);
+        ctx.closePath();
+        ctx.stroke();
+
+        resolve(cameraCanvas.toDataURL("image/jpeg", 0.85));
+      };
+      frontImg.src = frontDataUrl;
+    };
+    backImg.src = backDataUrl;
+  });
+}
+
+function showCameraPreview(dataUrl) {
+  stopCamera();
+  cameraVideo.style.display = "none";
+  cameraPip.style.display = "none";
+  cameraPreview.style.display = "";
+  cameraPreviewImg.src = dataUrl;
+  cameraCaptureBtn.style.display = "none";
+  cameraRetakeBtn.style.display = "";
+  cameraSendBtn.style.display = "";
+  cameraStepLabel.textContent = "Preview";
+}
+
+cameraRetakeBtn.addEventListener("click", function () {
+  openCameraOverlay();
+});
+
+cameraSendBtn.addEventListener("click", async function () {
+  var dataUrl = cameraPreviewImg.src;
+  var blob = dataUrlToBlob(dataUrl);
+  closeCameraOverlay();
+  await uploadAndSendPhoto(blob);
+});
+
+function dataUrlToBlob(dataUrl) {
+  var parts = dataUrl.split(",");
+  var mime = parts[0].match(/:(.*?);/)[1];
+  var bstr = atob(parts[1]);
+  var n = bstr.length;
+  var u8arr = new Uint8Array(n);
+  for (var i = 0; i < n; i++) {
+    u8arr[i] = bstr.charCodeAt(i);
+  }
+  return new Blob([u8arr], { type: mime });
+}
+
+function closeCameraOverlay() {
+  stopCamera();
+  cameraOverlay.style.display = "none";
+  cameraVideo.style.display = "";
+  cameraPreview.style.display = "none";
+}
+
+cameraCloseBtn.addEventListener("click", closeCameraOverlay);
+
+
+// ═══════════════════════════════════════════════
+// GALLERY TAB
+// ═══════════════════════════════════════════════
+
+var galleryGrid = document.getElementById("galleryGrid");
+var galleryEmpty = document.getElementById("galleryEmpty");
+var galleryAddBtn = document.getElementById("galleryAddBtn");
+var galleryViewer = document.getElementById("galleryViewer");
+var galleryViewerClose = document.getElementById("galleryViewerClose");
+var galleryViewerImg = document.getElementById("galleryViewerImg");
+var galleryViewerSender = document.getElementById("galleryViewerSender");
+var galleryViewerDate = document.getElementById("galleryViewerDate");
+
+var galleryPhotos = [];
+
+function collectGalleryPhotos() {
+  var photos = [];
+  var keys = Object.keys(allMessages);
+  for (var k = 0; k < keys.length; k++) {
+    var msgs = allMessages[keys[k]];
+    for (var i = 0; i < msgs.length; i++) {
+      if (msgs[i].imageUrl) {
+        photos.push(msgs[i]);
+      }
+    }
+  }
+  photos.sort(function (a, b) {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+  return photos;
+}
+
+function renderGallery() {
+  galleryPhotos = collectGalleryPhotos();
+
+  if (galleryPhotos.length === 0) {
+    galleryGrid.innerHTML = '';
+    galleryEmpty.style.display = "";
+    galleryGrid.appendChild(galleryEmpty);
+    return;
+  }
+
+  galleryEmpty.style.display = "none";
+  var html = "";
+  for (var i = 0; i < galleryPhotos.length; i++) {
+    var p = galleryPhotos[i];
+    var dateStr = formatGalleryDate(p.createdAt);
+    html += '<div class="gallery-item" data-index="' + i + '">';
+    html += '<img src="' + escapeAttr(p.imageUrl) + '" alt="Photo" loading="lazy">';
+    html += '<span class="gallery-item-date">' + dateStr + '</span>';
+    html += '</div>';
+  }
+  galleryGrid.innerHTML = html;
+
+  var items = galleryGrid.querySelectorAll(".gallery-item");
+  items.forEach(function (item) {
+    item.addEventListener("click", function () {
+      var idx = parseInt(item.getAttribute("data-index"), 10);
+      openGalleryViewer(idx);
+    });
+  });
+}
+
+function formatGalleryDate(isoStr) {
+  if (!isoStr) return "";
+  var d = new Date(isoStr);
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return months[d.getMonth()] + " " + d.getDate();
+}
+
+function openGalleryViewer(index) {
+  var photo = galleryPhotos[index];
+  if (!photo) return;
+  galleryViewerImg.src = photo.imageUrl;
+  galleryViewerSender.textContent = photo.senderName;
+  galleryViewerDate.textContent = new Date(photo.createdAt).toLocaleDateString(undefined, {
+    weekday: "short", month: "short", day: "numeric", year: "numeric"
+  });
+  galleryViewer.style.display = "flex";
+}
+
+galleryViewerClose.addEventListener("click", function () {
+  galleryViewer.style.display = "none";
+});
+
+galleryAddBtn.addEventListener("click", function () {
+  showPhotoOptions();
 });
 
 
