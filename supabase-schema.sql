@@ -76,7 +76,7 @@ drop function if exists public.create_couple();
 drop function if exists public.join_couple_by_invite(text);
 
 create or replace function public.get_my_couple()
-returns table(couple_id uuid, invite_code text, member_count integer, partner_name text)
+returns table(couple_id uuid, invite_code text, member_count integer, partner_name text, partner_id uuid)
 language sql
 stable
 security definer
@@ -98,7 +98,15 @@ as $$
         and cm_partner.user_id <> auth.uid()
       order by cm_partner.created_at asc
       limit 1
-    ) as partner_name
+    ) as partner_name,
+    (
+      select cm_partner.user_id
+      from public.couple_members cm_partner
+      where cm_partner.couple_id = c.id
+        and cm_partner.user_id <> auth.uid()
+      order by cm_partner.created_at asc
+      limit 1
+    ) as partner_id
   from public.couple_members cm
   join public.couples c on c.id = cm.couple_id
   where cm.user_id = auth.uid()
@@ -107,7 +115,7 @@ as $$
 $$;
 
 create or replace function public.create_couple()
-returns table(couple_id uuid, invite_code text, member_count integer, partner_name text)
+returns table(couple_id uuid, invite_code text, member_count integer, partner_name text, partner_id uuid)
 language plpgsql
 security definer
 set search_path = public
@@ -159,12 +167,13 @@ begin
       new_couple_id,
       generated_code,
       1,
-      null::text;
+      null::text,
+      null::uuid;
 end;
 $$;
 
 create or replace function public.join_couple_by_invite(invite_code_arg text)
-returns table(couple_id uuid, invite_code text, member_count integer, partner_name text)
+returns table(couple_id uuid, invite_code text, member_count integer, partner_name text, partner_id uuid)
 language plpgsql
 security definer
 set search_path = public
@@ -310,6 +319,63 @@ end $$;
 do $$
 begin
   alter publication supabase_realtime add table public.couple_members;
+exception
+  when duplicate_object then null;
+end $$;
+
+
+-- ═══════════════════════════════════════════════
+-- GAME STATES (persistent async turn-based games)
+-- ═══════════════════════════════════════════════
+
+create table if not exists public.game_states (
+  couple_id uuid not null references public.couples(id) on delete cascade,
+  game_type text not null check (game_type in ('tictactoe', 'memory')),
+  state jsonb not null default '{}',
+  updated_by uuid not null references auth.users(id),
+  updated_at timestamptz not null default now(),
+  primary key (couple_id, game_type)
+);
+
+alter table public.game_states enable row level security;
+
+drop policy if exists "Game states visible to couple members" on public.game_states;
+create policy "Game states visible to couple members"
+on public.game_states
+for select
+to authenticated
+using (public.is_couple_member(couple_id));
+
+drop policy if exists "Couple members can create game states" on public.game_states;
+create policy "Couple members can create game states"
+on public.game_states
+for insert
+to authenticated
+with check (
+  updated_by = auth.uid()
+  and public.is_couple_member(couple_id)
+);
+
+drop policy if exists "Couple members can update game states" on public.game_states;
+create policy "Couple members can update game states"
+on public.game_states
+for update
+to authenticated
+using (public.is_couple_member(couple_id))
+with check (updated_by = auth.uid());
+
+drop policy if exists "Couple members can delete game states" on public.game_states;
+create policy "Couple members can delete game states"
+on public.game_states
+for delete
+to authenticated
+using (public.is_couple_member(couple_id));
+
+grant select, insert, update, delete on public.game_states to authenticated;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.game_states;
 exception
   when duplicate_object then null;
 end $$;

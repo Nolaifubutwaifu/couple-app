@@ -432,12 +432,17 @@ async function loadCouple() {
     id: coupleRow.couple_id,
     inviteCode: coupleRow.invite_code,
     memberCount: coupleRow.member_count || 1,
-    partnerName: coupleRow.partner_name || ""
+    partnerName: coupleRow.partner_name || "",
+    partnerId: coupleRow.partner_id || null
   };
+
+  myTttRole = getMyGameRole();
+  myMemoryRole = getMyGameRole();
 
   showMainExperience();
   await loadMessages();
   await subscribeToMessages();
+  await subscribeToGameStates();
 }
 
 async function loadMessages() {
@@ -612,6 +617,14 @@ async function handleSignedOut() {
     await supabase.removeChannel(messagesChannel);
     messagesChannel = null;
   }
+
+  if (gameChannel !== null) {
+    await supabase.removeChannel(gameChannel);
+    gameChannel = null;
+  }
+
+  myTttRole = null;
+  myMemoryRole = null;
 
   currentUser = null;
   currentProfile = null;
@@ -907,134 +920,94 @@ function shuffleArray(array) {
   return shuffled;
 }
 
-var tttChannel = null;
-var memoryChannel = null;
-var tttPartnerPresent = false;
-var memoryPartnerPresent = false;
+var gameChannel = null;
 var myTttRole = null;
 var myMemoryRole = null;
-var tabId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+var lastSavedGameState = { tictactoe: null, memory: null };
 
-function getGameRole(presenceState) {
-  var keys = Object.keys(presenceState);
-  if (keys.length < 2 || !currentUser) return null;
-
-  var entries = [];
-  keys.forEach(function (k) {
-    var arr = presenceState[k];
-    if (arr && arr.length > 0) {
-      entries.push({ key: k, user_id: arr[0].user_id || k });
-    }
-  });
-
-  var uniqueUserIds = [];
-  entries.forEach(function (e) {
-    if (uniqueUserIds.indexOf(e.user_id) === -1) uniqueUserIds.push(e.user_id);
-  });
-  uniqueUserIds.sort();
-
-  if (uniqueUserIds.length >= 2) {
-    return uniqueUserIds[0] === currentUser.id ? "P1" : "P2";
-  }
-
-  var sortedKeys = keys.slice().sort();
-  return sortedKeys[0] === tabId ? "P1" : "P2";
+function getMyGameRole() {
+  if (!currentUser || !currentCouple || !currentCouple.partnerId) return null;
+  var ids = [currentUser.id, currentCouple.partnerId].sort();
+  return ids[0] === currentUser.id ? "P1" : "P2";
 }
 
-function joinGameChannel(gameType) {
+async function loadGameState(gameType) {
+  if (!currentCouple) return null;
+
+  var result = await supabase
+    .from("game_states")
+    .select("state")
+    .eq("couple_id", currentCouple.id)
+    .eq("game_type", gameType)
+    .maybeSingle();
+
+  if (result.error) {
+    console.error("loadGameState error:", result.error);
+    return null;
+  }
+
+  return result.data ? result.data.state : null;
+}
+
+async function saveGameState(gameType, state) {
   if (!currentCouple || !currentUser) return;
 
-  if (gameType === "tictactoe" && tttChannel) {
-    supabase.removeChannel(tttChannel);
-    tttChannel = null;
-  }
-  if (gameType === "memory" && memoryChannel) {
-    supabase.removeChannel(memoryChannel);
-    memoryChannel = null;
-  }
+  lastSavedGameState[gameType] = JSON.stringify(state);
 
-  var channelName = "game-" + gameType + "-" + currentCouple.id;
-  var channel = supabase.channel(channelName, {
-    config: {
-      broadcast: { self: false, ack: false },
-      presence: { key: tabId }
-    }
-  });
-
-  if (gameType === "tictactoe") {
-    tttChannel = channel;
-
-    channel.on("presence", { event: "sync" }, function () {
-      var state = channel.presenceState();
-      var count = Object.keys(state).length;
-      tttPartnerPresent = count >= 2;
-      myTttRole = getGameRole(state);
-      renderTTTOnlineState();
-      if (tttPartnerPresent && myTttRole) {
-        initTTT(false);
-      }
-    });
-
-    channel.on("broadcast", { event: "ttt-move" }, function (msg) {
-      onTTTMove(msg.payload);
-    });
-
-    channel.on("broadcast", { event: "ttt-reset" }, function () {
-      initTTTBoard();
-      renderTTTOnlineState();
-    });
-
-  } else if (gameType === "memory") {
-    memoryChannel = channel;
-
-    channel.on("presence", { event: "sync" }, function () {
-      var state = channel.presenceState();
-      var count = Object.keys(state).length;
-      memoryPartnerPresent = count >= 2;
-      myMemoryRole = getGameRole(state);
-      renderMemoryOnlineState();
-      if (memoryPartnerPresent && myMemoryRole) {
-        initMemoryGame(false);
-      }
-    });
-
-    channel.on("broadcast", { event: "memory-init" }, function (msg) {
-      onMemoryInit(msg.payload);
-    });
-
-    channel.on("broadcast", { event: "memory-flip" }, function (msg) {
-      onMemoryFlip(msg.payload);
-    });
-
-    channel.on("broadcast", { event: "memory-reset" }, function () {
-      initMemoryGame(false);
-    });
-  }
-
-  channel.subscribe(function (status) {
-    if (status === "SUBSCRIBED") {
-      channel.track({ user_id: currentUser.id, tab_id: tabId });
-    }
-  });
+  await supabase
+    .from("game_states")
+    .upsert(
+      {
+        couple_id: currentCouple.id,
+        game_type: gameType,
+        state: state,
+        updated_by: currentUser.id,
+        updated_at: new Date().toISOString()
+      },
+      { onConflict: "couple_id,game_type" }
+    );
 }
 
-function leaveGameChannel(gameType) {
-  if (gameType === "tictactoe" && tttChannel) {
-    supabase.removeChannel(tttChannel);
-    tttChannel = null;
-    tttPartnerPresent = false;
-    myTttRole = null;
-  } else if (gameType === "memory" && memoryChannel) {
-    supabase.removeChannel(memoryChannel);
-    memoryChannel = null;
-    memoryPartnerPresent = false;
-    myMemoryRole = null;
+async function subscribeToGameStates() {
+  if (!currentCouple) return;
+
+  if (gameChannel) {
+    await supabase.removeChannel(gameChannel);
   }
+
+  gameChannel = supabase
+    .channel("game-states-" + currentCouple.id)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "game_states",
+        filter: "couple_id=eq." + currentCouple.id
+      },
+      function (payload) {
+        if (!payload.new) return;
+        var gameType = payload.new.game_type;
+        var stateStr = JSON.stringify(payload.new.state);
+
+        if (stateStr === lastSavedGameState[gameType]) {
+          lastSavedGameState[gameType] = null;
+          return;
+        }
+
+        if (gameType === "tictactoe") {
+          onTTTStateFromDB(payload.new.state);
+        } else if (gameType === "memory") {
+          onMemoryStateFromDB(payload.new.state);
+        }
+      }
+    )
+    .subscribe();
 }
 
 
 // ═══════════════════════════════════════════════
-// TIC TAC TOE (ONLINE)
+// TIC TAC TOE (PERSISTENT)
 // ═══════════════════════════════════════════════
 
 const tttGrid = document.getElementById("tttGrid");
@@ -1062,15 +1035,7 @@ let tttCurrentPlayer = TTT_X;
 let tttGameOver = false;
 let tttScores = { x: 0, o: 0, d: 0 };
 
-function initTTT(broadcast) {
-  initTTTBoard();
-  renderTTTOnlineState();
-  if (broadcast !== false && tttChannel && tttPartnerPresent) {
-    tttChannel.send({ type: "broadcast", event: "ttt-reset", payload: {} });
-  }
-}
-
-function initTTTBoard() {
+function initTTT(saveToDb) {
   tttBoard = ["","","","","","","","",""];
   tttCurrentPlayer = TTT_X;
   tttGameOver = false;
@@ -1080,12 +1045,19 @@ function initTTTBoard() {
     cell.disabled = false;
     cell.classList.remove("winner");
   });
+
+  renderTTTStatus();
+
+  if (saveToDb !== false) {
+    saveTTTState(null, null);
+  }
 }
 
-function renderTTTOnlineState() {
-  if (!tttPartnerPresent) {
+function renderTTTStatus() {
+  if (!currentCouple || currentCouple.memberCount < 2 || !myTttRole) {
     tttOnlineBar.style.display = "none";
     tttWaiting.style.display = "block";
+    tttWaiting.textContent = "You need a partner to play!";
     tttGrid.classList.add("game-board-disabled");
     tttStatusEl.textContent = "";
     return;
@@ -1093,14 +1065,17 @@ function renderTTTOnlineState() {
 
   tttWaiting.style.display = "none";
   tttOnlineBar.style.display = "flex";
-  tttGrid.classList.remove("game-board-disabled");
 
   var mySymbol = myTttRole === "P1" ? TTT_X : TTT_O;
   tttMyRoleEl.textContent = "You are " + mySymbol;
 
-  if (tttGameOver) return;
+  if (tttGameOver) {
+    tttGrid.classList.add("game-board-disabled");
+    return;
+  }
 
   var isMyTurn = tttCurrentPlayer === mySymbol;
+  tttGrid.classList.toggle("game-board-disabled", !isMyTurn);
   tttTurnTextEl.textContent = isMyTurn ? "Your turn!" : "Partner's turn...";
   tttTurnTextEl.className = isMyTurn ? "your-turn" : "their-turn";
   tttStatusEl.textContent = tttCurrentPlayer + "'s turn";
@@ -1158,9 +1133,20 @@ function applyTTTResult(result) {
   tttCells.forEach(function (cell) { cell.disabled = true; });
 }
 
+function saveTTTState(winner, winLine) {
+  saveGameState("tictactoe", {
+    board: tttBoard.slice(),
+    currentPlayer: tttCurrentPlayer,
+    gameOver: tttGameOver,
+    scores: { x: tttScores.x, o: tttScores.o, d: tttScores.d },
+    winner: winner,
+    winLine: winLine
+  });
+}
+
 function handleTTTClick(index) {
   if (tttGameOver || tttBoard[index] !== "") return;
-  if (!tttPartnerPresent) return;
+  if (!currentCouple || currentCouple.memberCount < 2) return;
 
   var mySymbol = myTttRole === "P1" ? TTT_X : TTT_O;
   if (tttCurrentPlayer !== mySymbol) return;
@@ -1169,38 +1155,64 @@ function handleTTTClick(index) {
   tttCells[index].textContent = tttCurrentPlayer;
 
   var result = checkTTTWinner();
+  var winner = null;
+  var winLine = null;
 
   if (result) {
     applyTTTResult(result);
+    winner = result.winner;
+    winLine = result.line;
   } else {
     tttCurrentPlayer = tttCurrentPlayer === TTT_X ? TTT_O : TTT_X;
   }
 
-  renderTTTOnlineState();
-
-  if (tttChannel) {
-    tttChannel.send({
-      type: "broadcast",
-      event: "ttt-move",
-      payload: { index: index, board: tttBoard.slice(), currentPlayer: tttCurrentPlayer, gameOver: tttGameOver }
-    });
-  }
+  renderTTTStatus();
+  saveTTTState(winner, winLine);
 }
 
-function onTTTMove(payload) {
-  tttBoard = payload.board;
-  tttCurrentPlayer = payload.currentPlayer;
+function onTTTStateFromDB(state) {
+  if (!state) return;
+
+  tttBoard = state.board || ["","","","","","","","",""];
+  tttCurrentPlayer = state.currentPlayer || TTT_X;
+  tttGameOver = state.gameOver || false;
+  tttScores = {
+    x: (state.scores && state.scores.x) || 0,
+    o: (state.scores && state.scores.o) || 0,
+    d: (state.scores && state.scores.d) || 0
+  };
 
   tttCells.forEach(function (cell, i) {
     cell.textContent = tttBoard[i];
+    cell.disabled = tttGameOver;
+    cell.classList.remove("winner");
   });
 
-  var result = checkTTTWinner();
-  if (result) {
-    applyTTTResult(result);
+  tttScoreXEl.textContent = tttScores.x;
+  tttScoreOEl.textContent = tttScores.o;
+  tttScoreDEl.textContent = tttScores.d;
+
+  if (tttGameOver && state.winner) {
+    var mySymbol = myTttRole === "P1" ? TTT_X : TTT_O;
+    if (state.winner === "draw") {
+      tttStatusEl.textContent = "It's a draw!";
+      tttTurnTextEl.textContent = "Draw!";
+      tttTurnTextEl.className = "";
+    } else {
+      var iWon = state.winner === mySymbol;
+      tttStatusEl.textContent = state.winner + " wins!";
+      tttTurnTextEl.textContent = iWon ? "You win!" : "Partner wins!";
+      tttTurnTextEl.className = iWon ? "your-turn" : "their-turn";
+    }
+
+    if (state.winLine) {
+      state.winLine.forEach(function (idx) {
+        tttCells[idx].classList.add("winner");
+      });
+    }
   }
 
-  renderTTTOnlineState();
+  renderTTTStatus();
 }
 
 tttCells.forEach(function (cell) {
@@ -1215,7 +1227,7 @@ tttRestartBtn.addEventListener("click", function () {
 
 
 // ═══════════════════════════════════════════════
-// MEMORY MATCH (ONLINE)
+// MEMORY MATCH (PERSISTENT)
 // ═══════════════════════════════════════════════
 
 const memoryGrid = document.getElementById("memoryGrid");
@@ -1231,54 +1243,37 @@ const memoryStatsEl = document.getElementById("memoryStats");
 
 let memoryCards = [];
 let memoryFlipped = [];
+let memoryMatchedIndices = [];
 let memoryTotalMatched = 0;
 let memoryScores = { P1: 0, P2: 0 };
 let memoryCurrentTurn = "P1";
 let memoryLocked = false;
 let memoryInitialized = false;
 
-function initMemoryGame(broadcast) {
+function initMemoryGame(saveToDb) {
   memoryFlipped = [];
+  memoryMatchedIndices = [];
   memoryTotalMatched = 0;
   memoryScores = { P1: 0, P2: 0 };
   memoryCurrentTurn = "P1";
   memoryLocked = false;
   memoryInitialized = false;
 
-  renderMemoryOnlineState();
-
-  if (!memoryPartnerPresent) return;
-
-  if (myMemoryRole === "P1") {
-    var pairs = memoryMatchEmojis.concat(memoryMatchEmojis);
-    memoryCards = shuffleArray(pairs);
-    buildMemoryGrid();
-    memoryInitialized = true;
-
-    if (memoryChannel) {
-      memoryChannel.send({
-        type: "broadcast",
-        event: "memory-init",
-        payload: { cards: memoryCards }
-      });
-    }
-
-    if (broadcast !== false && memoryChannel && memoryPartnerPresent) {
-      memoryChannel.send({ type: "broadcast", event: "memory-reset", payload: {} });
-    }
+  if (!currentCouple || currentCouple.memberCount < 2 || !myMemoryRole) {
+    renderMemoryStatus();
+    return;
   }
-}
 
-function onMemoryInit(payload) {
-  memoryCards = payload.cards;
-  memoryFlipped = [];
-  memoryTotalMatched = 0;
-  memoryScores = { P1: 0, P2: 0 };
-  memoryCurrentTurn = "P1";
-  memoryLocked = false;
-  memoryInitialized = true;
+  var pairs = memoryMatchEmojis.concat(memoryMatchEmojis);
+  memoryCards = shuffleArray(pairs);
   buildMemoryGrid();
-  renderMemoryOnlineState();
+  memoryInitialized = true;
+
+  renderMemoryStatus();
+
+  if (saveToDb !== false) {
+    saveMemoryState();
+  }
 }
 
 function buildMemoryGrid() {
@@ -1313,10 +1308,11 @@ function buildMemoryGrid() {
   updateMemoryScoreDisplay();
 }
 
-function renderMemoryOnlineState() {
-  if (!memoryPartnerPresent) {
+function renderMemoryStatus() {
+  if (!currentCouple || currentCouple.memberCount < 2 || !myMemoryRole) {
     memoryOnlineBar.style.display = "none";
     memoryWaiting.style.display = "block";
+    memoryWaiting.textContent = "You need a partner to play!";
     memoryGrid.classList.add("game-board-disabled");
     memoryStatsEl.style.display = "none";
     return;
@@ -1324,14 +1320,17 @@ function renderMemoryOnlineState() {
 
   memoryWaiting.style.display = "none";
   memoryOnlineBar.style.display = "flex";
-  memoryGrid.classList.remove("game-board-disabled");
   memoryStatsEl.style.display = "flex";
 
   memoryMyRoleEl.textContent = myMemoryRole === "P1" ? "Player 1" : "Player 2";
 
-  if (memoryTotalMatched >= 8) return;
+  if (memoryTotalMatched >= 8) {
+    memoryGrid.classList.add("game-board-disabled");
+    return;
+  }
 
   var isMyTurn = memoryCurrentTurn === myMemoryRole;
+  memoryGrid.classList.toggle("game-board-disabled", !isMyTurn || memoryLocked);
   memoryTurnTextEl.textContent = isMyTurn ? "Your turn!" : "Partner's turn...";
   memoryTurnTextEl.className = isMyTurn ? "your-turn" : "their-turn";
 }
@@ -1346,25 +1345,31 @@ function updateMemoryScoreDisplay() {
   memoryPairsEl.textContent = "Pairs: " + memoryTotalMatched + " / 8";
 }
 
+function saveMemoryState() {
+  saveGameState("memory", {
+    cards: memoryCards,
+    matched: memoryMatchedIndices.slice(),
+    flipped: memoryFlipped.map(function (f) { return f.index; }),
+    totalMatched: memoryTotalMatched,
+    scores: { P1: memoryScores.P1, P2: memoryScores.P2 },
+    currentTurn: memoryCurrentTurn,
+    initialized: memoryInitialized
+  });
+}
+
 function handleMemoryCardClick(index, cardElement) {
   if (memoryLocked) return;
-  if (!memoryPartnerPresent || !memoryInitialized) return;
+  if (!currentCouple || currentCouple.memberCount < 2 || !memoryInitialized) return;
   if (memoryCurrentTurn !== myMemoryRole) return;
   if (cardElement.classList.contains("flipped")) return;
   if (cardElement.classList.contains("matched")) return;
 
   flipMemoryCard(index, cardElement);
 
-  if (memoryChannel) {
-    memoryChannel.send({
-      type: "broadcast",
-      event: "memory-flip",
-      payload: { index: index }
-    });
-  }
-
   if (memoryFlipped.length === 2) {
     evaluateMemoryPair();
+  } else {
+    saveMemoryState();
   }
 }
 
@@ -1378,15 +1383,6 @@ function flipMemoryCard(index, cardElement) {
   memoryFlipped.push({ index: index, element: cardElement });
 }
 
-function onMemoryFlip(payload) {
-  var cardElement = memoryGrid.querySelectorAll(".memory-card")[payload.index];
-  flipMemoryCard(payload.index, cardElement);
-
-  if (memoryFlipped.length === 2) {
-    evaluateMemoryPair();
-  }
-}
-
 function evaluateMemoryPair() {
   memoryLocked = true;
   var first = memoryFlipped[0];
@@ -1395,28 +1391,18 @@ function evaluateMemoryPair() {
   if (memoryCards[first.index] === memoryCards[second.index]) {
     first.element.classList.add("matched");
     second.element.classList.add("matched");
+    memoryMatchedIndices.push(first.index, second.index);
     memoryScores[memoryCurrentTurn]++;
     memoryTotalMatched++;
     memoryFlipped = [];
     memoryLocked = false;
 
     updateMemoryScoreDisplay();
+    renderMemoryStatus();
+    saveMemoryState();
 
     if (memoryTotalMatched >= 8) {
-      var myScore = memoryScores[myMemoryRole] || 0;
-      var partnerRole = myMemoryRole === "P1" ? "P2" : "P1";
-      var partnerScore = memoryScores[partnerRole] || 0;
-
-      if (myScore > partnerScore) {
-        memoryTurnTextEl.textContent = "You win!";
-        memoryTurnTextEl.className = "your-turn";
-      } else if (partnerScore > myScore) {
-        memoryTurnTextEl.textContent = "Partner wins!";
-        memoryTurnTextEl.className = "their-turn";
-      } else {
-        memoryTurnTextEl.textContent = "It's a tie!";
-        memoryTurnTextEl.className = "";
-      }
+      showMemoryEndState();
     }
   } else {
     window.setTimeout(function () {
@@ -1425,8 +1411,66 @@ function evaluateMemoryPair() {
       memoryFlipped = [];
       memoryCurrentTurn = memoryCurrentTurn === "P1" ? "P2" : "P1";
       memoryLocked = false;
-      renderMemoryOnlineState();
+      renderMemoryStatus();
+      saveMemoryState();
     }, 700);
+  }
+}
+
+function showMemoryEndState() {
+  var myScore = memoryScores[myMemoryRole] || 0;
+  var partnerRole = myMemoryRole === "P1" ? "P2" : "P1";
+  var partnerScore = memoryScores[partnerRole] || 0;
+
+  if (myScore > partnerScore) {
+    memoryTurnTextEl.textContent = "You win!";
+    memoryTurnTextEl.className = "your-turn";
+  } else if (partnerScore > myScore) {
+    memoryTurnTextEl.textContent = "Partner wins!";
+    memoryTurnTextEl.className = "their-turn";
+  } else {
+    memoryTurnTextEl.textContent = "It's a tie!";
+    memoryTurnTextEl.className = "";
+  }
+}
+
+function onMemoryStateFromDB(state) {
+  if (!state || !state.initialized) return;
+
+  memoryCards = state.cards;
+  memoryTotalMatched = state.totalMatched || 0;
+  memoryScores = { P1: (state.scores && state.scores.P1) || 0, P2: (state.scores && state.scores.P2) || 0 };
+  memoryCurrentTurn = state.currentTurn || "P1";
+  memoryMatchedIndices = state.matched || [];
+  memoryInitialized = true;
+  memoryLocked = false;
+
+  buildMemoryGrid();
+
+  var cardElements = memoryGrid.querySelectorAll(".memory-card");
+
+  memoryMatchedIndices.forEach(function (idx) {
+    cardElements[idx].classList.add("flipped", "matched");
+  });
+
+  memoryFlipped = [];
+  if (state.flipped && state.flipped.length > 0) {
+    state.flipped.forEach(function (idx) {
+      cardElements[idx].classList.add("flipped");
+      memoryFlipped.push({ index: idx, element: cardElements[idx] });
+    });
+
+    if (memoryFlipped.length === 2) {
+      evaluateMemoryPair();
+      return;
+    }
+  }
+
+  updateMemoryScoreDisplay();
+  renderMemoryStatus();
+
+  if (memoryTotalMatched >= 8) {
+    showMemoryEndState();
   }
 }
 
@@ -1558,20 +1602,30 @@ const gamePanels = {
 };
 
 const gameInitFunctions = {
-  memory: initMemoryGame,
-  tictactoe: initTTT,
   truthdare: function () {},
   quiz: initQuiz
 };
 
 gamesGrid.querySelectorAll(".game-launcher").forEach(function (btn) {
-  btn.addEventListener("click", function () {
-    const gameId = btn.dataset.game;
+  btn.addEventListener("click", async function () {
+    var gameId = btn.dataset.game;
     gamesGrid.style.display = "none";
     gamePanels[gameId].style.display = "block";
 
-    if (gameId === "tictactoe" || gameId === "memory") {
-      joinGameChannel(gameId);
+    if (gameId === "tictactoe") {
+      var tttState = await loadGameState("tictactoe");
+      if (tttState) {
+        onTTTStateFromDB(tttState);
+      } else {
+        initTTT(true);
+      }
+    } else if (gameId === "memory") {
+      var memState = await loadGameState("memory");
+      if (memState && memState.initialized) {
+        onMemoryStateFromDB(memState);
+      } else {
+        initMemoryGame(true);
+      }
     } else {
       gameInitFunctions[gameId]();
     }
@@ -1582,13 +1636,9 @@ gamesGrid.querySelectorAll(".game-launcher").forEach(function (btn) {
 
 document.querySelectorAll(".game-back-btn").forEach(function (btn) {
   btn.addEventListener("click", function () {
-    const gameId = btn.dataset.close;
+    var gameId = btn.dataset.close;
     gamePanels[gameId].style.display = "none";
     gamesGrid.style.display = "grid";
-
-    if (gameId === "tictactoe" || gameId === "memory") {
-      leaveGameChannel(gameId);
-    }
   });
 });
 
