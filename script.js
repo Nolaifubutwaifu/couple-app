@@ -175,71 +175,174 @@ function showCategories() {
   categorySectionsContainer.innerHTML = "";
 
   for (let i = 0; i < promptCategorySections.length; i++) {
-    const sectionElement = document.createElement("section");
+    var section = promptCategorySections[i];
+    var sectionElement = document.createElement("section");
     sectionElement.classList.add("category-section");
 
-    const sectionTitle = document.createElement("h2");
-    sectionTitle.textContent = promptCategorySections[i].title;
+    var activeCategory = null;
+    for (var j = 0; j < section.categories.length; j++) {
+      if (section.categories[j].id === currentCategoryId) {
+        activeCategory = section.categories[j];
+        break;
+      }
+    }
+    var displayCategory = activeCategory || section.categories[0];
 
-    const categoryRow = document.createElement("div");
-    categoryRow.classList.add("category-row");
+    var card = document.createElement("button");
+    card.type = "button";
+    card.classList.add("category-card");
+    card.classList.add("category-card--" + displayCategory.theme);
+    card.dataset.sectionIndex = i;
+    if (activeCategory) card.classList.add("active");
 
-    for (let j = 0; j < promptCategorySections[i].categories.length; j++) {
-      const category = promptCategorySections[i].categories[j];
-      const categoryCard = document.createElement("button");
-      categoryCard.type = "button";
-      categoryCard.classList.add("category-card");
-      categoryCard.classList.add("category-card--" + category.theme);
-      categoryCard.dataset.categoryId = category.id;
-      categoryCard.setAttribute("aria-pressed", category.id === currentCategoryId ? "true" : "false");
+    var iconEl = document.createElement("span");
+    iconEl.classList.add("category-icon");
+    iconEl.textContent = displayCategory.icon;
 
-      if (category.id === currentCategoryId) {
-        categoryCard.classList.add("active");
+    var body = document.createElement("div");
+    body.classList.add("category-card-body");
+
+    var sectionLabel = document.createElement("span");
+    sectionLabel.classList.add("category-section-label");
+    sectionLabel.textContent = section.title;
+
+    var label = document.createElement("span");
+    label.classList.add("category-label");
+    label.textContent = displayCategory.label;
+
+    var title = document.createElement("span");
+    title.classList.add("category-title");
+    title.textContent = displayCategory.title;
+
+    body.appendChild(sectionLabel);
+    body.appendChild(label);
+    body.appendChild(title);
+
+    var chevron = document.createElement("span");
+    chevron.classList.add("category-card-chevron");
+    chevron.textContent = "⋯";
+
+    card.appendChild(iconEl);
+    card.appendChild(body);
+    card.appendChild(chevron);
+    sectionElement.appendChild(card);
+    categorySectionsContainer.appendChild(sectionElement);
+
+    (function (sectionIdx, cardEl) {
+      var longPressTimer = null;
+      var didLongPress = false;
+
+      function startLongPress(e) {
+        didLongPress = false;
+        longPressTimer = setTimeout(function () {
+          didLongPress = true;
+          openWheelMenu(sectionIdx);
+        }, 400);
       }
 
-      const cardTop = document.createElement("span");
-      cardTop.classList.add("category-card-top");
-
-      const badge = document.createElement("span");
-      badge.classList.add("category-badge");
-
-      if (category.isNew) {
-        badge.textContent = "New";
+      function cancelLongPress() {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
       }
 
-      const progressRing = document.createElement("span");
-      progressRing.classList.add("progress-ring");
-      progressRing.style.setProperty("--progress", getCategoryProgress(category.id) + "%");
-
-      cardTop.appendChild(badge);
-      cardTop.appendChild(progressRing);
-
-      const icon = document.createElement("span");
-      icon.classList.add("category-icon");
-      icon.textContent = category.icon;
-
-      const label = document.createElement("span");
-      label.classList.add("category-label");
-      label.textContent = category.label;
-
-      const title = document.createElement("span");
-      title.classList.add("category-title");
-      title.textContent = category.title;
-
-      categoryCard.appendChild(cardTop);
-      categoryCard.appendChild(icon);
-      categoryCard.appendChild(label);
-      categoryCard.appendChild(title);
-      categoryRow.appendChild(categoryCard);
-
-      categoryCard.addEventListener("click", function () {
-        changeCategory(category.id);
+      cardEl.addEventListener("pointerdown", startLongPress);
+      cardEl.addEventListener("pointerup", function () {
+        cancelLongPress();
+        if (!didLongPress) {
+          openWheelMenu(sectionIdx);
+        }
       });
+      cardEl.addEventListener("pointerleave", cancelLongPress);
+      cardEl.addEventListener("pointercancel", cancelLongPress);
+      cardEl.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    })(i, card);
+  }
+}
+
+var wheelOverlay = null;
+
+function openWheelMenu(sectionIndex) {
+  var section = promptCategorySections[sectionIndex];
+  if (!section) return;
+  closeWheelMenu();
+
+  wheelOverlay = document.createElement("div");
+  wheelOverlay.classList.add("wheel-overlay");
+
+  var container = document.createElement("div");
+  container.classList.add("wheel-container");
+
+  var center = document.createElement("div");
+  center.classList.add("wheel-center");
+  center.textContent = section.title;
+  container.appendChild(center);
+
+  var categories = section.categories;
+  var count = categories.length;
+  var radius = 90;
+  var startAngle = -90;
+
+  for (var i = 0; i < count; i++) {
+    var cat = categories[i];
+    var angle = startAngle + (i * (360 / count));
+    var rad = angle * (Math.PI / 180);
+    var x = 130 + radius * Math.cos(rad) - 40;
+    var y = 130 + radius * Math.sin(rad) - 40;
+
+    var item = document.createElement("button");
+    item.type = "button";
+    item.classList.add("wheel-item");
+    item.classList.add("category-card--" + cat.theme);
+    item.style.left = x + "px";
+    item.style.top = y + "px";
+    item.dataset.categoryId = cat.id;
+
+    if (cat.id === currentCategoryId) {
+      item.style.transform = "scale(1.15)";
+      item.style.boxShadow = "0 0 0 2px #1a1a2e, 0 6px 24px rgba(0,0,0,0.18)";
     }
 
-    sectionElement.appendChild(sectionTitle);
-    sectionElement.appendChild(categoryRow);
-    categorySectionsContainer.appendChild(sectionElement);
+    var itemIcon = document.createElement("span");
+    itemIcon.classList.add("wheel-item-icon");
+    itemIcon.textContent = cat.icon;
+
+    var itemLabel = document.createElement("span");
+    itemLabel.classList.add("wheel-item-label");
+    itemLabel.textContent = cat.label;
+
+    item.appendChild(itemIcon);
+    item.appendChild(itemLabel);
+    container.appendChild(item);
+
+    (function (categoryId) {
+      item.addEventListener("click", function (e) {
+        e.stopPropagation();
+        changeCategory(categoryId);
+        closeWheelMenu();
+      });
+    })(cat.id);
+  }
+
+  wheelOverlay.appendChild(container);
+  document.body.appendChild(wheelOverlay);
+
+  requestAnimationFrame(function () {
+    wheelOverlay.classList.add("wheel-visible");
+  });
+
+  wheelOverlay.addEventListener("click", function (e) {
+    if (e.target === wheelOverlay) {
+      closeWheelMenu();
+    }
+  });
+}
+
+function closeWheelMenu() {
+  if (wheelOverlay) {
+    wheelOverlay.remove();
+    wheelOverlay = null;
   }
 }
 
