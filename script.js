@@ -1265,6 +1265,13 @@ async function subscribeToPresence() {
     }
   });
 
+  presenceChannel.on("broadcast", { event: "reaction" }, function (payload) {
+    if (payload.payload && payload.payload.userId !== currentUser.id) {
+      messageReactions[payload.payload.msgId] = payload.payload.emoji;
+      renderDirectChat();
+    }
+  });
+
   await presenceChannel.subscribe(async function (status) {
     if (status === "SUBSCRIBED") {
       await presenceChannel.track({ online_at: new Date().toISOString() });
@@ -2998,13 +3005,25 @@ function renderDirectChat() {
     var cls = isMe ? "direct-msg-me" : "direct-msg-partner";
     var timeCls = isMe ? "direct-msg-time time-right" : "direct-msg-time";
     var timeStr = formatMessageTime(m.createdAt);
+    var reactionHtml = messageReactions[m.id] ? '<span class="msg-reaction">' + messageReactions[m.id] + '</span>' : '';
+
+    if (m.text === "[nudge]") {
+      var nudgeName = isMe ? "You" : (currentCouple && currentCouple.partnerName ? currentCouple.partnerName.split(" ")[0] : "Partner");
+      html += '<div class="direct-msg-nudge">';
+      html += '<span class="nudge-heart">💭</span>';
+      html += '<span class="nudge-text">' + escapeHTML(nudgeName) + ' is thinking of you</span>';
+      html += '</div>';
+      html += '<div class="' + timeCls + '">' + timeStr + '</div>';
+      continue;
+    }
 
     if (m.imageUrl) {
-      html += '<div class="direct-msg direct-msg-photo ' + cls + '">';
+      html += '<div class="direct-msg direct-msg-photo ' + cls + '" data-msg-id="' + escapeAttr(m.id) + '">';
       html += '<img src="' + escapeAttr(m.imageUrl) + '" alt="Photo" loading="lazy" data-full="' + escapeAttr(m.imageUrl) + '">';
+      html += reactionHtml;
       html += '</div>';
     } else {
-      html += '<div class="direct-msg ' + cls + '">' + escapeHTML(m.text) + '</div>';
+      html += '<div class="direct-msg ' + cls + '" data-msg-id="' + escapeAttr(m.id) + '">' + escapeHTML(m.text) + reactionHtml + '</div>';
     }
     html += '<div class="' + timeCls + '">' + timeStr + '</div>';
   }
@@ -3104,6 +3123,75 @@ directChatMessages.addEventListener("click", function (event) {
     galleryViewerSender.textContent = "";
     galleryViewerDate.textContent = "";
     galleryViewer.style.display = "flex";
+  }
+});
+
+
+// ═══════════════════════════════════════════════
+// NUDGE + REACTIONS
+// ═══════════════════════════════════════════════
+
+var directNudgeButton = document.getElementById("directNudgeButton");
+var messageReactions = {};
+var lastTapTime = 0;
+var lastTapMsgId = null;
+
+async function sendNudge() {
+  if (!currentUser || !currentCouple) return;
+  directNudgeButton.disabled = true;
+
+  var result = await supabase
+    .from("messages")
+    .insert({
+      couple_id: currentCouple.id,
+      question_id: "direct",
+      sender_id: currentUser.id,
+      text: "[nudge]"
+    })
+    .select("id, question_id, text, image_url, sender_id, created_at, profiles:sender_id(display_name)")
+    .single();
+
+  directNudgeButton.disabled = false;
+
+  if (result.data) {
+    addOrReplaceMessage(result.data);
+    renderDirectChat();
+  }
+
+  recordEngagement();
+  scheduleMessagesReload();
+}
+
+directNudgeButton.addEventListener("click", sendNudge);
+
+function reactToMessage(msgId, emoji) {
+  messageReactions[msgId] = emoji;
+  renderDirectChat();
+
+  if (presenceChannel) {
+    presenceChannel.send({
+      type: "broadcast",
+      event: "reaction",
+      payload: { msgId: msgId, emoji: emoji, userId: currentUser.id }
+    });
+  }
+}
+
+directChatMessages.addEventListener("click", function (event) {
+  var msgEl = event.target.closest(".direct-msg[data-msg-id]");
+  if (!msgEl) return;
+  if (event.target.closest("img[data-full]")) return;
+
+  var msgId = msgEl.getAttribute("data-msg-id");
+  var now = Date.now();
+
+  if (lastTapMsgId === msgId && now - lastTapTime < 400) {
+    reactToMessage(msgId, "❤️");
+    lastTapMsgId = null;
+    lastTapTime = 0;
+  } else {
+    lastTapMsgId = msgId;
+    lastTapTime = now;
   }
 });
 
