@@ -1,12 +1,19 @@
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  overscroll-behavior: none;
 }
 
 body {
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background-color: #faf5f0;
   color: #1a1a2e;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button,
@@ -38,8 +45,10 @@ button:disabled {
   width: 100%;
   max-width: 520px;
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0 auto;
-  padding: 28px 18px 100px;
+  padding: 28px 18px calc(100px + env(safe-area-inset-bottom, 0));
+  padding-top: calc(28px + env(safe-area-inset-top, 0));
   background-color: #faf5f0;
 }
 
@@ -881,6 +890,7 @@ h3 {
   background: #ffffff;
   border-top: 1px solid #ebe5de;
   z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .nav-tab {
@@ -2708,6 +2718,15 @@ h3 {
 
 .direct-chat-status.online {
   color: #4a9e6e;
+}
+
+.direct-chat-online-dot.online {
+  animation: presencePulse 2s ease-in-out infinite;
+}
+
+@keyframes presencePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 158, 110, 0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(74, 158, 110, 0); }
 }
 
 .direct-chat-messages {

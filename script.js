@@ -734,6 +734,7 @@ async function loadCouple() {
   await loadMessages();
   await subscribeToMessages();
   await subscribeToGameStates();
+  await subscribeToPresence();
   await checkExistingDateSession();
 }
 
@@ -922,6 +923,7 @@ async function handleSignedOut() {
     gameChannel = null;
   }
 
+  await cleanupPresence();
   cleanupDateCall();
 
   myTttRole = null;
@@ -1214,6 +1216,98 @@ function shuffleArray(array) {
     shuffled[j] = temp;
   }
   return shuffled;
+}
+
+// ═══════════════════════════════════════════════
+// REAL-TIME PRESENCE + TYPING
+// ═══════════════════════════════════════════════
+
+var presenceChannel = null;
+var partnerOnline = false;
+var partnerTyping = false;
+var typingTimeout = null;
+var lastTypingBroadcast = 0;
+
+async function subscribeToPresence() {
+  if (!currentCouple || !currentUser) return;
+
+  if (presenceChannel) {
+    await supabase.removeChannel(presenceChannel);
+  }
+
+  presenceChannel = supabase.channel("presence-" + currentCouple.id, {
+    config: { presence: { key: currentUser.id } }
+  });
+
+  presenceChannel.on("presence", { event: "sync" }, function () {
+    var state = presenceChannel.presenceState();
+    var partnerPresent = false;
+    var keys = Object.keys(state);
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i] !== currentUser.id) {
+        partnerPresent = true;
+        break;
+      }
+    }
+    partnerOnline = partnerPresent;
+    updatePresenceUI();
+  });
+
+  presenceChannel.on("broadcast", { event: "typing" }, function (payload) {
+    if (payload.payload && payload.payload.userId !== currentUser.id) {
+      partnerTyping = true;
+      updatePresenceUI();
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(function () {
+        partnerTyping = false;
+        updatePresenceUI();
+      }, 3000);
+    }
+  });
+
+  await presenceChannel.subscribe(async function (status) {
+    if (status === "SUBSCRIBED") {
+      await presenceChannel.track({ online_at: new Date().toISOString() });
+    }
+  });
+}
+
+function broadcastTyping() {
+  if (!presenceChannel || !currentUser) return;
+  var now = Date.now();
+  if (now - lastTypingBroadcast < 2000) return;
+  lastTypingBroadcast = now;
+  presenceChannel.send({
+    type: "broadcast",
+    event: "typing",
+    payload: { userId: currentUser.id }
+  });
+}
+
+function updatePresenceUI() {
+  if (partnerOnline) {
+    directChatOnlineDot.classList.add("online");
+    if (partnerTyping) {
+      directChatStatus.textContent = "typing...";
+      directChatStatus.classList.add("online");
+    } else {
+      directChatStatus.textContent = "Online";
+      directChatStatus.classList.add("online");
+    }
+  } else {
+    directChatOnlineDot.classList.remove("online");
+    directChatStatus.textContent = "Offline";
+    directChatStatus.classList.remove("online");
+  }
+}
+
+async function cleanupPresence() {
+  if (presenceChannel) {
+    await supabase.removeChannel(presenceChannel);
+    presenceChannel = null;
+  }
+  partnerOnline = false;
+  partnerTyping = false;
 }
 
 var gameChannel = null;
@@ -2998,6 +3092,8 @@ directMessageInput.addEventListener("keydown", function (event) {
     sendDirectMessage();
   }
 });
+
+directMessageInput.addEventListener("input", broadcastTyping);
 
 directChatMessages.addEventListener("click", function (event) {
   var img = event.target.closest(".direct-msg-photo img");
