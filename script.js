@@ -69,6 +69,7 @@ let allMessages = createEmptyMessages();
 
 function createEmptyMessages() {
   const messages = {};
+  messages["direct"] = [];
 
   for (let i = 0; i < questions.length; i++) {
     messages[questions[i].id] = [];
@@ -442,6 +443,7 @@ async function loadCouple() {
 
   showMainExperience();
   renderProfileTab();
+  updateDirectChatHeader();
   await loadMessages();
   await subscribeToMessages();
   await subscribeToGameStates();
@@ -485,6 +487,7 @@ async function loadMessages() {
   }
 
   renderPromptExperience();
+  renderDirectChat();
 }
 
 function getSenderName(row) {
@@ -2563,6 +2566,139 @@ dateWYROptionA.addEventListener("click", function () {
 dateWYROptionB.addEventListener("click", function () {
   dateWYROptionB.classList.add("selected");
   dateWYROptionA.classList.remove("selected");
+});
+
+
+// ═══════════════════════════════════════════════
+// DIRECT CHAT
+// ═══════════════════════════════════════════════
+
+var directChatView = document.getElementById("directChatView");
+var promptsChatView = document.getElementById("promptsChatView");
+var chatModeDirectBtn = document.getElementById("chatModeDirectBtn");
+var chatModePromptsBtn = document.getElementById("chatModePromptsBtn");
+var directChatMessages = document.getElementById("directChatMessages");
+var directMessageInput = document.getElementById("directMessageInput");
+var directSendButton = document.getElementById("directSendButton");
+var directChatName = document.getElementById("directChatName");
+var directChatStatus = document.getElementById("directChatStatus");
+var directChatOnlineDot = document.getElementById("directChatOnlineDot");
+var directChatAvatar = document.getElementById("directChatAvatar");
+var directChatAvatarPlaceholder = document.getElementById("directChatAvatarPlaceholder");
+var directChatInitials = document.getElementById("directChatInitials");
+
+chatModeDirectBtn.addEventListener("click", function () {
+  chatModeDirectBtn.classList.add("chat-mode-active");
+  chatModePromptsBtn.classList.remove("chat-mode-active");
+  directChatView.style.display = "";
+  promptsChatView.style.display = "none";
+});
+
+chatModePromptsBtn.addEventListener("click", function () {
+  chatModePromptsBtn.classList.add("chat-mode-active");
+  chatModeDirectBtn.classList.remove("chat-mode-active");
+  promptsChatView.style.display = "";
+  directChatView.style.display = "none";
+});
+
+function renderDirectChat() {
+  var msgs = allMessages["direct"] || [];
+
+  if (msgs.length === 0) {
+    directChatMessages.innerHTML = '<p class="direct-chat-empty">No messages yet. Say hi!</p>';
+    return;
+  }
+
+  var html = "";
+  for (var i = 0; i < msgs.length; i++) {
+    var m = msgs[i];
+    var isMe = m.sender === "me";
+    var cls = isMe ? "direct-msg-me" : "direct-msg-partner";
+    var timeCls = isMe ? "direct-msg-time time-right" : "direct-msg-time";
+    var timeStr = formatMessageTime(m.createdAt);
+
+    html += '<div class="direct-msg ' + cls + '">' + escapeHTML(m.text) + '</div>';
+    html += '<div class="' + timeCls + '">' + timeStr + '</div>';
+  }
+
+  directChatMessages.innerHTML = html;
+  directChatMessages.scrollTop = directChatMessages.scrollHeight;
+}
+
+function formatMessageTime(isoStr) {
+  if (!isoStr) return "";
+  var d = new Date(isoStr);
+  var h = d.getHours();
+  var m = d.getMinutes();
+  var ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m + " " + ampm;
+}
+
+function escapeHTML(str) {
+  var div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function updateDirectChatHeader() {
+  if (currentCouple && currentCouple.partnerName) {
+    directChatName.textContent = currentCouple.partnerName;
+    directMessageInput.placeholder = "Message " + currentCouple.partnerName + "...";
+
+    var initials = currentCouple.partnerName.split(" ").map(function (w) { return w.charAt(0).toUpperCase(); }).join("").slice(0, 2);
+    directChatInitials.textContent = initials || "?";
+  } else {
+    directChatName.textContent = "Partner";
+    directMessageInput.placeholder = "Message...";
+    directChatInitials.textContent = "?";
+  }
+
+  directChatAvatar.style.display = "none";
+  directChatAvatarPlaceholder.style.display = "";
+}
+
+async function sendDirectMessage() {
+  var text = directMessageInput.value.trim();
+  if (!text || !currentUser || !currentCouple) return;
+
+  directSendButton.disabled = true;
+
+  var result = await supabase
+    .from("messages")
+    .insert({
+      couple_id: currentCouple.id,
+      question_id: "direct",
+      sender_id: currentUser.id,
+      text: text
+    })
+    .select("id, question_id, text, sender_id, created_at, profiles:sender_id(display_name)")
+    .single();
+
+  directSendButton.disabled = false;
+
+  if (result.error) {
+    setStatus(appStatusMessage, getReadableError(result.error), "error");
+    return;
+  }
+
+  directMessageInput.value = "";
+
+  if (result.data) {
+    addOrReplaceMessage(result.data);
+    renderDirectChat();
+  }
+
+  recordEngagement();
+  scheduleMessagesReload();
+}
+
+directSendButton.addEventListener("click", sendDirectMessage);
+
+directMessageInput.addEventListener("keydown", function (event) {
+  if (event.key === "Enter") {
+    sendDirectMessage();
+  }
 });
 
 

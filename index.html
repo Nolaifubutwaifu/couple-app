@@ -110,30 +110,66 @@
 
               <!-- TAB: Chat -->
               <div id="tabChat" class="tab-content tab-active">
-                <div class="category-sections" id="categorySections"></div>
 
-                <section class="prompt-panel">
-                  <div class="prompt-panel-header">
-                      <p class="small-text" id="selectedCategoryLabel">daily check-in</p>
-                      <h2 id="selectedCategoryTitle">Start close.</h2>
+                <!-- Chat Mode Toggle -->
+                <div class="chat-mode-toggle">
+                  <button type="button" class="chat-mode-btn chat-mode-active" id="chatModeDirectBtn">Chat</button>
+                  <button type="button" class="chat-mode-btn" id="chatModePromptsBtn">Prompts</button>
+                </div>
+
+                <!-- Direct Chat View -->
+                <div id="directChatView">
+                  <div class="direct-chat-header" id="directChatHeader">
+                    <div class="direct-chat-avatar-wrap">
+                      <img id="directChatAvatar" class="direct-chat-avatar" src="" alt="" style="display:none">
+                      <div id="directChatAvatarPlaceholder" class="direct-chat-avatar-placeholder">
+                        <span id="directChatInitials">?</span>
+                      </div>
+                      <span class="direct-chat-online-dot" id="directChatOnlineDot"></span>
+                    </div>
+                    <div class="direct-chat-info">
+                      <span class="direct-chat-name" id="directChatName">Partner</span>
+                      <span class="direct-chat-status" id="directChatStatus">Offline</span>
+                    </div>
                   </div>
 
-                  <div class="question-list" id="questionList"></div>
-                </section>
+                  <div class="direct-chat-messages" id="directChatMessages"></div>
 
-                <section class="chat-panel">
-                  <div class="current-chat-header">
-                    <p class="small-text">Current chat</p>
-                    <h2 id="currentQuestionTitle">What's a shared dream you and your partner are working towards?</h2>
+                  <div class="direct-chat-input">
+                    <input id="directMessageInput" type="text" placeholder="Message...">
+                    <button id="directSendButton" type="button" class="direct-send-btn">
+                      <span>➤</span>
+                    </button>
                   </div>
+                </div>
 
-                  <div class="chat" id="chat"></div>
+                <!-- Prompts View (existing) -->
+                <div id="promptsChatView" style="display:none">
+                  <div class="category-sections" id="categorySections"></div>
 
-                  <div class="message-input">
-                    <input id="messageInput" type="text" placeholder="Write your answer...">
-                    <button id="sendButton" type="button">Send</button>
-                  </div>
-                </section>
+                  <section class="prompt-panel">
+                    <div class="prompt-panel-header">
+                        <p class="small-text" id="selectedCategoryLabel">daily check-in</p>
+                        <h2 id="selectedCategoryTitle">Start close.</h2>
+                    </div>
+
+                    <div class="question-list" id="questionList"></div>
+                  </section>
+
+                  <section class="chat-panel">
+                    <div class="current-chat-header">
+                      <p class="small-text">Current chat</p>
+                      <h2 id="currentQuestionTitle">What's a shared dream you and your partner are working towards?</h2>
+                    </div>
+
+                    <div class="chat" id="chat"></div>
+
+                    <div class="message-input">
+                      <input id="messageInput" type="text" placeholder="Write your answer...">
+                      <button id="sendButton" type="button">Send</button>
+                    </div>
+                  </section>
+                </div>
               </div>
 
               <!-- TAB: Games -->
