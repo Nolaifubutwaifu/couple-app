@@ -1,4 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
+import { Capacitor } from "@capacitor/core";
+import { StatusBar, Style as StatusBarStyle } from "@capacitor/status-bar";
+import { SplashScreen } from "@capacitor/splash-screen";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { Keyboard } from "@capacitor/keyboard";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { Clipboard } from "@capacitor/clipboard";
 import {
   promptCategorySections,
   questions,
@@ -20,6 +27,91 @@ if (!supabaseUrl || !supabasePublishableKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabasePublishableKey);
+
+// ─── Capacitor Native Bridge ───
+
+var isNative = Capacitor.isNativePlatform();
+
+async function initNative() {
+  if (!isNative) return;
+
+  try {
+    await StatusBar.setStyle({ style: StatusBarStyle.Light });
+    await StatusBar.setBackgroundColor({ color: "#faf5f0" });
+  } catch (e) {}
+
+  try {
+    await SplashScreen.hide();
+  } catch (e) {}
+
+  try {
+    Keyboard.addListener("keyboardWillShow", function () {
+      document.body.classList.add("keyboard-open");
+      var chatEl = document.getElementById("directChatMessages");
+      if (chatEl) setTimeout(function () { chatEl.scrollTop = chatEl.scrollHeight; }, 100);
+    });
+    Keyboard.addListener("keyboardWillHide", function () {
+      document.body.classList.remove("keyboard-open");
+    });
+  } catch (e) {}
+}
+
+function hapticLight() {
+  if (!isNative) return;
+  try { Haptics.impact({ style: ImpactStyle.Light }); } catch (e) {}
+}
+
+function hapticMedium() {
+  if (!isNative) return;
+  try { Haptics.impact({ style: ImpactStyle.Medium }); } catch (e) {}
+}
+
+async function nativeClipboardWrite(text) {
+  if (isNative) {
+    try {
+      await Clipboard.write({ string: text });
+      return true;
+    } catch (e) {}
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function nativePickPhoto() {
+  if (!isNative) return null;
+  try {
+    var result = await Camera.getPhoto({
+      resultType: CameraResultType.DataUrl,
+      source: CameraSource.Photos,
+      quality: 80,
+      width: 1200,
+    });
+    return result.dataUrl || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function nativeTakePhoto() {
+  if (!isNative) return null;
+  try {
+    var result = await Camera.getPhoto({
+      resultType: CameraResultType.DataUrl,
+      source: CameraSource.Camera,
+      quality: 80,
+      width: 1200,
+    });
+    return result.dataUrl || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+initNative();
 
 // ─── DOM Elements ───
 
@@ -1113,10 +1205,11 @@ async function joinCouple() {
 async function copyInviteCode() {
   if (!currentCouple) return;
 
-  try {
-    await navigator.clipboard.writeText(currentCouple.inviteCode);
+  var ok = await nativeClipboardWrite(currentCouple.inviteCode);
+  if (ok) {
+    hapticLight();
     setStatus(appStatusMessage, "Invite code copied.", "success");
-  } catch (error) {
+  } else {
     setStatus(appStatusMessage, "Copy failed. Select the invite code and copy it manually.", "error");
   }
 }
@@ -1188,6 +1281,7 @@ const navTabs = bottomNav.querySelectorAll(".nav-tab");
 
 navTabs.forEach(function (tab) {
   tab.addEventListener("click", function () {
+    hapticLight();
     const targetId = tab.dataset.tab;
 
     navTabs.forEach(function (t) {
@@ -3138,6 +3232,7 @@ var lastTapMsgId = null;
 
 async function sendNudge() {
   if (!currentUser || !currentCouple) return;
+  hapticMedium();
   directNudgeButton.disabled = true;
 
   var result = await supabase
@@ -3165,6 +3260,7 @@ async function sendNudge() {
 directNudgeButton.addEventListener("click", sendNudge);
 
 function reactToMessage(msgId, emoji) {
+  hapticLight();
   messageReactions[msgId] = emoji;
   renderDirectChat();
 
@@ -3207,11 +3303,39 @@ directPhotoButton.addEventListener("click", function () {
   showPhotoOptions();
 });
 
-function showPhotoOptions() {
+async function showPhotoOptions() {
+  if (isNative) {
+    try {
+      var result = await Camera.getPhoto({
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Prompt,
+        quality: 80,
+        width: 1200,
+      });
+      if (result.dataUrl) {
+        var blob = dataUrlToFileBlob(result.dataUrl);
+        if (blob) await uploadAndSendPhoto(blob);
+      }
+    } catch (e) {}
+    return;
+  }
   if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     openCameraOverlay();
   } else {
     directPhotoInput.click();
+  }
+}
+
+function dataUrlToFileBlob(dataUrl) {
+  try {
+    var parts = dataUrl.split(",");
+    var mime = parts[0].match(/:(.*?);/)[1];
+    var bstr = atob(parts[1]);
+    var arr = new Uint8Array(bstr.length);
+    for (var i = 0; i < bstr.length; i++) arr[i] = bstr.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  } catch (e) {
+    return null;
   }
 }
 
@@ -3730,13 +3854,14 @@ profileSignOutBtn.addEventListener("click", logout);
 
 document.getElementById("copyInviteBtn").addEventListener("click", async function () {
   if (!currentCouple) return;
-  try {
-    await navigator.clipboard.writeText(currentCouple.inviteCode);
+  var ok = await nativeClipboardWrite(currentCouple.inviteCode);
+  if (ok) {
+    hapticLight();
     this.textContent = "Copied!";
     setTimeout(function () {
       document.getElementById("copyInviteBtn").textContent = "Copy invite code";
     }, 1800);
-  } catch (e) {
+  } else {
     setStatus(coupleMessage, "Copy failed. Select the code and copy manually.", "error");
   }
 });

@@ -4,12 +4,26 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "node --check data.js && node --check script.js"
+    "check": "node --check data.js && node --check script.js",
+    "cap:build": "vite build && npx cap sync",
+    "cap:ios": "vite build && npx cap sync && npx cap open ios",
+    "cap:android": "vite build && npx cap sync && npx cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.3",
+    "@capacitor/camera": "^8.2.0",
+    "@capacitor/cli": "^8.3.3",
+    "@capacitor/clipboard": "^8.0.1",
+    "@capacitor/core": "^8.3.3",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.3.3",
+    "@capacitor/keyboard": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
     "@supabase/supabase-js": "^2.105.4"
   },
   "devDependencies": {
+    "typescript": "^6.0.3",
     "vite": "^8.0.11"
   }
 }
