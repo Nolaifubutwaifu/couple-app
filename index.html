@@ -170,8 +170,16 @@
                     <h2>🃏 Memory Match</h2>
                     <button type="button" class="game-back-btn" data-close="memory">Back</button>
                   </div>
-                  <div class="game-stats">
-                    <span id="memoryMoves">Moves: 0</span>
+                  <div class="game-online-bar" id="memoryOnlineBar" style="display:none">
+                    <span id="memoryMyRole"></span>
+                    <span id="memoryTurnText"></span>
+                  </div>
+                  <div class="game-waiting" id="memoryWaiting" style="display:none">
+                    Waiting for partner to open this game...
+                  </div>
+                  <div class="game-stats" id="memoryStats">
+                    <span>You: <strong id="memoryMyScore">0</strong></span>
+                    <span>Partner: <strong id="memoryPartnerScore">0</strong></span>
                     <span id="memoryPairs">Pairs: 0 / 8</span>
                   </div>
                   <div class="memory-grid" id="memoryGrid"></div>
@@ -183,6 +191,13 @@
                   <div class="game-panel-header">
                     <h2>⭕ Tic Tac Toe</h2>
                     <button type="button" class="game-back-btn" data-close="tictactoe">Back</button>
+                  </div>
+                  <div class="game-online-bar" id="tttOnlineBar" style="display:none">
+                    <span id="tttMyRole"></span>
+                    <span id="tttTurnText"></span>
+                  </div>
+                  <div class="game-waiting" id="tttWaiting" style="display:none">
+                    Waiting for partner to open this game...
                   </div>
                   <p id="tttStatus" class="game-status">❤️ goes first</p>
                   <div class="ttt-grid" id="tttGrid">
