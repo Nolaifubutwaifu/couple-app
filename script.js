@@ -2192,7 +2192,7 @@ function cleanupDateCall() {
 }
 
 async function startDateNight() {
-  if (!currentCouple || !currentCouple.partnerId) {
+  if (!currentCouple || currentCouple.memberCount < 2) {
     setStatus(dateStartMessage, "You need a partner to start a date.", "error");
     return;
   }
