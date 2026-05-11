@@ -381,7 +381,7 @@ async function ensureProfile(user) {
 
   const { data: existingProfile, error: selectError } = await supabase
     .from("profiles")
-    .select("id, display_name")
+    .select("id, display_name, avatar_url")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -396,7 +396,7 @@ async function ensureProfile(user) {
   const { data: profile, error } = await supabase
     .from("profiles")
     .upsert({ id: user.id, display_name: profileName }, { onConflict: "id" })
-    .select("id, display_name")
+    .select("id, display_name, avatar_url")
     .single();
 
   if (error) {
@@ -441,6 +441,7 @@ async function loadCouple() {
   myMemoryRole = getMyGameRole();
 
   showMainExperience();
+  renderProfileTab();
   await loadMessages();
   await subscribeToMessages();
   await subscribeToGameStates();
@@ -602,6 +603,7 @@ async function handleSignedIn(user) {
     currentProfile = await ensureProfile(user);
     signedInText.textContent = "Signed in as " + currentProfile.display_name;
     renderPromptExperience();
+    renderProfileTab();
     await loadCouple();
   } catch (error) {
     showCoupleSetup();
@@ -2508,6 +2510,125 @@ dateWYROptionB.addEventListener("click", function () {
   dateWYROptionB.classList.add("selected");
   dateWYROptionA.classList.remove("selected");
 });
+
+
+// ═══════════════════════════════════════════════
+// PROFILE TAB
+// ═══════════════════════════════════════════════
+
+var profileAvatarImg = document.getElementById("profileAvatarImg");
+var profileAvatarPlaceholder = document.getElementById("profileAvatarPlaceholder");
+var profileAvatarInitials = document.getElementById("profileAvatarInitials");
+var profileAvatarEditBtn = document.getElementById("profileAvatarEditBtn");
+var profileAvatarInput = document.getElementById("profileAvatarInput");
+var profileNameInput = document.getElementById("profileNameInput");
+var profileNameEditBtn = document.getElementById("profileNameEditBtn");
+var profileNameSaveBtn = document.getElementById("profileNameSaveBtn");
+var profilePartnerName = document.getElementById("profilePartnerName");
+var profileSignOutBtn = document.getElementById("profileSignOutBtn");
+var profileMessage = document.getElementById("profileMessage");
+
+function renderProfileTab() {
+  if (!currentProfile) return;
+
+  var name = currentProfile.display_name || "";
+  profileNameInput.value = name;
+
+  if (currentProfile.avatar_url) {
+    profileAvatarImg.src = currentProfile.avatar_url;
+    profileAvatarImg.style.display = "";
+    profileAvatarPlaceholder.style.display = "none";
+  } else {
+    profileAvatarImg.style.display = "none";
+    profileAvatarPlaceholder.style.display = "";
+    var initials = name.split(" ").map(function (w) { return w.charAt(0).toUpperCase(); }).join("").slice(0, 2);
+    profileAvatarInitials.textContent = initials || "?";
+  }
+
+  if (currentCouple && currentCouple.partnerName) {
+    profilePartnerName.textContent = currentCouple.partnerName;
+  } else {
+    profilePartnerName.textContent = "No partner yet";
+  }
+}
+
+profileAvatarEditBtn.addEventListener("click", function () {
+  profileAvatarInput.click();
+});
+
+profileAvatarInput.addEventListener("change", async function () {
+  var file = profileAvatarInput.files[0];
+  if (!file || !currentUser) return;
+
+  setStatus(profileMessage, "Uploading...", "");
+
+  var ext = file.name.split(".").pop() || "jpg";
+  var path = currentUser.id + "/avatar." + ext;
+
+  var uploadResult = await supabase.storage
+    .from("avatars")
+    .upload(path, file, { upsert: true, contentType: file.type });
+
+  if (uploadResult.error) {
+    setStatus(profileMessage, "Upload failed: " + uploadResult.error.message, "error");
+    profileAvatarInput.value = "";
+    return;
+  }
+
+  var urlResult = supabase.storage.from("avatars").getPublicUrl(path);
+  var publicUrl = urlResult.data.publicUrl + "?t=" + Date.now();
+
+  var updateResult = await supabase
+    .from("profiles")
+    .update({ avatar_url: publicUrl })
+    .eq("id", currentUser.id);
+
+  if (updateResult.error) {
+    setStatus(profileMessage, "Failed to save: " + updateResult.error.message, "error");
+    profileAvatarInput.value = "";
+    return;
+  }
+
+  currentProfile.avatar_url = publicUrl;
+  renderProfileTab();
+  setStatus(profileMessage, "Photo updated!", "success");
+  profileAvatarInput.value = "";
+});
+
+profileNameEditBtn.addEventListener("click", function () {
+  profileNameInput.removeAttribute("readonly");
+  profileNameInput.focus();
+  profileNameEditBtn.style.display = "none";
+  profileNameSaveBtn.style.display = "";
+});
+
+profileNameSaveBtn.addEventListener("click", async function () {
+  var newName = profileNameInput.value.trim();
+  if (!newName || !currentUser) return;
+
+  profileNameSaveBtn.disabled = true;
+
+  var result = await supabase
+    .from("profiles")
+    .update({ display_name: newName })
+    .eq("id", currentUser.id);
+
+  if (result.error) {
+    setStatus(profileMessage, "Failed to save name.", "error");
+    profileNameSaveBtn.disabled = false;
+    return;
+  }
+
+  currentProfile.display_name = newName;
+  signedInText.textContent = "Signed in as " + newName;
+  profileNameInput.setAttribute("readonly", "");
+  profileNameEditBtn.style.display = "";
+  profileNameSaveBtn.style.display = "none";
+  profileNameSaveBtn.disabled = false;
+  setStatus(profileMessage, "Name updated!", "success");
+});
+
+profileSignOutBtn.addEventListener("click", logout);
 
 
 // ═══════════════════════════════════════════════

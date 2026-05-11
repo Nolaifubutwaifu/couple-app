@@ -446,6 +446,49 @@
 
               </div>
 
+              <!-- TAB: Profile -->
+              <div id="tabProfile" class="tab-content">
+                <section class="profile-header">
+                  <h2>Profile Details</h2>
+                </section>
+
+                <div class="profile-avatar-section">
+                  <div class="profile-avatar-wrap">
+                    <img id="profileAvatarImg" class="profile-avatar" src="" alt="Profile photo" style="display:none">
+                    <div id="profileAvatarPlaceholder" class="profile-avatar-placeholder">
+                      <span id="profileAvatarInitials"></span>
+                    </div>
+                    <button type="button" id="profileAvatarEditBtn" class="profile-avatar-edit" title="Change photo">📷</button>
+                    <input type="file" id="profileAvatarInput" accept="image/*" style="display:none">
+                  </div>
+                  <p class="profile-avatar-hint">Tap icon to change photo</p>
+                </div>
+
+                <div class="profile-field" id="profileNameField">
+                  <span class="profile-field-label">YOUR NAME</span>
+                  <div class="profile-field-row">
+                    <input type="text" id="profileNameInput" class="profile-field-value" readonly>
+                    <button type="button" id="profileNameEditBtn" class="profile-field-edit">✎</button>
+                    <button type="button" id="profileNameSaveBtn" class="profile-field-save" style="display:none">Save</button>
+                  </div>
+                </div>
+
+                <div class="profile-field">
+                  <span class="profile-field-label">PARTNER'S NAME</span>
+                  <div class="profile-field-row">
+                    <span class="profile-field-value profile-field-readonly" id="profilePartnerName">No partner yet</span>
+                  </div>
+                </div>
+
+                <div class="profile-settings">
+                  <div class="profile-settings-row">Notification Preferences</div>
+                  <div class="profile-settings-row">Privacy Settings</div>
+                </div>
+
+                <button type="button" id="profileSignOutBtn" class="profile-signout">Sign Out</button>
+                <p id="profileMessage" class="status-message" aria-live="polite"></p>
+              </div>
+
               <!-- Bottom Navigation -->
               <nav class="bottom-nav" id="bottomNav">
                 <button type="button" class="nav-tab nav-tab-active" data-tab="tabChat">
@@ -463,6 +506,10 @@
                 <button type="button" class="nav-tab" data-tab="tabDate">
                   <span class="nav-icon">◐</span>
                   <span class="nav-label">Date</span>
+                </button>
+                <button type="button" class="nav-tab" data-tab="tabProfile">
+                  <span class="nav-icon">⚙</span>
+                  <span class="nav-label">Profile</span>
                 </button>
               </nav>
 
