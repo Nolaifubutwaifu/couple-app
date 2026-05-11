@@ -399,17 +399,57 @@ function showCurrentQuestionTitle() {
   }
 }
 
+var dailyRevealed = {};
+
+function isDailyPrompt(questionId) {
+  var today = getTodayPrompt();
+  return today && today.id === questionId;
+}
+
+function getDailyRevealState(questionId) {
+  var msgs = allMessages[questionId] || [];
+  var hasMe = false;
+  var hasPartner = false;
+  for (var i = 0; i < msgs.length; i++) {
+    if (msgs[i].sender === "me") hasMe = true;
+    else hasPartner = true;
+  }
+  return { hasMe: hasMe, hasPartner: hasPartner, bothAnswered: hasMe && hasPartner };
+}
+
 function showMessages() {
   chat.innerHTML = "";
 
   const messagesForCurrentQuestion = allMessages[currentQuestionId] || [];
 
   if (messagesForCurrentQuestion.length === 0) {
-    const emptyState = document.createElement("p");
-    emptyState.classList.add("empty-chat");
-    emptyState.textContent = "No answers yet.";
+    var emptyState = document.createElement("div");
+    emptyState.classList.add("emotional-empty");
+
+    if (isDailyPrompt(currentQuestionId)) {
+      emptyState.innerHTML = '<span class="emotional-empty-icon">🤫</span><p class="emotional-empty-title">Today\'s prompt</p><p class="emotional-empty-text">Answer first — your partner\'s response will be revealed once you both reply.</p>';
+    } else {
+      emptyState.innerHTML = '<span class="emotional-empty-icon">✨</span><p class="emotional-empty-title">No answers yet</p><p class="emotional-empty-text">Be the first to share your thoughts — your partner will see them here.</p>';
+    }
     chat.appendChild(emptyState);
     return;
+  }
+
+  var isDaily = isDailyPrompt(currentQuestionId);
+  var reveal = isDaily ? getDailyRevealState(currentQuestionId) : null;
+  var shouldBlur = isDaily && reveal && !reveal.bothAnswered && !dailyRevealed[currentQuestionId];
+
+  if (isDaily && reveal && reveal.bothAnswered && !dailyRevealed[currentQuestionId]) {
+    dailyRevealed[currentQuestionId] = true;
+  }
+
+  if (isDaily && !shouldBlur) {
+    var revealBanner = document.createElement("div");
+    revealBanner.classList.add("reveal-banner");
+    if (reveal && reveal.bothAnswered) {
+      revealBanner.innerHTML = '<span class="reveal-banner-icon">💕</span> Both answered — here are your thoughts';
+    }
+    if (revealBanner.innerHTML) chat.appendChild(revealBanner);
   }
 
   for (let i = 0; i < messagesForCurrentQuestion.length; i++) {
@@ -417,6 +457,8 @@ function showMessages() {
     const newMessage = document.createElement("div");
     newMessage.classList.add("message");
     newMessage.classList.add(message.sender);
+
+    var isBlurred = shouldBlur && message.sender !== "me";
 
     if (message.sender !== "me") {
       const senderName = document.createElement("span");
@@ -426,10 +468,26 @@ function showMessages() {
     }
 
     const messageParagraph = document.createElement("p");
-    messageParagraph.textContent = message.text;
+    if (isBlurred) {
+      messageParagraph.textContent = message.text;
+      newMessage.classList.add("message-blurred");
+    } else {
+      messageParagraph.textContent = message.text;
+    }
 
     newMessage.appendChild(messageParagraph);
     chat.appendChild(newMessage);
+  }
+
+  if (isDaily && shouldBlur) {
+    var hint = document.createElement("div");
+    hint.classList.add("reveal-hint");
+    if (reveal.hasMe && !reveal.hasPartner) {
+      hint.innerHTML = '<span class="reveal-hint-icon">⏳</span> Waiting for your partner to answer...';
+    } else if (!reveal.hasMe && reveal.hasPartner) {
+      hint.innerHTML = '<span class="reveal-hint-icon">🤫</span> Your partner answered — share yours to reveal!';
+    }
+    chat.appendChild(hint);
   }
 }
 
@@ -444,15 +502,17 @@ function renderPromptExperience() {
 function showCoupleSetup() {
   coupleSetup.style.display = "block";
   mainExperience.style.display = "none";
-  inviteCard.style.display = "none";
-  coupleStatusText.textContent = "No couple space yet";
-  setStatus(syncStatusText, "", "");
+  document.getElementById("onboardingStep1").style.display = "";
+  document.getElementById("onboardingStep2").style.display = "none";
+  setStatus(coupleMessage, "", "");
 }
 
 function showMainExperience() {
   coupleSetup.style.display = "none";
   mainExperience.style.display = "block";
   renderGreeting();
+  renderTodayCard();
+  updateFeatureLocks();
   setStatus(appStatusMessage, "", "");
 }
 
@@ -473,6 +533,73 @@ function renderGreeting() {
     homeConnectedText.textContent = "";
   }
 }
+
+function getTodayPrompt() {
+  var today = new Date();
+  var dayIndex = today.getFullYear() * 366 + today.getMonth() * 31 + today.getDate();
+  return questions[dayIndex % questions.length];
+}
+
+function renderTodayCard() {
+  var card = document.getElementById("todayCard");
+  if (!currentCouple || currentCouple.memberCount < 2) {
+    card.style.display = "none";
+    return;
+  }
+
+  var prompt = getTodayPrompt();
+  if (!prompt) { card.style.display = "none"; return; }
+
+  var now = new Date();
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  document.getElementById("todayCardDate").textContent = months[now.getMonth()] + " " + now.getDate();
+  document.getElementById("todayCardPrompt").textContent = prompt.text;
+  card.style.display = "";
+
+  var reveal = getDailyRevealState(prompt.id);
+  var statusEl = document.getElementById("todayCardStatus");
+  if (!statusEl) {
+    statusEl = document.createElement("p");
+    statusEl.id = "todayCardStatus";
+    statusEl.classList.add("today-card-status");
+    card.querySelector(".today-card-actions").before(statusEl);
+  }
+
+  if (reveal.bothAnswered) {
+    statusEl.textContent = "Both answered! Tap to see your answers.";
+    statusEl.className = "today-card-status today-card-status-done";
+  } else if (reveal.hasMe) {
+    statusEl.textContent = "You answered — waiting for your partner...";
+    statusEl.className = "today-card-status today-card-status-waiting";
+  } else if (reveal.hasPartner) {
+    statusEl.textContent = "Your partner answered — your turn!";
+    statusEl.className = "today-card-status today-card-status-turn";
+  } else {
+    statusEl.textContent = "Neither of you have answered yet";
+    statusEl.className = "today-card-status";
+  }
+}
+
+document.getElementById("todayAnswerBtn").addEventListener("click", function () {
+  var prompt = getTodayPrompt();
+  if (!prompt) return;
+  currentCategoryId = prompt.categoryId;
+  currentQuestionId = prompt.id;
+  renderPromptExperience();
+
+  chatModePromptsBtn.classList.add("chat-mode-active");
+  chatModeDirectBtn.classList.remove("chat-mode-active");
+  promptsChatView.style.display = "";
+  directChatView.style.display = "none";
+});
+
+document.getElementById("todayChatBtn").addEventListener("click", function () {
+  chatModeDirectBtn.classList.add("chat-mode-active");
+  chatModePromptsBtn.classList.remove("chat-mode-active");
+  directChatView.style.display = "";
+  promptsChatView.style.display = "none";
+  directMessageInput.focus();
+});
 
 var timezoneInterval = null;
 
@@ -602,6 +729,7 @@ async function loadCouple() {
   updateDirectChatHeader();
   await loadPartnerTimezone();
   renderGreeting();
+  renderTodayCard();
   startTimezoneWidget();
   await loadMessages();
   await subscribeToMessages();
@@ -648,6 +776,7 @@ async function loadMessages() {
   renderPromptExperience();
   renderDirectChat();
   renderGallery();
+  renderTodayCard();
 }
 
 function getSenderName(row) {
@@ -944,10 +1073,11 @@ async function createCouple() {
 
   if (coupleRow) {
     inviteCodeText.textContent = coupleRow.invite_code;
-    inviteCard.style.display = "block";
+    document.getElementById("onboardingStep1").style.display = "none";
+    document.getElementById("onboardingStep2").style.display = "";
   }
 
-  setStatus(coupleMessage, "Shared space ready.", "success");
+  setStatus(coupleMessage, "", "");
   await loadCouple();
 }
 
@@ -1021,6 +1151,7 @@ async function sendMessage() {
   if (data) {
     addOrReplaceMessage(data);
     renderPromptExperience();
+    renderTodayCard();
   }
 
   recordEngagement();
@@ -2761,7 +2892,8 @@ function renderDirectChat() {
   var msgs = allMessages["direct"] || [];
 
   if (msgs.length === 0) {
-    directChatMessages.innerHTML = '<p class="direct-chat-empty">No messages yet. Say hi!</p>';
+    var partnerHint = currentCouple && currentCouple.partnerName ? currentCouple.partnerName.split(" ")[0] : "your partner";
+    directChatMessages.innerHTML = '<div class="emotional-empty"><span class="emotional-empty-icon">💌</span><p class="emotional-empty-title">Start a conversation</p><p class="emotional-empty-text">Send ' + escapeHTML(partnerHint) + ' a message or a photo — even a simple hi counts.</p></div>';
     return;
   }
 
@@ -3411,6 +3543,40 @@ profileNameSaveBtn.addEventListener("click", async function () {
 });
 
 profileSignOutBtn.addEventListener("click", logout);
+
+document.getElementById("copyInviteBtn").addEventListener("click", async function () {
+  if (!currentCouple) return;
+  try {
+    await navigator.clipboard.writeText(currentCouple.inviteCode);
+    this.textContent = "Copied!";
+    setTimeout(function () {
+      document.getElementById("copyInviteBtn").textContent = "Copy invite code";
+    }, 1800);
+  } catch (e) {
+    setStatus(coupleMessage, "Copy failed. Select the code and copy manually.", "error");
+  }
+});
+
+
+// ═══════════════════════════════════════════════
+// FEATURE LOCKS
+// ═══════════════════════════════════════════════
+
+var lockIds = ["lockGames", "lockExtras", "lockGallery", "lockDate"];
+
+function updateFeatureLocks() {
+  var isUnlocked = currentCouple && currentCouple.memberCount >= 2;
+  for (var i = 0; i < lockIds.length; i++) {
+    var el = document.getElementById(lockIds[i]);
+    if (el) {
+      if (isUnlocked) {
+        el.classList.remove("locked");
+      } else {
+        el.classList.add("locked");
+      }
+    }
+  }
+}
 
 
 // ═══════════════════════════════════════════════

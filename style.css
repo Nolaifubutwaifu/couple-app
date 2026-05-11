@@ -674,6 +674,7 @@ h3 {
 
 .home-greeting {
   margin-bottom: 16px;
+  animation: fadeInUp 0.4s ease both;
 }
 
 .home-greeting-text {
@@ -705,6 +706,7 @@ h3 {
   border-radius: 16px;
   background-color: #ffffff;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  animation: fadeInUp 0.4s 0.05s ease both;
 }
 
 .timezone-slot {
@@ -771,6 +773,89 @@ h3 {
 .join-form button:hover,
 .invite-code-row button:hover {
   background-color: #3d3d4a;
+}
+
+/* ─── Onboarding ─── */
+
+.onboarding-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 20px 0;
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.onboarding-divider::before,
+.onboarding-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e5ddd5;
+}
+
+.waiting-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: #f5f0eb;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.waiting-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #d4a0a0;
+  animation: waitingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes waitingPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ─── Tab Lock Overlay ─── */
+
+.tab-lock-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(250, 245, 240, 0.88);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border-radius: 8px;
+}
+
+.tab-lock-overlay.locked {
+  display: flex;
+}
+
+.tab-lock-icon {
+  font-size: 32px;
+}
+
+.tab-lock-text {
+  margin: 0;
+  color: #6b7280;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.tab-content {
+  position: relative;
 }
 
 /* ─── Tab System ─── */
@@ -1502,6 +1587,215 @@ h3 {
   font-style: italic;
 }
 
+/* ─── Today Card ─── */
+
+.today-card {
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 1px solid rgba(212, 160, 160, 0.2);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fff 0%, #fdf5f5 100%);
+  box-shadow: 0 2px 12px rgba(212, 160, 160, 0.1);
+}
+
+.today-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.today-card-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #d4a0a0;
+}
+
+.today-card-date {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.today-card-prompt {
+  margin: 0 0 16px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1.4;
+}
+
+.today-card-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.today-card-action {
+  flex: 1;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  background: #d4a0a0;
+  color: #fff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.today-card-action:active {
+  transform: scale(0.97);
+}
+
+.today-card-action-soft {
+  background: rgba(212, 160, 160, 0.15);
+  color: #d4a0a0;
+}
+
+/* ─── Reveal Mode ─── */
+
+.message-blurred p {
+  filter: blur(8px);
+  user-select: none;
+  transition: filter 0.5s ease;
+}
+
+.reveal-banner {
+  text-align: center;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fdf5f5, #f5ede6);
+  font-size: 13px;
+  font-weight: 600;
+  color: #d4a0a0;
+  animation: fadeInUp 0.4s ease both;
+}
+
+.reveal-banner-icon {
+  margin-right: 4px;
+}
+
+.reveal-hint {
+  text-align: center;
+  padding: 14px 16px;
+  margin-top: 12px;
+  border-radius: 12px;
+  background: #f5f0eb;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9ca3af;
+  animation: gentlePulse 2.5s ease-in-out infinite;
+}
+
+.reveal-hint-icon {
+  margin-right: 4px;
+}
+
+.today-card-status {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.today-card-status-done {
+  color: #4a9e6e;
+}
+
+.today-card-status-waiting {
+  color: #d4a0a0;
+}
+
+.today-card-status-turn {
+  color: #d4a0a0;
+  font-weight: 700;
+}
+
+/* ─── Emotional Empty States ─── */
+
+.emotional-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  animation: fadeIn 0.5s ease;
+}
+
+.emotional-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: gentleFloat 3s ease-in-out infinite;
+}
+
+.emotional-empty-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.emotional-empty-text {
+  margin: 0;
+  font-size: 14px;
+  color: #9ca3af;
+  line-height: 1.5;
+  max-width: 280px;
+}
+
+/* ─── Micro-animations ─── */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes gentlePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.anim-fade-up {
+  animation: fadeInUp 0.4s ease both;
+}
+
+.category-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.category-card:active {
+  transform: scale(0.97);
+}
+
+.game-launcher {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.game-launcher:active {
+  transform: scale(0.96);
+}
+
+.nav-tab {
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+
+.nav-tab:active {
+  transform: scale(0.9);
+}
+
 /* ─── Streak System ─── */
 
 .streak-bar {
@@ -1514,6 +1808,7 @@ h3 {
   border-radius: 16px;
   background: #ffffff;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  animation: fadeInUp 0.4s 0.15s ease both;
 }
 
 .streak-bar.active-today {

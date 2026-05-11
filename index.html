@@ -48,22 +48,44 @@
             </header>
 
             <section id="coupleSetup" class="setup-panel">
-              <p class="small-text">Shared space</p>
-              <h2>Create or join a couple space</h2>
-              <p class="setup-description">
-                Start a space and share the invite code, or enter the code your partner sent you.
-              </p>
+              <div id="onboardingStep1">
+                <p class="small-text">step 1 of 2</p>
+                <h2>Create your private space</h2>
+                <p class="setup-description">
+                  This is where everything between you and your partner lives — chats, games, memories, and date nights. Only the two of you can see it.
+                </p>
 
-              <button id="createCoupleButton" type="button" class="primary-wide-button">Create shared space</button>
+                <button id="createCoupleButton" type="button" class="primary-wide-button">Create shared space</button>
 
-              <div id="inviteCard" class="invite-card">
-                <span>Your invite code</span>
-                <strong id="inviteCodeText"></strong>
+                <div class="onboarding-divider">
+                  <span>or</span>
+                </div>
+
+                <p class="setup-description">Already have a code from your partner?</p>
+                <div class="join-form">
+                  <input id="inviteCodeInput" type="text" placeholder="Enter invite code" autocomplete="off">
+                  <button id="joinCoupleButton" type="button">Join</button>
+                </div>
               </div>
 
-              <div class="join-form">
-                <input id="inviteCodeInput" type="text" placeholder="Invite code" autocomplete="off">
-                <button id="joinCoupleButton" type="button">Join</button>
+              <div id="onboardingStep2" style="display:none">
+                <p class="small-text">step 2 of 2</p>
+                <h2>Invite your partner</h2>
+                <p class="setup-description">
+                  Send this code to your partner. Once they join, your shared chat, games, streaks, and memories will unlock.
+                </p>
+
+                <div id="inviteCard" class="invite-card">
+                  <span>Your invite code</span>
+                  <strong id="inviteCodeText"></strong>
+                </div>
+
+                <button id="copyInviteBtn" type="button" class="primary-wide-button">Copy invite code</button>
+
+                <div class="waiting-indicator" id="waitingIndicator">
+                  <span class="waiting-dot"></span>
+                  <span>Waiting for your partner to join...</span>
+                </div>
               </div>
 
               <p id="coupleMessage" class="status-message" aria-live="polite"></p>
@@ -93,6 +115,19 @@
               </section>
 
               <p id="syncStatusText" class="status-message" aria-live="polite"></p>
+
+              <!-- Today Card -->
+              <section class="today-card anim-fade-up" id="todayCard" style="display:none">
+                <div class="today-card-header">
+                  <span class="today-card-label">today's prompt</span>
+                  <span class="today-card-date" id="todayCardDate"></span>
+                </div>
+                <p class="today-card-prompt" id="todayCardPrompt"></p>
+                <div class="today-card-actions">
+                  <button type="button" class="today-card-action" id="todayAnswerBtn">Answer together</button>
+                  <button type="button" class="today-card-action today-card-action-soft" id="todayChatBtn">Open chat</button>
+                </div>
+              </section>
 
               <!-- Streak Bar -->
               <div class="streak-bar" id="streakBar">
@@ -183,6 +218,10 @@
 
               <!-- TAB: Games -->
               <div id="tabGames" class="tab-content">
+                <div class="tab-lock-overlay" id="lockGames">
+                  <span class="tab-lock-icon">🔒</span>
+                  <p class="tab-lock-text">Unlocks when your partner joins</p>
+                </div>
                 <section class="games-header">
                   <p class="small-text">minigames</p>
                   <h2>Play together.</h2>
@@ -306,6 +345,10 @@
 
               <!-- TAB: Extras -->
               <div id="tabExtras" class="tab-content">
+                <div class="tab-lock-overlay" id="lockExtras">
+                  <span class="tab-lock-icon">🔒</span>
+                  <p class="tab-lock-text">Unlocks when your partner joins</p>
+                </div>
                 <section class="extras-header">
                   <p class="small-text">extras</p>
                   <h2>A little more love.</h2>
@@ -414,6 +457,10 @@
 
               <!-- TAB: Gallery -->
               <div id="tabGallery" class="tab-content">
+                <div class="tab-lock-overlay" id="lockGallery">
+                  <span class="tab-lock-icon">🔒</span>
+                  <p class="tab-lock-text">Unlocks when your partner joins</p>
+                </div>
                 <section class="gallery-header">
                   <p class="small-text">memories</p>
                   <h2>Our Memories.</h2>
@@ -425,7 +472,11 @@
                 </button>
 
                 <div class="gallery-grid" id="galleryGrid">
-                  <p class="gallery-empty" id="galleryEmpty">No photos yet. Share your first photo in chat!</p>
+                  <div class="emotional-empty" id="galleryEmpty">
+                    <span class="emotional-empty-icon">📸</span>
+                    <p class="emotional-empty-title">Your gallery is waiting</p>
+                    <p class="emotional-empty-text">Every photo you share in chat will appear here — your little collection of moments together.</p>
+                  </div>
                 </div>
 
                 <div class="gallery-viewer" id="galleryViewer" style="display:none">
@@ -440,6 +491,10 @@
 
               <!-- TAB: Date -->
               <div id="tabDate" class="tab-content">
+                <div class="tab-lock-overlay" id="lockDate">
+                  <span class="tab-lock-icon">🔒</span>
+                  <p class="tab-lock-text">Unlocks when your partner joins</p>
+                </div>
 
                 <!-- Start Screen -->
                 <section id="dateStart" class="date-screen">
