@@ -51,11 +51,15 @@ const inviteCodeInput = document.getElementById("inviteCodeInput");
 const joinCoupleButton = document.getElementById("joinCoupleButton");
 const coupleMessage = document.getElementById("coupleMessage");
 const appStatusMessage = document.getElementById("appStatusMessage");
-const sharedSpaceTitle = document.getElementById("sharedSpaceTitle");
-const sharedSpaceDescription = document.getElementById("sharedSpaceDescription");
-const activeInviteCodeText = document.getElementById("activeInviteCodeText");
-const copyInviteButton = document.getElementById("copyInviteButton");
 const syncStatusText = document.getElementById("syncStatusText");
+const homeGreetingText = document.getElementById("homeGreetingText");
+const homeGreetingTitle = document.getElementById("homeGreetingTitle");
+const homeConnectedText = document.getElementById("homeConnectedText");
+const timezoneCard = document.getElementById("timezoneCard");
+const tzYourLabel = document.getElementById("tzYourLabel");
+const tzYourTime = document.getElementById("tzYourTime");
+const tzPartnerLabel = document.getElementById("tzPartnerLabel");
+const tzPartnerTime = document.getElementById("tzPartnerTime");
 
 let currentUser = null;
 let currentProfile = null;
@@ -345,32 +349,81 @@ function showCoupleSetup() {
 function showMainExperience() {
   coupleSetup.style.display = "none";
   mainExperience.style.display = "block";
-  renderSharedSpacePanel();
+  renderGreeting();
   setStatus(appStatusMessage, "", "");
 }
 
-function renderSharedSpacePanel() {
-  if (!currentCouple) {
-    return;
-  }
+function renderGreeting() {
+  if (!currentProfile) return;
 
-  var inviteCodeRow = document.querySelector(".invite-code-row");
+  var hour = new Date().getHours();
+  var greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  var firstName = (currentProfile.display_name || "").split(" ")[0];
 
-  if (currentCouple.memberCount >= 2) {
-    var partnerName = currentCouple.partnerName || "your partner";
+  homeGreetingText.textContent = greeting + ", " + firstName;
 
-    sharedSpaceTitle.textContent = "Connected with " + partnerName;
-    sharedSpaceDescription.textContent = "This space is now private to the two of you.";
-    coupleStatusText.textContent = "Connected";
-    inviteCodeRow.style.display = "none";
+  if (currentCouple && currentCouple.partnerName) {
+    homeGreetingTitle.textContent = firstName + " & " + currentCouple.partnerName.split(" ")[0];
+    homeConnectedText.textContent = "Connected with " + currentCouple.partnerName;
   } else {
-    activeInviteCodeText.textContent = currentCouple.inviteCode;
-    sharedSpaceTitle.textContent = "Waiting for partner";
-    sharedSpaceDescription.textContent = "Share your invite code so your partner can join this private space.";
-    coupleStatusText.textContent = "Invite " + currentCouple.inviteCode;
-    copyInviteButton.textContent = "Copy";
-    copyInviteButton.disabled = false;
-    inviteCodeRow.style.display = "grid";
+    homeGreetingTitle.textContent = firstName;
+    homeConnectedText.textContent = "";
+  }
+}
+
+var timezoneInterval = null;
+
+function startTimezoneWidget() {
+  updateTimezoneDisplay();
+  if (timezoneInterval) clearInterval(timezoneInterval);
+  timezoneInterval = setInterval(updateTimezoneDisplay, 30000);
+}
+
+function updateTimezoneDisplay() {
+  if (!currentProfile) return;
+
+  var myTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  var now = new Date();
+  var opts = { hour: "2-digit", minute: "2-digit", hour12: true };
+
+  tzYourTime.textContent = now.toLocaleTimeString([], opts);
+
+  var firstName = (currentProfile.display_name || "").split(" ")[0];
+  tzYourLabel.textContent = firstName + "'s Time";
+
+  if (currentCouple && currentCouple.partnerTimezone) {
+    timezoneCard.style.display = "";
+    var partnerFirst = (currentCouple.partnerName || "Partner").split(" ")[0];
+    tzPartnerLabel.textContent = partnerFirst + "'s Time";
+    try {
+      tzPartnerTime.textContent = now.toLocaleTimeString([], Object.assign({}, opts, { timeZone: currentCouple.partnerTimezone }));
+    } catch (e) {
+      tzPartnerTime.textContent = now.toLocaleTimeString([], opts);
+    }
+  } else if (currentCouple && currentCouple.memberCount >= 2) {
+    timezoneCard.style.display = "";
+    var partnerFirst2 = (currentCouple.partnerName || "Partner").split(" ")[0];
+    tzPartnerLabel.textContent = partnerFirst2 + "'s Time";
+    tzPartnerTime.textContent = now.toLocaleTimeString([], opts);
+  } else {
+    timezoneCard.style.display = "none";
+  }
+}
+
+async function autoDetectTimezone() {
+  if (!currentUser || !currentProfile) return;
+  var detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if (currentProfile.timezone === detectedTz) return;
+
+  await supabase.from("profiles").update({ timezone: detectedTz }).eq("id", currentUser.id);
+  currentProfile.timezone = detectedTz;
+}
+
+async function loadPartnerTimezone() {
+  if (!currentCouple || !currentCouple.partnerId) return;
+  var result = await supabase.from("profiles").select("timezone").eq("id", currentCouple.partnerId).maybeSingle();
+  if (result.data && result.data.timezone) {
+    currentCouple.partnerTimezone = result.data.timezone;
   }
 }
 
@@ -382,7 +435,7 @@ async function ensureProfile(user) {
 
   const { data: existingProfile, error: selectError } = await supabase
     .from("profiles")
-    .select("id, display_name, avatar_url")
+    .select("id, display_name, avatar_url, timezone")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -397,7 +450,7 @@ async function ensureProfile(user) {
   const { data: profile, error } = await supabase
     .from("profiles")
     .upsert({ id: user.id, display_name: profileName }, { onConflict: "id" })
-    .select("id, display_name, avatar_url")
+    .select("id, display_name, avatar_url, timezone")
     .single();
 
   if (error) {
@@ -444,6 +497,9 @@ async function loadCouple() {
   showMainExperience();
   renderProfileTab();
   updateDirectChatHeader();
+  await loadPartnerTimezone();
+  renderGreeting();
+  startTimezoneWidget();
   await loadMessages();
   await subscribeToMessages();
   await subscribeToGameStates();
@@ -607,8 +663,10 @@ async function handleSignedIn(user) {
   try {
     currentProfile = await ensureProfile(user);
     signedInText.textContent = "Signed in as " + currentProfile.display_name;
+    renderGreeting();
     renderPromptExperience();
     renderProfileTab();
+    autoDetectTimezone();
     await loadCouple();
   } catch (error) {
     showCoupleSetup();
@@ -818,18 +876,11 @@ async function joinCouple() {
 }
 
 async function copyInviteCode() {
-  if (!currentCouple || copyInviteButton.disabled) {
-    return;
-  }
+  if (!currentCouple) return;
 
   try {
     await navigator.clipboard.writeText(currentCouple.inviteCode);
-    copyInviteButton.textContent = "Copied";
     setStatus(appStatusMessage, "Invite code copied.", "success");
-
-    window.setTimeout(function () {
-      copyInviteButton.textContent = "Copy";
-    }, 1800);
   } catch (error) {
     setStatus(appStatusMessage, "Copy failed. Select the invite code and copy it manually.", "error");
   }
@@ -3248,6 +3299,7 @@ profileNameSaveBtn.addEventListener("click", async function () {
 
   currentProfile.display_name = newName;
   signedInText.textContent = "Signed in as " + newName;
+  renderGreeting();
   profileNameInput.setAttribute("readonly", "");
   profileNameEditBtn.style.display = "";
   profileNameSaveBtn.style.display = "none";
@@ -3294,7 +3346,6 @@ signupButton.addEventListener("click", signup);
 logoutButton.addEventListener("click", logout);
 createCoupleButton.addEventListener("click", createCouple);
 joinCoupleButton.addEventListener("click", joinCouple);
-copyInviteButton.addEventListener("click", copyInviteCode);
 sendButton.addEventListener("click", sendMessage);
 
 passwordInput.addEventListener("keydown", function (event) {

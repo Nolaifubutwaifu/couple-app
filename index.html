@@ -40,10 +40,10 @@
                     <h1>Connect</h1>
                 </div>
 
-                <div class="user-bar">
+                <div class="user-bar" style="display:none">
                     <p id="signedInText">Signed in</p>
                     <p id="coupleStatusText">No couple space yet</p>
-                    <button id="logoutButton">Log out</button>
+                    <button id="logoutButton" style="display:none">Log out</button>
                 </div>
             </header>
 
@@ -72,22 +72,27 @@
             <main id="mainExperience" class="main-experience">
               <p id="appStatusMessage" class="status-message" aria-live="polite"></p>
 
-              <section class="shared-space-panel">
+              <section class="home-greeting" id="homeGreeting">
                 <div>
-                  <p class="small-text">Shared space</p>
-                  <h2 id="sharedSpaceTitle">Waiting for partner</h2>
-                  <p id="sharedSpaceDescription" class="setup-description">
-                    Share your invite code so your partner can join this private space.
-                  </p>
+                  <p class="home-greeting-text" id="homeGreetingText">Good morning</p>
+                  <h2 class="home-greeting-title" id="homeGreetingTitle"></h2>
                 </div>
-
-                <div class="invite-code-row">
-                  <span id="activeInviteCodeText"></span>
-                  <button id="copyInviteButton" type="button">Copy</button>
-                </div>
-
-                <p id="syncStatusText" class="status-message" aria-live="polite"></p>
+                <p class="home-connected-text" id="homeConnectedText"></p>
               </section>
+
+              <section class="timezone-card" id="timezoneCard" style="display:none">
+                <div class="timezone-slot">
+                  <span class="timezone-label" id="tzYourLabel">Your Time</span>
+                  <span class="timezone-time" id="tzYourTime">--:--</span>
+                </div>
+                <div class="timezone-divider"></div>
+                <div class="timezone-slot">
+                  <span class="timezone-label" id="tzPartnerLabel">Partner's Time</span>
+                  <span class="timezone-time" id="tzPartnerTime">--:--</span>
+                </div>
+              </section>
+
+              <p id="syncStatusText" class="status-message" aria-live="polite"></p>
 
               <!-- Streak Bar -->
               <div class="streak-bar" id="streakBar">
