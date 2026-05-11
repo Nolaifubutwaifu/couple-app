@@ -1971,6 +1971,12 @@ function recordEngagement() {
   }
 }
 
+function addBonusHearts(amount) {
+  var totalHearts = parseInt(localStorage.getItem("couple_streak_hearts") || "0");
+  localStorage.setItem("couple_streak_hearts", (totalHearts + amount).toString());
+  updateStreakUI();
+}
+
 function updateStreakUI() {
   var streak = parseInt(localStorage.getItem("couple_streak_count") || "0");
   var hearts = parseInt(localStorage.getItem("couple_streak_hearts") || "0");
@@ -2295,6 +2301,7 @@ function onPartnerEndedDate() {
   cleanupDateCall();
   showDateScreen(dateScreenEnd);
   recordEngagement();
+  addBonusHearts(5);
 }
 
 async function endDateNight() {
@@ -2316,6 +2323,7 @@ async function endDateNight() {
   cleanupDateCall();
   showDateScreen(dateScreenEnd);
   recordEngagement();
+  addBonusHearts(5);
 }
 
 async function closeDateEnd() {
