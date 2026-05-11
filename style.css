@@ -1433,8 +1433,12 @@ h3 {
   background: #e5ddd5;
 }
 
-.streak-bar-status {
+.streak-bar-right {
   margin-left: auto;
+  text-align: right;
+}
+
+.streak-bar-status {
   font-size: 12px;
   font-weight: 700;
   color: #9ca3af;
@@ -1443,6 +1447,14 @@ h3 {
 
 .streak-bar.active-today .streak-bar-status {
   color: #4a9e6e;
+}
+
+.streak-bar-timer {
+  font-size: 11px;
+  font-weight: 600;
+  color: #d4a0a0;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
 }
 
 /* Streak Detail Card */
@@ -1494,6 +1506,22 @@ h3 {
 .streak-detail-status.done-today {
   color: #4a9e6e;
   background: #e8f5ec;
+}
+
+.streak-detail-timer {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #faf0f0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #d4a0a0;
+  margin-bottom: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.streak-detail-timer:empty {
+  display: none;
 }
 
 .streak-next-milestone {

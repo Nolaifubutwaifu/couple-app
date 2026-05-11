@@ -1852,6 +1852,8 @@ const streakStatusEl = document.getElementById("streakStatus");
 const streakDetailCountEl = document.getElementById("streakDetailCount");
 const streakDetailHeartsEl = document.getElementById("streakDetailHearts");
 const streakDetailStatusEl = document.getElementById("streakDetailStatus");
+const streakBarTimerEl = document.getElementById("streakBarTimer");
+const streakDetailTimerEl = document.getElementById("streakDetailTimer");
 const nextMilestoneNameEl = document.getElementById("nextMilestoneName");
 const nextMilestoneTargetEl = document.getElementById("nextMilestoneTarget");
 const streakProgressFillEl = document.getElementById("streakProgressFill");
@@ -1882,8 +1884,52 @@ function getYesterdayString() {
   return d.toISOString().split("T")[0];
 }
 
+var streakTimerInterval = null;
+
 function loadStreak() {
   updateStreakUI();
+  startStreakTimer();
+}
+
+function getTimeUntilMidnight() {
+  var now = new Date();
+  var midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  return midnight - now;
+}
+
+function formatCountdown(ms) {
+  var totalSec = Math.floor(ms / 1000);
+  var h = Math.floor(totalSec / 3600);
+  var m = Math.floor((totalSec % 3600) / 60);
+  var s = totalSec % 60;
+  return h + "h " + (m < 10 ? "0" : "") + m + "m " + (s < 10 ? "0" : "") + s + "s";
+}
+
+function updateStreakTimer() {
+  var ms = getTimeUntilMidnight();
+  var lastDate = localStorage.getItem("couple_streak_last_date") || "";
+  var today = getTodayString();
+  var engagedToday = lastDate === today;
+  var formatted = formatCountdown(ms);
+
+  if (engagedToday) {
+    streakBarTimerEl.textContent = "Resets in " + formatted;
+    streakDetailTimerEl.textContent = "Next streak window opens in " + formatted;
+  } else {
+    streakBarTimerEl.textContent = formatted + " left";
+    streakDetailTimerEl.textContent = "Interact within " + formatted + " to keep your streak!";
+  }
+
+  if (ms <= 0) {
+    updateStreakUI();
+  }
+}
+
+function startStreakTimer() {
+  if (streakTimerInterval) clearInterval(streakTimerInterval);
+  updateStreakTimer();
+  streakTimerInterval = setInterval(updateStreakTimer, 1000);
 }
 
 function recordEngagement() {
