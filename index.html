@@ -120,7 +120,6 @@
                 </div>
               </section>
 
-              <p id="syncStatusText" class="status-message" aria-live="polite"></p>
 
               <!-- Today Card -->
               <section class="today-card anim-fade-up" id="todayCard" style="display:none">
@@ -621,8 +620,8 @@
                 </div>
 
                 <div class="profile-settings">
-                  <div class="profile-settings-row">Notification Preferences</div>
-                  <div class="profile-settings-row">Privacy Settings</div>
+                  <button type="button" class="profile-settings-row" id="openNotificationSettings">Notification Preferences <span class="settings-row-chevron">›</span></button>
+                  <button type="button" class="profile-settings-row" id="openPrivacySettings">Privacy Settings <span class="settings-row-chevron">›</span></button>
                 </div>
 
                 <button type="button" id="profileSignOutBtn" class="profile-signout">Sign Out</button>
@@ -684,6 +683,72 @@
         </div>
         <div class="camera-preview" id="cameraPreview" style="display:none">
           <img id="cameraPreviewImg" alt="Preview">
+        </div>
+      </div>
+    </div>
+
+    <!-- Questions Overlay -->
+    <div class="questions-overlay" id="questionsOverlay">
+      <div class="questions-overlay-inner">
+        <div class="questions-overlay-header">
+          <button type="button" class="questions-overlay-back" id="questionsOverlayBack">‹ Back</button>
+          <p class="small-text" id="questionsOverlayLabel"></p>
+          <h2 class="questions-overlay-title" id="questionsOverlayTitle"></h2>
+        </div>
+        <div class="questions-overlay-cards" id="questionsOverlayCards"></div>
+      </div>
+    </div>
+
+    <!-- Notification Settings Overlay -->
+    <div class="settings-overlay" id="notificationSettingsOverlay">
+      <div class="settings-overlay-inner">
+        <div class="settings-overlay-header">
+          <button type="button" class="settings-overlay-back" id="notifSettingsBack">‹ Back</button>
+          <h2 class="settings-overlay-title">Notification Preferences</h2>
+        </div>
+        <div class="settings-overlay-body">
+          <label class="settings-toggle-row">
+            <span class="settings-toggle-label">Message notifications</span>
+            <input type="checkbox" class="settings-toggle" id="settingMsgNotif" checked>
+            <span class="settings-toggle-slider"></span>
+          </label>
+          <label class="settings-toggle-row">
+            <span class="settings-toggle-label">Daily prompt reminders</span>
+            <input type="checkbox" class="settings-toggle" id="settingDailyReminder" checked>
+            <span class="settings-toggle-slider"></span>
+          </label>
+          <label class="settings-toggle-row">
+            <span class="settings-toggle-label">Partner activity alerts</span>
+            <input type="checkbox" class="settings-toggle" id="settingPartnerActivity" checked>
+            <span class="settings-toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Privacy Settings Overlay -->
+    <div class="settings-overlay" id="privacySettingsOverlay">
+      <div class="settings-overlay-inner">
+        <div class="settings-overlay-header">
+          <button type="button" class="settings-overlay-back" id="privacySettingsBack">‹ Back</button>
+          <h2 class="settings-overlay-title">Privacy Settings</h2>
+        </div>
+        <div class="settings-overlay-body">
+          <label class="settings-toggle-row">
+            <span class="settings-toggle-label">Read receipts</span>
+            <input type="checkbox" class="settings-toggle" id="settingReadReceipts" checked>
+            <span class="settings-toggle-slider"></span>
+          </label>
+          <label class="settings-toggle-row">
+            <span class="settings-toggle-label">Show online status</span>
+            <input type="checkbox" class="settings-toggle" id="settingOnlineStatus" checked>
+            <span class="settings-toggle-slider"></span>
+          </label>
+          <label class="settings-toggle-row">
+            <span class="settings-toggle-label">Typing indicators</span>
+            <input type="checkbox" class="settings-toggle" id="settingTypingIndicators" checked>
+            <span class="settings-toggle-slider"></span>
+          </label>
         </div>
       </div>
     </div>

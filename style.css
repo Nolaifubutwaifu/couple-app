@@ -3202,3 +3202,231 @@ h3 {
   color: rgba(255,255,255,0.7);
   font-size: 13px;
 }
+
+/* Questions Overlay */
+.questions-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: #faf5f0;
+  transform: translateY(100%);
+  transition: transform 320ms cubic-bezier(0.32, 0.72, 0, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.questions-overlay.questions-overlay-visible {
+  transform: translateY(0);
+}
+
+.questions-overlay-inner {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px;
+  padding-top: max(24px, env(safe-area-inset-top));
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+
+.questions-overlay-header {
+  padding-top: 8px;
+  margin-bottom: 28px;
+}
+
+.questions-overlay-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  color: #9ca3af;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.questions-overlay-title {
+  font-size: 28px;
+  line-height: 1.2;
+  color: #1a1a2e;
+  margin-top: 6px;
+}
+
+.questions-overlay-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+.questions-overlay-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 28px 24px;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 20px;
+  background: #ffffff;
+  color: #1a1a2e;
+  text-align: left;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+  min-height: 0;
+}
+
+.questions-overlay-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+}
+
+.questions-overlay-card-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.questions-overlay-card-text {
+  display: block;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* Settings Overlay */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: #faf5f0;
+  transform: translateX(100%);
+  transition: transform 320ms cubic-bezier(0.32, 0.72, 0, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.settings-overlay.settings-overlay-visible {
+  transform: translateX(0);
+}
+
+.settings-overlay-inner {
+  min-height: 100%;
+  padding: 0 20px;
+  padding-top: max(24px, env(safe-area-inset-top));
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+
+.settings-overlay-header {
+  padding-top: 8px;
+  margin-bottom: 32px;
+}
+
+.settings-overlay-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  color: #9ca3af;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.settings-overlay-title {
+  font-size: 24px;
+  color: #1a1a2e;
+}
+
+.settings-overlay-body {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  cursor: pointer;
+  position: relative;
+}
+
+.settings-toggle-row:last-child {
+  border-bottom: none;
+}
+
+.settings-toggle-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a1a2e;
+}
+
+.settings-toggle {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.settings-toggle-slider {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 28px;
+  background: #d1d5db;
+  border-radius: 28px;
+  transition: background 200ms ease;
+  flex-shrink: 0;
+}
+
+.settings-toggle-slider::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: transform 200ms ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.settings-toggle:checked + .settings-toggle-slider {
+  background: #1a1a2e;
+}
+
+.settings-toggle:checked + .settings-toggle-slider::after {
+  transform: translateX(20px);
+}
+
+.settings-row-chevron {
+  float: right;
+  color: #9ca3af;
+  font-size: 20px;
+}
+
+.profile-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  font-family: inherit;
+}

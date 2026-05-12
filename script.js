@@ -143,7 +143,6 @@ const inviteCodeInput = document.getElementById("inviteCodeInput");
 const joinCoupleButton = document.getElementById("joinCoupleButton");
 const coupleMessage = document.getElementById("coupleMessage");
 const appStatusMessage = document.getElementById("appStatusMessage");
-const syncStatusText = document.getElementById("syncStatusText");
 const homeGreetingText = document.getElementById("homeGreetingText");
 const homeGreetingTitle = document.getElementById("homeGreetingTitle");
 const homeConnectedText = document.getElementById("homeConnectedText");
@@ -490,6 +489,56 @@ function showCurrentQuestionTitle() {
     currentQuestionTitle.textContent = currentQuestion.text;
   }
 }
+
+var questionsOverlay = document.getElementById("questionsOverlay");
+var questionsOverlayBack = document.getElementById("questionsOverlayBack");
+var questionsOverlayLabel = document.getElementById("questionsOverlayLabel");
+var questionsOverlayTitle = document.getElementById("questionsOverlayTitle");
+var questionsOverlayCards = document.getElementById("questionsOverlayCards");
+function openQuestionsOverlay(categoryId) {
+  var cat = getCategoryById(categoryId);
+  if (!cat) return;
+
+  questionsOverlayLabel.textContent = cat.label;
+  questionsOverlayTitle.textContent = cat.title;
+  questionsOverlayCards.innerHTML = "";
+
+  var qs = getQuestionsForCategory(categoryId);
+  for (var i = 0; i < qs.length; i++) {
+    var card = document.createElement("button");
+    card.type = "button";
+    card.classList.add("questions-overlay-card");
+
+    var label = document.createElement("span");
+    label.classList.add("questions-overlay-card-label");
+    label.textContent = qs[i].label;
+
+    var text = document.createElement("span");
+    text.classList.add("questions-overlay-card-text");
+    text.textContent = qs[i].text;
+
+    card.appendChild(label);
+    card.appendChild(text);
+    questionsOverlayCards.appendChild(card);
+
+    (function (questionId) {
+      card.addEventListener("click", function () {
+        changeQuestion(questionId);
+        closeQuestionsOverlay();
+      });
+    })(qs[i].id);
+  }
+
+  requestAnimationFrame(function () {
+    questionsOverlay.classList.add("questions-overlay-visible");
+  });
+}
+
+function closeQuestionsOverlay() {
+  questionsOverlay.classList.remove("questions-overlay-visible");
+}
+
+questionsOverlayBack.addEventListener("click", closeQuestionsOverlay);
 
 var dailyRevealed = {};
 
@@ -969,11 +1018,9 @@ async function subscribeToMessages() {
     )
     .subscribe(function (status) {
       if (status === "SUBSCRIBED") {
-        setStatus(syncStatusText, "Live sync is on.", "success");
       }
 
       if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
-        setStatus(syncStatusText, "Live sync paused. Refresh if messages feel delayed.", "error");
       }
     });
 }
@@ -1264,6 +1311,8 @@ function changeCategory(categoryId) {
   currentQuestionId = questionsForCategory[0].id;
 
   renderPromptExperience();
+
+  openQuestionsOverlay(categoryId);
 }
 
 function changeQuestion(questionId) {
@@ -3851,6 +3900,75 @@ profileNameSaveBtn.addEventListener("click", async function () {
 });
 
 profileSignOutBtn.addEventListener("click", logout);
+
+// Settings overlays
+var notificationSettingsOverlay = document.getElementById("notificationSettingsOverlay");
+var privacySettingsOverlay = document.getElementById("privacySettingsOverlay");
+
+var settingToggles = {
+  settingMsgNotif: true,
+  settingDailyReminder: true,
+  settingPartnerActivity: true,
+  settingReadReceipts: true,
+  settingOnlineStatus: true,
+  settingTypingIndicators: true
+};
+
+function loadSettings() {
+  try {
+    var saved = JSON.parse(localStorage.getItem("coupleAppSettings"));
+    if (saved) {
+      for (var key in settingToggles) {
+        if (saved[key] !== undefined) settingToggles[key] = saved[key];
+      }
+    }
+  } catch (e) {}
+
+  for (var key in settingToggles) {
+    var el = document.getElementById(key);
+    if (el) el.checked = settingToggles[key];
+  }
+}
+
+function saveSetting(key, value) {
+  settingToggles[key] = value;
+  localStorage.setItem("coupleAppSettings", JSON.stringify(settingToggles));
+}
+
+for (var key in settingToggles) {
+  (function (k) {
+    var el = document.getElementById(k);
+    if (el) {
+      el.addEventListener("change", function () {
+        saveSetting(k, this.checked);
+      });
+    }
+  })(key);
+}
+
+document.getElementById("openNotificationSettings").addEventListener("click", function () {
+  loadSettings();
+  requestAnimationFrame(function () {
+    notificationSettingsOverlay.classList.add("settings-overlay-visible");
+  });
+});
+
+document.getElementById("openPrivacySettings").addEventListener("click", function () {
+  loadSettings();
+  requestAnimationFrame(function () {
+    privacySettingsOverlay.classList.add("settings-overlay-visible");
+  });
+});
+
+document.getElementById("notifSettingsBack").addEventListener("click", function () {
+  notificationSettingsOverlay.classList.remove("settings-overlay-visible");
+});
+
+document.getElementById("privacySettingsBack").addEventListener("click", function () {
+  privacySettingsOverlay.classList.remove("settings-overlay-visible");
+});
+
+loadSettings();
 
 document.getElementById("copyInviteBtn").addEventListener("click", async function () {
   if (!currentCouple) return;
