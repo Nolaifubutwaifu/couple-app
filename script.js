@@ -873,6 +873,18 @@ async function loadCouple() {
   renderTodayCard();
   startTimezoneWidget();
   await loadMessages();
+
+  if (settingToggles.settingDailyReminder) {
+    var todayPrompt = getTodayPrompt();
+    if (todayPrompt) {
+      var todayMsgs = allMessages[todayPrompt.id] || [];
+      var iAnswered = todayMsgs.some(function (m) { return m.sender === "me"; });
+      if (!iAnswered) {
+        showToast("You have an unanswered daily prompt waiting for you");
+      }
+    }
+  }
+
   await subscribeToMessages();
   await subscribeToGameStates();
   await subscribeToPresence();
@@ -997,6 +1009,13 @@ async function subscribeToMessages() {
       },
       function (payload) {
         if (payload.eventType === "INSERT" && payload.new) {
+          if (settingToggles.settingMsgNotif && payload.new.sender_id !== currentUser.id) {
+            var isOnDirectChat = directChatView.style.display !== "none" &&
+              document.getElementById("tabChat").classList.contains("tab-active");
+            if (!isOnDirectChat) {
+              showToast("New message from your partner");
+            }
+          }
           scheduleMessagesReload();
           return;
         }
@@ -1392,8 +1411,12 @@ async function subscribeToPresence() {
         break;
       }
     }
+    var wasOffline = !partnerOnline;
     partnerOnline = partnerPresent;
     updatePresenceUI();
+    if (wasOffline && partnerOnline && settingToggles.settingPartnerActivity) {
+      showToast("Your partner is now online");
+    }
   });
 
   presenceChannel.on("broadcast", { event: "typing" }, function (payload) {
@@ -1416,7 +1439,7 @@ async function subscribeToPresence() {
   });
 
   await presenceChannel.subscribe(async function (status) {
-    if (status === "SUBSCRIBED") {
+    if (status === "SUBSCRIBED" && settingToggles.settingOnlineStatus) {
       await presenceChannel.track({ online_at: new Date().toISOString() });
     }
   });
@@ -1424,6 +1447,7 @@ async function subscribeToPresence() {
 
 function broadcastTyping() {
   if (!presenceChannel || !currentUser) return;
+  if (!settingToggles.settingTypingIndicators) return;
   var now = Date.now();
   if (now - lastTypingBroadcast < 2000) return;
   lastTypingBroadcast = now;
@@ -3313,7 +3337,7 @@ function reactToMessage(msgId, emoji) {
   messageReactions[msgId] = emoji;
   renderDirectChat();
 
-  if (presenceChannel) {
+  if (presenceChannel && settingToggles.settingReadReceipts) {
     presenceChannel.send({
       type: "broadcast",
       event: "reaction",
@@ -3969,6 +3993,21 @@ document.getElementById("privacySettingsBack").addEventListener("click", functio
 });
 
 loadSettings();
+
+function showToast(message) {
+  var container = document.getElementById("toastContainer");
+  if (!container) return;
+  var toast = document.createElement("div");
+  toast.classList.add("toast");
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(function () {
+    toast.classList.add("toast-out");
+    toast.addEventListener("animationend", function () {
+      toast.remove();
+    });
+  }, 3000);
+}
 
 document.getElementById("copyInviteBtn").addEventListener("click", async function () {
   if (!currentCouple) return;
