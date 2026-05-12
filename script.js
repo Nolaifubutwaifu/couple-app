@@ -6,6 +6,7 @@ import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { Keyboard } from "@capacitor/keyboard";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { Clipboard } from "@capacitor/clipboard";
+import { LocalNotifications } from "@capacitor/local-notifications";
 import {
   promptCategorySections,
   questions,
@@ -112,6 +113,74 @@ async function nativeTakePhoto() {
 }
 
 initNative();
+
+// ─── Offline Detection ───
+
+var offlineBanner = document.getElementById("offlineBanner");
+
+function updateOfflineStatus() {
+  if (navigator.onLine) {
+    offlineBanner.classList.remove("offline-banner-visible");
+  } else {
+    offlineBanner.classList.add("offline-banner-visible");
+  }
+}
+
+window.addEventListener("online", updateOfflineStatus);
+window.addEventListener("offline", updateOfflineStatus);
+updateOfflineStatus();
+
+// ─── Local Notifications ───
+
+var notificationsPermitted = false;
+var notifIdCounter = 1;
+
+async function requestNotificationPermission() {
+  if (!isNative) return;
+  try {
+    var perm = await LocalNotifications.checkPermissions();
+    if (perm.display === "granted") {
+      notificationsPermitted = true;
+      return;
+    }
+    if (perm.display === "denied") return;
+    var result = await LocalNotifications.requestPermissions();
+    notificationsPermitted = result.display === "granted";
+  } catch (e) {}
+}
+
+function sendLocalNotification(title, body) {
+  if (!isNative || !notificationsPermitted) return;
+  try {
+    LocalNotifications.schedule({
+      notifications: [{
+        title: title,
+        body: body,
+        id: notifIdCounter++,
+        schedule: { at: new Date(Date.now() + 100) },
+        sound: "default"
+      }]
+    });
+  } catch (e) {}
+}
+
+function scheduleDailyPromptReminder() {
+  if (!isNative || !notificationsPermitted) return;
+  try {
+    LocalNotifications.schedule({
+      notifications: [{
+        title: "Daily Prompt",
+        body: "A new question is waiting for you and your partner",
+        id: 9999,
+        schedule: {
+          on: { hour: 9, minute: 0 },
+          repeats: true
+        },
+        sound: "default"
+      }]
+    });
+  } catch (e) {}
+}
 
 // ─── DOM Elements ───
 
@@ -881,6 +950,7 @@ async function loadCouple() {
       var iAnswered = todayMsgs.some(function (m) { return m.sender === "me"; });
       if (!iAnswered) {
         showToast("You have an unanswered daily prompt waiting for you");
+        sendLocalNotification("Daily Prompt", "Answer today's question — your partner is waiting");
       }
     }
   }
@@ -1014,6 +1084,7 @@ async function subscribeToMessages() {
               document.getElementById("tabChat").classList.contains("tab-active");
             if (!isOnDirectChat) {
               showToast("New message from your partner");
+              sendLocalNotification("New Message", "Your partner sent you a message");
             }
           }
           scheduleMessagesReload();
@@ -1058,6 +1129,10 @@ async function handleSignedIn(user) {
     renderPromptExperience();
     renderProfileTab();
     autoDetectTimezone();
+    await requestNotificationPermission();
+    if (settingToggles.settingDailyReminder) {
+      scheduleDailyPromptReminder();
+    }
     await loadCouple();
   } catch (error) {
     showCoupleSetup();
@@ -1416,6 +1491,7 @@ async function subscribeToPresence() {
     updatePresenceUI();
     if (wasOffline && partnerOnline && settingToggles.settingPartnerActivity) {
       showToast("Your partner is now online");
+      sendLocalNotification("Partner Online", "Your partner just opened the app");
     }
   });
 
@@ -3195,8 +3271,16 @@ function renderDirectChat() {
     html += '<div class="' + timeCls + '">' + timeStr + '</div>';
   }
 
+  var wasNearBottom = directChatMessages.scrollHeight - directChatMessages.scrollTop - directChatMessages.clientHeight < 100;
+  var prevScrollTop = directChatMessages.scrollTop;
+
   directChatMessages.innerHTML = html;
-  directChatMessages.scrollTop = directChatMessages.scrollHeight;
+
+  if (wasNearBottom) {
+    directChatMessages.scrollTop = directChatMessages.scrollHeight;
+  } else {
+    directChatMessages.scrollTop = prevScrollTop;
+  }
 }
 
 function formatMessageTime(isoStr) {
