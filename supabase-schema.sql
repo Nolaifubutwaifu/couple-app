@@ -334,7 +334,7 @@ end $$;
 
 create table if not exists public.game_states (
   couple_id uuid not null references public.couples(id) on delete cascade,
-  game_type text not null check (game_type in ('tictactoe', 'memory', 'date')),
+  game_type text not null check (game_type in ('tictactoe', 'memory', 'date', 'stats')),
   state jsonb not null default '{}',
   updated_by uuid not null references auth.users(id),
   updated_at timestamptz not null default now(),

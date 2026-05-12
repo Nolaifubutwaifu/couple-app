@@ -18,13 +18,13 @@
 
     <section id="loginScreen" class="login-screen">
         <div class="login-card">
-          <p class="small-text">Long-distance couple app</p>
-          <h1>Welcome back</h1>
+          <p class="small-text">for the two of you</p>
+          <h1>couple.</h1>
           <p class="login-description">
-            Log in or create an account to open your shared space.
+            A private space for you and your partner — chats, games, memories, and date nights. Just the two of you.
           </p>
 
-          <input id="displayNameInput" type="text" placeholder="Your name">
+          <input id="displayNameInput" type="text" placeholder="Your name" style="display:none">
           <input id="emailInput" type="email" placeholder="Email address" autocomplete="email">
           <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password">
 
@@ -86,7 +86,10 @@
                   <strong id="inviteCodeText"></strong>
                 </div>
 
-                <button id="copyInviteBtn" type="button" class="primary-wide-button">Copy invite code</button>
+                <div class="invite-actions">
+                  <button id="copyInviteBtn" type="button" class="primary-wide-button">Copy code</button>
+                  <button id="shareInviteBtn" type="button" class="primary-wide-button invite-share-btn">Share</button>
+                </div>
 
                 <div class="waiting-indicator" id="waitingIndicator">
                   <span class="waiting-dot"></span>
@@ -227,8 +230,8 @@
               <!-- TAB: Games -->
               <div id="tabGames" class="tab-content">
                 <div class="tab-lock-overlay" id="lockGames">
-                  <span class="tab-lock-icon">🔒</span>
-                  <p class="tab-lock-text">Unlocks when your partner joins</p>
+                  <span class="tab-lock-icon">🎮</span>
+                  <p class="tab-lock-text">Tic-tac-toe, memory match, truth or dare, and more — unlocks when your partner joins</p>
                 </div>
                 <section class="games-header">
                   <p class="small-text">minigames</p>
@@ -354,8 +357,8 @@
               <!-- TAB: Extras -->
               <div id="tabExtras" class="tab-content">
                 <div class="tab-lock-overlay" id="lockExtras">
-                  <span class="tab-lock-icon">🔒</span>
-                  <p class="tab-lock-text">Unlocks when your partner joins</p>
+                  <span class="tab-lock-icon">✨</span>
+                  <p class="tab-lock-text">Streaks, hugs, countdowns, and little surprises — unlocks when your partner joins</p>
                 </div>
                 <section class="extras-header">
                   <p class="small-text">extras</p>
@@ -466,8 +469,8 @@
               <!-- TAB: Gallery -->
               <div id="tabGallery" class="tab-content">
                 <div class="tab-lock-overlay" id="lockGallery">
-                  <span class="tab-lock-icon">🔒</span>
-                  <p class="tab-lock-text">Unlocks when your partner joins</p>
+                  <span class="tab-lock-icon">📸</span>
+                  <p class="tab-lock-text">Photos you share will appear here — unlocks when your partner joins</p>
                 </div>
                 <section class="gallery-header">
                   <p class="small-text">memories</p>
@@ -500,8 +503,8 @@
               <!-- TAB: Date -->
               <div id="tabDate" class="tab-content">
                 <div class="tab-lock-overlay" id="lockDate">
-                  <span class="tab-lock-icon">🔒</span>
-                  <p class="tab-lock-text">Unlocks when your partner joins</p>
+                  <span class="tab-lock-icon">🌙</span>
+                  <p class="tab-lock-text">Video date nights with guided questions and challenges — unlocks when your partner joins</p>
                 </div>
 
                 <!-- Start Screen -->

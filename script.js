@@ -941,6 +941,7 @@ async function loadCouple() {
   renderGreeting();
   renderTodayCard();
   startTimezoneWidget();
+  await loadCoupleStats();
   await loadMessages();
 
   if (settingToggles.settingDailyReminder) {
@@ -1240,6 +1241,14 @@ function validatePassword(password) {
 }
 
 async function signup() {
+  if (displayNameInput.style.display === "none") {
+    displayNameInput.style.display = "";
+    displayNameInput.focus();
+    signupButton.textContent = "Sign up";
+    setStatus(authMessage, "Pick a name so your partner knows it's you.", "");
+    return;
+  }
+
   const fields = getAuthFields();
 
   if (fields.displayName === "" || fields.email === "" || fields.password === "") {
@@ -2358,6 +2367,7 @@ countdownSetBtn.addEventListener("click", function () {
 
   localStorage.setItem("couple_countdown_date", dateVal);
   startCountdown(dateVal);
+  saveCoupleStats();
 });
 
 countdownClearBtn.addEventListener("click", function () {
@@ -2366,6 +2376,7 @@ countdownClearBtn.addEventListener("click", function () {
   }
 
   localStorage.removeItem("couple_countdown_date");
+  saveCoupleStats();
   countdownTimer.style.display = "none";
   countdownMessage.textContent = "Set a date to start counting down!";
   countdownMessage.style.display = "block";
@@ -2424,6 +2435,7 @@ hugButton.addEventListener("click", function () {
   hugCountEl.textContent = hugCount;
   localStorage.setItem("couple_hug_count", hugCount.toString());
   recordEngagement();
+  saveCoupleStats();
 
   for (let i = 0; i < 12; i++) {
     const particle = document.createElement("span");
@@ -2507,6 +2519,93 @@ const MILESTONES = [
   { days: 100, bonus: 100, name: "Century of Love", emoji: "💎" },
   { days: 365, bonus: 365, name: "Soulmates", emoji: "👑" }
 ];
+
+var statsSaveTimer = null;
+
+async function loadCoupleStats() {
+  if (!currentCouple || !currentUser) return;
+
+  var result = await supabase
+    .from("game_states")
+    .select("state")
+    .eq("couple_id", currentCouple.id)
+    .eq("game_type", "stats")
+    .maybeSingle();
+
+  if (result.error || !result.data) return;
+
+  var remote = result.data.state;
+  var localStreak = parseInt(localStorage.getItem("couple_streak_count") || "0");
+  var localHearts = parseInt(localStorage.getItem("couple_streak_hearts") || "0");
+  var localHugs = parseInt(localStorage.getItem("couple_hug_count") || "0");
+  var localLastDate = localStorage.getItem("couple_streak_last_date") || "";
+  var localMilestones = [];
+  try { localMilestones = JSON.parse(localStorage.getItem("couple_streak_milestones_reached") || "[]"); } catch (e) {}
+
+  var remoteStreak = remote.streak_count || 0;
+  var remoteHearts = remote.hearts || 0;
+  var remoteHugs = remote.hug_count || 0;
+  var remoteLastDate = remote.streak_last_date || "";
+  var remoteMilestones = remote.milestones_reached || [];
+
+  var mergedStreak = Math.max(localStreak, remoteStreak);
+  var mergedHearts = Math.max(localHearts, remoteHearts);
+  var mergedHugs = Math.max(localHugs, remoteHugs);
+  var mergedLastDate = localLastDate > remoteLastDate ? localLastDate : remoteLastDate;
+  var mergedMilestones = Array.from(new Set(localMilestones.concat(remoteMilestones)));
+
+  localStorage.setItem("couple_streak_count", mergedStreak.toString());
+  localStorage.setItem("couple_streak_hearts", mergedHearts.toString());
+  localStorage.setItem("couple_hug_count", mergedHugs.toString());
+  localStorage.setItem("couple_streak_last_date", mergedLastDate);
+  localStorage.setItem("couple_streak_milestones_reached", JSON.stringify(mergedMilestones));
+
+  hugCount = mergedHugs;
+  hugCountEl.textContent = hugCount;
+
+  if (remote.countdown_date) {
+    localStorage.setItem("couple_countdown_date", remote.countdown_date);
+  }
+
+  updateStreakUI();
+}
+
+function saveCoupleStats() {
+  if (statsSaveTimer) clearTimeout(statsSaveTimer);
+  statsSaveTimer = setTimeout(function () {
+    statsSaveTimer = null;
+    saveCoupleStatsNow();
+  }, 500);
+}
+
+async function saveCoupleStatsNow() {
+  if (!currentCouple || !currentUser) return;
+
+  var milestones = [];
+  try { milestones = JSON.parse(localStorage.getItem("couple_streak_milestones_reached") || "[]"); } catch (e) {}
+
+  var state = {
+    streak_count: parseInt(localStorage.getItem("couple_streak_count") || "0"),
+    streak_last_date: localStorage.getItem("couple_streak_last_date") || "",
+    hearts: parseInt(localStorage.getItem("couple_streak_hearts") || "0"),
+    milestones_reached: milestones,
+    hug_count: parseInt(localStorage.getItem("couple_hug_count") || "0"),
+    countdown_date: localStorage.getItem("couple_countdown_date") || null
+  };
+
+  await supabase
+    .from("game_states")
+    .upsert(
+      {
+        couple_id: currentCouple.id,
+        game_type: "stats",
+        state: state,
+        updated_by: currentUser.id,
+        updated_at: new Date().toISOString()
+      },
+      { onConflict: "couple_id,game_type" }
+    );
+}
 
 function getTodayString() {
   return new Date().toISOString().split("T")[0];
@@ -2599,6 +2698,7 @@ function recordEngagement() {
   localStorage.setItem("couple_streak_hearts", (totalHearts + heartsEarned).toString());
 
   updateStreakUI();
+  saveCoupleStats();
 
   if (milestoneHit) {
     showMilestoneCelebration(milestoneHit);
@@ -2609,6 +2709,7 @@ function addBonusHearts(amount) {
   var totalHearts = parseInt(localStorage.getItem("couple_streak_hearts") || "0");
   localStorage.setItem("couple_streak_hearts", (totalHearts + amount).toString());
   updateStreakUI();
+  saveCoupleStats();
 }
 
 function updateStreakUI() {
@@ -2686,6 +2787,7 @@ function markMilestoneReached(days) {
   if (reached.indexOf(days) < 0) {
     reached.push(days);
     localStorage.setItem("couple_streak_milestones_reached", JSON.stringify(reached));
+    saveCoupleStats();
   }
 }
 
@@ -4100,10 +4202,31 @@ document.getElementById("copyInviteBtn").addEventListener("click", async functio
     hapticLight();
     this.textContent = "Copied!";
     setTimeout(function () {
-      document.getElementById("copyInviteBtn").textContent = "Copy invite code";
+      document.getElementById("copyInviteBtn").textContent = "Copy code";
     }, 1800);
   } else {
     setStatus(coupleMessage, "Copy failed. Select the code and copy manually.", "error");
+  }
+});
+
+document.getElementById("shareInviteBtn").addEventListener("click", async function () {
+  if (!currentCouple) return;
+  var code = currentCouple.inviteCode;
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "Join me on Couple",
+        text: "Join me on Couple! Use this invite code: " + code
+      });
+    } catch (e) {}
+  } else {
+    var ok = await nativeClipboardWrite("Join me on Couple! Use this invite code: " + code);
+    if (ok) {
+      hapticLight();
+      this.textContent = "Copied!";
+      var btn = this;
+      setTimeout(function () { btn.textContent = "Share"; }, 1800);
+    }
   }
 });
 

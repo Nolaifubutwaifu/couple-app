@@ -670,6 +670,18 @@ h3 {
   letter-spacing: 0.12em;
 }
 
+.invite-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.invite-share-btn {
+  background: #1a1a2e !important;
+  color: #ffffff !important;
+}
+
 .join-form {
   display: grid;
   grid-template-columns: 1fr 94px;
