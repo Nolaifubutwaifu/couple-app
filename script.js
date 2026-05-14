@@ -20,15 +20,10 @@ import {
 import { subscribeToPresence, cleanupPresence, isPartnerOnline, setPresenceChangeCallback } from "./presence.js";
 import { getMyGameRole, subscribeToGameStates } from "./games.js";
 import {
-  loadCountdown,
   loadStreak,
   loadCoupleStats,
   saveCoupleStats,
   recordEngagement,
-  initCountdownListeners,
-  initDice,
-  initHug,
-  initFortune,
   clearCountdownInterval,
   clearStreakTimerInterval,
   setHugCount,
@@ -36,9 +31,10 @@ import {
 } from "./extras.js";
 import { addOrReplaceMessage, formatMessageRow, uploadAndSendPhoto, dataUrlToBlob } from "./chat.js";
 import { cleanupDateCall, onDateStateFromDB, checkExistingDateSession, loadScheduledDate, renderDateLanding, loadDateHistory } from "./date-night.js";
-import { renderGallery, initGalleryAddButton } from "./gallery.js";
 import { renderProfileTab, initProfile, loadSettings, initSettings, initInviteButtons } from "./profile.js";
 import { initMoments, loadTodayMoments, getMomentsCount, cleanupMomentsChannel } from "./moments.js";
+import { initShop, updateShopBalance } from "./shop.js";
+import { renderAchievements } from "./achievements.js";
 
 
 // ─── Supabase ───
@@ -1194,6 +1190,18 @@ async function loadCouple() {
   renderHomeScreen();
   startTimezoneWidget();
   await loadCoupleStats();
+  updateShopBalance();
+  renderAchievements();
+
+  var profileInviteCode = document.getElementById("profileInviteCode");
+  if (profileInviteCode && app.currentCouple) {
+    profileInviteCode.textContent = app.currentCouple.inviteCode;
+  }
+  var settingsAccountInfo = document.getElementById("settingsAccountInfo");
+  if (settingsAccountInfo && app.currentProfile) {
+    settingsAccountInfo.textContent = "Signed in as " + app.currentProfile.display_name;
+  }
+
   await loadMessages();
 
   if (app.settingToggles.settingDailyReminder) {
@@ -1253,8 +1261,8 @@ async function loadMessages() {
   }
 
   renderPromptExperience();
-  renderGallery();
   renderHomeScreen();
+  renderAchievements();
 }
 
 function scheduleMessagesReload() {
@@ -1651,21 +1659,6 @@ navTabs.forEach(function (tab) {
 });
 
 
-// ─── Settings Overlay (from More tab) ───
-
-var settingsOverlay = document.getElementById("settingsOverlay");
-
-document.getElementById("openSettingsBtn").addEventListener("click", function () {
-  hapticLight();
-  settingsOverlay.classList.add("settings-overlay-visible");
-});
-
-document.getElementById("settingsBackBtn").addEventListener("click", function () {
-  hapticLight();
-  settingsOverlay.classList.remove("settings-overlay-visible");
-});
-
-
 // ─── More Tab Sub-Nav ───
 
 var moreSubNav = document.getElementById("moreSubNav");
@@ -1729,21 +1722,27 @@ import { initCamera } from "./camera.js";
 initSettings();
 initMoments({ recordEngagement: recordEngagement });
 initGames(recordEngagement);
-initCountdownListeners(saveCoupleStats);
-initDice(recordEngagement);
-initHug(recordEngagement, saveCoupleStats);
-initFortune(recordEngagement);
-initGalleryAddButton(function () {
-  promptPhotoInput.click();
-});
 initProfile(logout, renderGreeting);
 initInviteButtons(coupleMessage);
+initShop();
+
+var profileCopyInviteBtn = document.getElementById("profileCopyInviteBtn");
+if (profileCopyInviteBtn) {
+  profileCopyInviteBtn.addEventListener("click", async function () {
+    if (!app.currentCouple) return;
+    var ok = await nativeClipboardWrite(app.currentCouple.inviteCode);
+    if (ok) {
+      hapticLight();
+      profileCopyInviteBtn.textContent = "✓";
+      setTimeout(function () { profileCopyInviteBtn.textContent = "📋"; }, 1800);
+    }
+  });
+}
 initCamera(
   function () { return currentQuestionId; },
   {
     recordEngagement: recordEngagement,
     scheduleMessagesReload: scheduleMessagesReload,
-    renderGallery: renderGallery,
     renderMessages: renderPromptChatMessages,
     getMessageContainer: function () { return promptChatMessages; }
   }
@@ -1868,7 +1867,6 @@ function getPhotoCallbacks() {
   return {
     recordEngagement: recordEngagement,
     scheduleMessagesReload: scheduleMessagesReload,
-    renderGallery: renderGallery,
     renderMessages: renderPromptChatMessages,
     getMessageContainer: function () { return promptChatMessages; }
   };
@@ -1906,7 +1904,6 @@ document.addEventListener("visibilitychange", function () {
 
 async function init() {
   renderPromptExperience();
-  loadCountdown();
   loadStreak();
 
   const { data, error } = await supabase.auth.getSession();

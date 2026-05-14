@@ -22,6 +22,7 @@ export function clearCountdownInterval() {
 }
 
 export function loadCountdown() {
+  if (!countdownDateInput) return;
   const savedDate = localStorage.getItem("couple_countdown_date");
 
   if (savedDate) {
@@ -137,13 +138,13 @@ const hugParticles = document.getElementById("hugParticles");
 const hugCountEl = document.getElementById("hugCount");
 
 export var hugCount = parseInt(localStorage.getItem("couple_hug_count") || "0");
-hugCountEl.textContent = hugCount;
+if (hugCountEl) hugCountEl.textContent = hugCount;
 
 const hugEmojis = ["❤️", "💕", "💗", "💖", "💘", "💝", "🥰", "😘", "✨", "💫"];
 
 export function setHugCount(val) {
   hugCount = val;
-  hugCountEl.textContent = hugCount;
+  if (hugCountEl) hugCountEl.textContent = hugCount;
 }
 
 export function initHug(recordEngagement, saveCoupleStats) {
@@ -209,16 +210,16 @@ const streakBar = document.getElementById("streakBar");
 const streakCountEl = document.getElementById("streakCount");
 const heartsCountEl = document.getElementById("heartsCount");
 const streakStatusEl = document.getElementById("streakStatus");
-const streakDetailCountEl = document.getElementById("streakDetailCount");
-const streakDetailHeartsEl = document.getElementById("streakDetailHearts");
-const streakDetailStatusEl = document.getElementById("streakDetailStatus");
+const streakDetailCountEl = document.getElementById("achieveStreakCount");
+const streakDetailHeartsEl = null;
+const streakDetailStatusEl = null;
 const streakBarTimerEl = document.getElementById("streakBarTimer");
-const streakDetailTimerEl = document.getElementById("streakDetailTimer");
-const nextMilestoneNameEl = document.getElementById("nextMilestoneName");
-const nextMilestoneTargetEl = document.getElementById("nextMilestoneTarget");
-const streakProgressFillEl = document.getElementById("streakProgressFill");
-const streakProgressTextEl = document.getElementById("streakProgressText");
-const streakBadgeList = document.getElementById("streakBadgeList");
+const streakDetailTimerEl = document.getElementById("achieveStreakTimer");
+const nextMilestoneNameEl = document.getElementById("achieveNextMilestoneName");
+const nextMilestoneTargetEl = document.getElementById("achieveNextMilestoneTarget");
+const streakProgressFillEl = document.getElementById("achieveStreakProgressFill");
+const streakProgressTextEl = document.getElementById("achieveStreakProgressText");
+const streakBadgeList = document.getElementById("achieveStreakBadgeList");
 const milestoneOverlay = document.getElementById("milestoneOverlay");
 const milestoneEmojiEl = document.getElementById("milestoneEmoji");
 const milestoneTitleEl = document.getElementById("milestoneTitle");
@@ -284,7 +285,7 @@ export async function loadCoupleStats() {
   localStorage.setItem("couple_longest_streak", mergedLongest.toString());
 
   hugCount = mergedHugs;
-  hugCountEl.textContent = hugCount;
+  if (hugCountEl) hugCountEl.textContent = hugCount;
 
   if (remote.countdown_date) {
     localStorage.setItem("couple_countdown_date", remote.countdown_date);
@@ -438,23 +439,27 @@ function updateStreakUI() {
     streak = 0;
   }
 
-  streakCountEl.textContent = streak;
-  heartsCountEl.textContent = hearts;
-  streakDetailCountEl.textContent = streak;
-  streakDetailHeartsEl.textContent = hearts;
+  if (streakCountEl) streakCountEl.textContent = streak;
+  if (heartsCountEl) heartsCountEl.textContent = hearts;
+  if (streakDetailCountEl) streakDetailCountEl.textContent = streak;
+  if (streakDetailHeartsEl) streakDetailHeartsEl.textContent = hearts;
 
   if (engagedToday) {
-    streakBar.classList.add("active-today");
-    streakStatusEl.textContent = "Done today!";
-    streakDetailStatusEl.textContent = "You've already engaged today. Come back tomorrow to keep it going!";
-    streakDetailStatusEl.classList.add("done-today");
+    if (streakBar) streakBar.classList.add("active-today");
+    if (streakStatusEl) streakStatusEl.textContent = "Done today!";
+    if (streakDetailStatusEl) {
+      streakDetailStatusEl.textContent = "You've already engaged today. Come back tomorrow to keep it going!";
+      streakDetailStatusEl.classList.add("done-today");
+    }
   } else {
-    streakBar.classList.remove("active-today");
-    streakStatusEl.textContent = "Do something today!";
-    streakDetailStatusEl.textContent = streak > 0
-      ? "Don't break your streak! Do something today."
-      : "Use the app today to start your streak!";
-    streakDetailStatusEl.classList.remove("done-today");
+    if (streakBar) streakBar.classList.remove("active-today");
+    if (streakStatusEl) streakStatusEl.textContent = "Do something today!";
+    if (streakDetailStatusEl) {
+      streakDetailStatusEl.textContent = streak > 0
+        ? "Don't break your streak! Do something today."
+        : "Use the app today to start your streak!";
+      streakDetailStatusEl.classList.remove("done-today");
+    }
   }
 
   var nextMilestone = null;
@@ -466,18 +471,19 @@ function updateStreakUI() {
   }
 
   if (nextMilestone) {
-    nextMilestoneNameEl.textContent = nextMilestone.name;
-    nextMilestoneTargetEl.textContent = nextMilestone.days + " days";
+    if (nextMilestoneNameEl) nextMilestoneNameEl.textContent = nextMilestone.name;
+    if (nextMilestoneTargetEl) nextMilestoneTargetEl.textContent = nextMilestone.days + " days";
     var progress = Math.round((streak / nextMilestone.days) * 100);
-    streakProgressFillEl.style.width = progress + "%";
-    streakProgressTextEl.textContent = streak + " / " + nextMilestone.days + " days";
+    if (streakProgressFillEl) streakProgressFillEl.style.width = progress + "%";
+    if (streakProgressTextEl) streakProgressTextEl.textContent = streak + " / " + nextMilestone.days + " days";
   } else {
-    nextMilestoneNameEl.textContent = "All unlocked!";
-    nextMilestoneTargetEl.textContent = "";
-    streakProgressFillEl.style.width = "100%";
-    streakProgressTextEl.textContent = "You've earned every badge.";
+    if (nextMilestoneNameEl) nextMilestoneNameEl.textContent = "All unlocked!";
+    if (nextMilestoneTargetEl) nextMilestoneTargetEl.textContent = "";
+    if (streakProgressFillEl) streakProgressFillEl.style.width = "100%";
+    if (streakProgressTextEl) streakProgressTextEl.textContent = "You've earned every badge.";
   }
 
+  if (!streakBadgeList) return;
   var badges = streakBadgeList.querySelectorAll(".streak-badge");
   badges.forEach(function (badge) {
     var requiredDays = parseInt(badge.dataset.days);

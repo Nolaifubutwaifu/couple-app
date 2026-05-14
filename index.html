@@ -312,13 +312,15 @@
               <div id="tabMore" class="tab-content">
                 <div class="tab-lock-overlay" id="lockMore">
                   <span class="tab-lock-icon">✦</span>
-                  <p class="tab-lock-text">Games, extras, and memories — unlocks when your partner joins</p>
+                  <p class="tab-lock-text">Games, shop, achievements, and more — unlocks when your partner joins</p>
                 </div>
 
                 <div class="more-sub-nav" id="moreSubNav">
                   <button type="button" class="more-sub-btn more-sub-active" data-section="moreGames">Games</button>
-                  <button type="button" class="more-sub-btn" data-section="moreExtras">Extras</button>
-                  <button type="button" class="more-sub-btn" data-section="moreGallery">Gallery</button>
+                  <button type="button" class="more-sub-btn" data-section="moreShop">Shop</button>
+                  <button type="button" class="more-sub-btn" data-section="moreAchievements">Achieve</button>
+                  <button type="button" class="more-sub-btn" data-section="moreProfile">Profile</button>
+                  <button type="button" class="more-sub-btn" data-section="moreSettings">Settings</button>
                 </div>
 
                 <!-- Games -->
@@ -436,139 +438,195 @@
                   </section>
                 </div>
 
-                <!-- Extras -->
-                <div id="moreExtras" class="more-section">
-                  <section class="extras-header">
-                    <p class="small-text">extras</p>
-                    <h2>A little more love.</h2>
-                    <p class="setup-description">Countdowns, surprises, and little things that make the distance feel smaller.</p>
+                <!-- Heart Shop -->
+                <div id="moreShop" class="more-section">
+                  <section class="shop-header">
+                    <p class="small-text">heart shop</p>
+                    <h2>Spend your hearts.</h2>
+                    <p class="setup-description">Earn hearts from streaks, games, and dates. Spend them on fun extras for the two of you.</p>
+                    <div class="shop-balance">
+                      <span class="shop-balance-icon">❤️</span>
+                      <span class="shop-balance-count" id="shopHeartsBalance">0</span>
+                      <span class="shop-balance-label">hearts</span>
+                    </div>
                   </section>
 
-                  <section class="extra-card extra-card-streak">
-                    <p class="small-text">daily streak</p>
-                    <h3>Your Streak</h3>
-                    <div class="streak-detail-stats">
-                      <div class="streak-detail-stat">
-                        <span class="streak-detail-number" id="streakDetailCount">0</span>
-                        <span class="streak-detail-label">🔥 Day streak</span>
+                  <div class="shop-categories" id="shopCategories">
+                    <button type="button" class="shop-category-btn shop-category-active" data-category="all">All</button>
+                    <button type="button" class="shop-category-btn" data-category="avatars">Avatars</button>
+                    <button type="button" class="shop-category-btn" data-category="chat-themes">Chat Themes</button>
+                    <button type="button" class="shop-category-btn" data-category="home-themes">Home Themes</button>
+                    <button type="button" class="shop-category-btn" data-category="date-themes">Date Themes</button>
+                    <button type="button" class="shop-category-btn" data-category="question-packs">Questions</button>
+                    <button type="button" class="shop-category-btn" data-category="reactions">Reactions</button>
+                    <button type="button" class="shop-category-btn" data-category="extras">Extras</button>
+                  </div>
+
+                  <div class="shop-grid" id="shopGrid"></div>
+                </div>
+
+                <!-- Achievements -->
+                <div id="moreAchievements" class="more-section">
+                  <section class="achievements-header">
+                    <p class="small-text">achievements</p>
+                    <h2>Your journey together.</h2>
+                    <p class="setup-description">Milestones, badges, and progress from everything you do as a couple.</p>
+                  </section>
+
+                  <section class="achievements-streak-summary">
+                    <div class="achievement-streak-row">
+                      <span class="achievement-streak-icon">🔥</span>
+                      <div class="achievement-streak-info">
+                        <span class="achievement-streak-count" id="achieveStreakCount">0</span>
+                        <span class="achievement-streak-label">day streak</span>
                       </div>
-                      <div class="streak-detail-stat">
-                        <span class="streak-detail-number" id="streakDetailHearts">0</span>
-                        <span class="streak-detail-label">❤️ Hearts earned</span>
+                      <div class="achievement-streak-info">
+                        <span class="achievement-streak-count" id="achieveStreakLongest">0</span>
+                        <span class="achievement-streak-label">longest</span>
                       </div>
                     </div>
-                    <div class="streak-detail-status" id="streakDetailStatus">Use the app today to start your streak!</div>
-                    <div class="streak-detail-timer" id="streakDetailTimer"></div>
+                    <div class="streak-detail-timer" id="achieveStreakTimer"></div>
                     <div class="streak-next-milestone">
-                      <p class="small-text">next milestone</p>
+                      <p class="small-text">next streak milestone</p>
                       <div class="streak-milestone-info">
-                        <span id="nextMilestoneName">Week of Love</span>
-                        <span id="nextMilestoneTarget">7 days</span>
+                        <span id="achieveNextMilestoneName">Week of Love</span>
+                        <span id="achieveNextMilestoneTarget">7 days</span>
                       </div>
                       <div class="streak-progress-bar">
-                        <div class="streak-progress-fill" id="streakProgressFill" style="width: 0%"></div>
+                        <div class="streak-progress-fill" id="achieveStreakProgressFill" style="width: 0%"></div>
                       </div>
-                      <p class="streak-progress-text" id="streakProgressText">0 / 7 days</p>
-                    </div>
-                    <div class="streak-badges" id="streakBadges">
-                      <p class="small-text">badges</p>
-                      <div class="streak-badge-list" id="streakBadgeList">
-                        <span class="streak-badge locked" data-days="7" title="Week of Love (7 days)">🌱</span>
-                        <span class="streak-badge locked" data-days="14" title="Fortnight of Fire (14 days)">🔥</span>
-                        <span class="streak-badge locked" data-days="30" title="Monthly Magic (30 days)">✨</span>
-                        <span class="streak-badge locked" data-days="50" title="Golden Couple (50 days)">💛</span>
-                        <span class="streak-badge locked" data-days="100" title="Century of Love (100 days)">💎</span>
-                        <span class="streak-badge locked" data-days="365" title="Soulmates (365 days)">👑</span>
-                      </div>
+                      <p class="streak-progress-text" id="achieveStreakProgressText">0 / 7 days</p>
                     </div>
                   </section>
 
-                  <section class="extra-card">
-                    <p class="small-text">countdown</p>
-                    <h3>Next visit</h3>
-                    <div id="countdownMessage" class="countdown-message">Set a date to start counting down!</div>
-                    <div class="countdown-timer" id="countdownTimer" style="display:none">
-                      <div class="countdown-unit"><span id="cdDays">0</span><small>days</small></div>
-                      <div class="countdown-unit"><span id="cdHours">0</span><small>hours</small></div>
-                      <div class="countdown-unit"><span id="cdMinutes">0</span><small>min</small></div>
-                      <div class="countdown-unit"><span id="cdSeconds">0</span><small>sec</small></div>
-                    </div>
-                    <div class="countdown-input-row">
-                      <input type="date" id="countdownDate">
-                      <button type="button" id="countdownSet" class="game-action-btn">Set</button>
-                      <button type="button" id="countdownClear" class="game-action-btn" style="display:none">Clear</button>
+                  <section class="achievements-badges">
+                    <p class="small-text">streak badges</p>
+                    <div class="streak-badge-list" id="achieveStreakBadgeList">
+                      <span class="streak-badge locked" data-days="7" title="Week of Love (7 days)">🌱</span>
+                      <span class="streak-badge locked" data-days="14" title="Fortnight of Fire (14 days)">🔥</span>
+                      <span class="streak-badge locked" data-days="30" title="Monthly Magic (30 days)">✨</span>
+                      <span class="streak-badge locked" data-days="50" title="Golden Couple (50 days)">💛</span>
+                      <span class="streak-badge locked" data-days="100" title="Century of Love (100 days)">💎</span>
+                      <span class="streak-badge locked" data-days="365" title="Soulmates (365 days)">👑</span>
                     </div>
                   </section>
 
-                  <section class="extra-card">
-                    <p class="small-text">date idea generator</p>
-                    <h3>Love Dice</h3>
-                    <div class="dice-display">
-                      <div class="die" id="die1">🎲</div>
-                      <div class="die" id="die2">🎲</div>
-                    </div>
-                    <p class="dice-result" id="diceResult">Tap roll to get a fun date idea!</p>
-                    <button type="button" id="rollDice" class="game-action-btn">Roll</button>
-                  </section>
-
-                  <section class="extra-card extra-card-hug">
-                    <p class="small-text">virtual love</p>
-                    <h3>Send a hug</h3>
-                    <div class="hug-zone" id="hugZone">
-                      <button type="button" id="hugButton" class="hug-btn">❤️</button>
-                      <div class="hug-particles" id="hugParticles"></div>
-                    </div>
-                    <p class="hug-counter">Hugs sent: <strong id="hugCount">0</strong></p>
-                  </section>
-
-                  <section class="extra-card">
-                    <p class="small-text">daily fortune</p>
-                    <h3>Love Fortune Cookie</h3>
-                    <div class="fortune-display">
-                      <button type="button" class="fortune-cookie" id="fortuneCookie">🥠</button>
-                      <p class="fortune-text" id="fortuneText">Tap the cookie to reveal your fortune!</p>
-                    </div>
-                    <button type="button" id="newFortune" class="game-action-btn" style="display:none">Another fortune</button>
-                  </section>
+                  <section class="achievements-list" id="achievementsList"></section>
                 </div>
 
-                <!-- Gallery -->
-                <div id="moreGallery" class="more-section">
-                  <section class="gallery-header">
-                    <p class="small-text">memories</p>
-                    <h2>Our Memories.</h2>
-                    <p class="setup-description">All the photos you've shared together, in one place.</p>
+                <!-- Profile -->
+                <div id="moreProfile" class="more-section">
+                  <section class="profile-tab-header">
+                    <p class="small-text">your profile</p>
+                    <h2>Profile.</h2>
                   </section>
 
-                  <button type="button" id="galleryAddBtn" class="gallery-add-btn">
-                    <span>+</span> Add Photo
-                  </button>
+                  <div class="profile-avatar-section">
+                    <div class="profile-avatar-wrap">
+                      <img id="profileAvatarImg" class="profile-avatar" src="" alt="Profile photo" style="display:none">
+                      <div id="profileAvatarPlaceholder" class="profile-avatar-placeholder">
+                        <span id="profileAvatarInitials"></span>
+                      </div>
+                      <button type="button" id="profileAvatarEditBtn" class="profile-avatar-edit" title="Change photo">📷</button>
+                      <input type="file" id="profileAvatarInput" accept="image/*" style="display:none">
+                    </div>
+                    <p class="profile-avatar-hint">Tap icon to change photo</p>
+                  </div>
 
-                  <div class="gallery-grid" id="galleryGrid">
-                    <div class="emotional-empty" id="galleryEmpty">
-                      <span class="emotional-empty-icon">📸</span>
-                      <p class="emotional-empty-title">Your gallery is waiting</p>
-                      <p class="emotional-empty-text">Every photo you share in chat will appear here — your little collection of moments together.</p>
+                  <div class="profile-field" id="profileNameField">
+                    <span class="profile-field-label">YOUR NAME</span>
+                    <div class="profile-field-row">
+                      <input type="text" id="profileNameInput" class="profile-field-value" readonly>
+                      <button type="button" id="profileNameEditBtn" class="profile-field-edit">✎</button>
+                      <button type="button" id="profileNameSaveBtn" class="profile-field-save" style="display:none">Save</button>
                     </div>
                   </div>
 
-                  <div class="gallery-viewer" id="galleryViewer" style="display:none">
-                    <button type="button" id="galleryViewerClose" class="gallery-viewer-close">&#10005;</button>
-                    <img id="galleryViewerImg" class="gallery-viewer-img" alt="">
-                    <div class="gallery-viewer-info">
-                      <span id="galleryViewerSender"></span>
-                      <span id="galleryViewerDate"></span>
+                  <div class="profile-field">
+                    <span class="profile-field-label">PARTNER'S NAME</span>
+                    <div class="profile-field-row">
+                      <span class="profile-field-value profile-field-readonly" id="profilePartnerName">No partner yet</span>
                     </div>
                   </div>
+
+                  <div class="profile-field">
+                    <span class="profile-field-label">INVITE CODE</span>
+                    <div class="profile-field-row">
+                      <span class="profile-field-value profile-field-readonly profile-invite-code" id="profileInviteCode">—</span>
+                      <button type="button" id="profileCopyInviteBtn" class="profile-field-edit" title="Copy code">📋</button>
+                    </div>
+                  </div>
+
+                  <p id="profileMessage" class="status-message" aria-live="polite"></p>
                 </div>
 
-                <!-- Settings access -->
-                <div class="more-settings-row">
-                  <button type="button" class="more-settings-btn" id="openSettingsBtn">
-                    <span class="more-settings-icon">⚙</span>
-                    <span>Settings</span>
-                    <span class="settings-row-chevron">›</span>
-                  </button>
+                <!-- Settings -->
+                <div id="moreSettings" class="more-section">
+                  <section class="settings-tab-header">
+                    <p class="small-text">preferences</p>
+                    <h2>Settings.</h2>
+                  </section>
+
+                  <div class="settings-group">
+                    <p class="small-text">notifications</p>
+                    <div class="settings-card">
+                      <label class="settings-toggle-row">
+                        <span class="settings-toggle-label">Message notifications</span>
+                        <input type="checkbox" class="settings-toggle" id="settingMsgNotif" checked>
+                        <span class="settings-toggle-slider"></span>
+                      </label>
+                      <label class="settings-toggle-row">
+                        <span class="settings-toggle-label">Daily prompt reminders</span>
+                        <input type="checkbox" class="settings-toggle" id="settingDailyReminder" checked>
+                        <span class="settings-toggle-slider"></span>
+                      </label>
+                      <label class="settings-toggle-row">
+                        <span class="settings-toggle-label">Partner activity alerts</span>
+                        <input type="checkbox" class="settings-toggle" id="settingPartnerActivity" checked>
+                        <span class="settings-toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="settings-group">
+                    <p class="small-text">privacy</p>
+                    <div class="settings-card">
+                      <label class="settings-toggle-row">
+                        <span class="settings-toggle-label">Read receipts</span>
+                        <input type="checkbox" class="settings-toggle" id="settingReadReceipts" checked>
+                        <span class="settings-toggle-slider"></span>
+                      </label>
+                      <label class="settings-toggle-row">
+                        <span class="settings-toggle-label">Show online status</span>
+                        <input type="checkbox" class="settings-toggle" id="settingOnlineStatus" checked>
+                        <span class="settings-toggle-slider"></span>
+                      </label>
+                      <label class="settings-toggle-row">
+                        <span class="settings-toggle-label">Typing indicators</span>
+                        <input type="checkbox" class="settings-toggle" id="settingTypingIndicators" checked>
+                        <span class="settings-toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="settings-group">
+                    <p class="small-text">theme</p>
+                    <div class="settings-card">
+                      <div class="settings-theme-placeholder">
+                        <span>🎨</span>
+                        <span>Theme customization coming soon</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-group">
+                    <p class="small-text">account</p>
+                    <div class="settings-card">
+                      <p class="settings-account-info" id="settingsAccountInfo">Signed in</p>
+                    </div>
+                  </div>
+
+                  <button type="button" id="profileSignOutBtn" class="profile-signout">Sign Out</button>
                 </div>
               </div>
 
@@ -731,48 +789,6 @@
               </div>
 
               <!-- Settings Overlay (accessed from More tab) -->
-              <div class="settings-overlay" id="settingsOverlay">
-                <div class="settings-overlay-header">
-                  <button type="button" class="settings-back-btn" id="settingsBackBtn">‹ Back</button>
-                  <h2>Settings</h2>
-                </div>
-
-                <div class="profile-avatar-section">
-                  <div class="profile-avatar-wrap">
-                    <img id="profileAvatarImg" class="profile-avatar" src="" alt="Profile photo" style="display:none">
-                    <div id="profileAvatarPlaceholder" class="profile-avatar-placeholder">
-                      <span id="profileAvatarInitials"></span>
-                    </div>
-                    <button type="button" id="profileAvatarEditBtn" class="profile-avatar-edit" title="Change photo">📷</button>
-                    <input type="file" id="profileAvatarInput" accept="image/*" style="display:none">
-                  </div>
-                  <p class="profile-avatar-hint">Tap icon to change photo</p>
-                </div>
-
-                <div class="profile-field" id="profileNameField">
-                  <span class="profile-field-label">YOUR NAME</span>
-                  <div class="profile-field-row">
-                    <input type="text" id="profileNameInput" class="profile-field-value" readonly>
-                    <button type="button" id="profileNameEditBtn" class="profile-field-edit">✎</button>
-                    <button type="button" id="profileNameSaveBtn" class="profile-field-save" style="display:none">Save</button>
-                  </div>
-                </div>
-
-                <div class="profile-field">
-                  <span class="profile-field-label">PARTNER'S NAME</span>
-                  <div class="profile-field-row">
-                    <span class="profile-field-value profile-field-readonly" id="profilePartnerName">No partner yet</span>
-                  </div>
-                </div>
-
-                <div class="profile-settings">
-                  <button type="button" class="profile-settings-row" id="openNotificationSettings">Notification Preferences <span class="settings-row-chevron">›</span></button>
-                  <button type="button" class="profile-settings-row" id="openPrivacySettings">Privacy Settings <span class="settings-row-chevron">›</span></button>
-                </div>
-
-                <button type="button" id="profileSignOutBtn" class="profile-signout">Sign Out</button>
-                <p id="profileMessage" class="status-message" aria-live="polite"></p>
-              </div>
 
               <!-- Bottom Navigation -->
               <nav class="bottom-nav" id="bottomNav">
@@ -938,58 +954,6 @@
     </div>
 
     <!-- Notification Settings Overlay -->
-    <div class="settings-overlay" id="notificationSettingsOverlay">
-      <div class="settings-overlay-inner">
-        <div class="settings-overlay-header">
-          <button type="button" class="settings-overlay-back" id="notifSettingsBack">‹ Back</button>
-          <h2 class="settings-overlay-title">Notification Preferences</h2>
-        </div>
-        <div class="settings-overlay-body">
-          <label class="settings-toggle-row">
-            <span class="settings-toggle-label">Message notifications</span>
-            <input type="checkbox" class="settings-toggle" id="settingMsgNotif" checked>
-            <span class="settings-toggle-slider"></span>
-          </label>
-          <label class="settings-toggle-row">
-            <span class="settings-toggle-label">Daily prompt reminders</span>
-            <input type="checkbox" class="settings-toggle" id="settingDailyReminder" checked>
-            <span class="settings-toggle-slider"></span>
-          </label>
-          <label class="settings-toggle-row">
-            <span class="settings-toggle-label">Partner activity alerts</span>
-            <input type="checkbox" class="settings-toggle" id="settingPartnerActivity" checked>
-            <span class="settings-toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <!-- Privacy Settings Overlay -->
-    <div class="settings-overlay" id="privacySettingsOverlay">
-      <div class="settings-overlay-inner">
-        <div class="settings-overlay-header">
-          <button type="button" class="settings-overlay-back" id="privacySettingsBack">‹ Back</button>
-          <h2 class="settings-overlay-title">Privacy Settings</h2>
-        </div>
-        <div class="settings-overlay-body">
-          <label class="settings-toggle-row">
-            <span class="settings-toggle-label">Read receipts</span>
-            <input type="checkbox" class="settings-toggle" id="settingReadReceipts" checked>
-            <span class="settings-toggle-slider"></span>
-          </label>
-          <label class="settings-toggle-row">
-            <span class="settings-toggle-label">Show online status</span>
-            <input type="checkbox" class="settings-toggle" id="settingOnlineStatus" checked>
-            <span class="settings-toggle-slider"></span>
-          </label>
-          <label class="settings-toggle-row">
-            <span class="settings-toggle-label">Typing indicators</span>
-            <input type="checkbox" class="settings-toggle" id="settingTypingIndicators" checked>
-            <span class="settings-toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
 
     <!-- Milestone Celebration Overlay -->
     <div class="milestone-overlay" id="milestoneOverlay">

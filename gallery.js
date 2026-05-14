@@ -30,6 +30,7 @@ function collectGalleryPhotos() {
 }
 
 export function renderGallery() {
+  if (!galleryGrid) return;
   galleryPhotos = collectGalleryPhotos();
 
   if (galleryPhotos.length === 0) {
@@ -83,6 +84,7 @@ galleryViewerClose.addEventListener("click", function () {
 });
 
 export function initGalleryAddButton(showPhotoOptions) {
+  if (!galleryAddBtn) return;
   galleryAddBtn.addEventListener("click", function () {
     showPhotoOptions();
   });

@@ -122,8 +122,6 @@ export function initProfile(logout, renderGreeting) {
 
 // Settings
 
-var notificationSettingsOverlay = document.getElementById("notificationSettingsOverlay");
-var privacySettingsOverlay = document.getElementById("privacySettingsOverlay");
 
 export function loadSettings() {
   try {
@@ -157,28 +155,6 @@ export function initSettings() {
       }
     })(key);
   }
-
-  document.getElementById("openNotificationSettings").addEventListener("click", function () {
-    loadSettings();
-    requestAnimationFrame(function () {
-      notificationSettingsOverlay.classList.add("settings-overlay-visible");
-    });
-  });
-
-  document.getElementById("openPrivacySettings").addEventListener("click", function () {
-    loadSettings();
-    requestAnimationFrame(function () {
-      privacySettingsOverlay.classList.add("settings-overlay-visible");
-    });
-  });
-
-  document.getElementById("notifSettingsBack").addEventListener("click", function () {
-    notificationSettingsOverlay.classList.remove("settings-overlay-visible");
-  });
-
-  document.getElementById("privacySettingsBack").addEventListener("click", function () {
-    privacySettingsOverlay.classList.remove("settings-overlay-visible");
-  });
 
   loadSettings();
 }
