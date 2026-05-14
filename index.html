@@ -176,8 +176,13 @@
                 <!-- 5. Date Night Preview -->
                 <section class="date-preview-card" id="datePreviewCard">
                   <div class="date-preview-header">
-                    <span class="date-preview-icon">🌙</span>
+                    <span class="date-preview-icon" id="datePreviewIcon">🌙</span>
                     <h3 class="date-preview-title">Date Night</h3>
+                  </div>
+                  <div class="date-preview-scheduled-detail" id="datePreviewScheduled" style="display:none">
+                    <span class="date-preview-scheduled-day" id="datePreviewDay"></span>
+                    <span class="date-preview-scheduled-time" id="datePreviewTime"></span>
+                    <span class="date-preview-scheduled-theme" id="datePreviewTheme"></span>
                   </div>
                   <p class="date-preview-status" id="datePreviewStatus">Plan your next date night together</p>
                   <button type="button" class="date-preview-btn" id="datePreviewAction">Start a date night</button>

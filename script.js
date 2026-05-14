@@ -3,7 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style as StatusBarStyle } from "@capacitor/status-bar";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { Keyboard } from "@capacitor/keyboard";
-import { promptCategorySections, questions } from "./data.js";
+import { promptCategorySections, questions, dateThemes } from "./data.js";
 import { app } from "./state.js";
 import {
   hapticLight,
@@ -790,6 +790,14 @@ function renderCoupleLog() {
 }
 
 function renderDateNightPreview() {
+  var card = document.getElementById("datePreviewCard");
+  var scheduledEl = document.getElementById("datePreviewScheduled");
+  var iconEl = document.getElementById("datePreviewIcon");
+
+  card.classList.remove("date-preview-has-scheduled");
+  scheduledEl.style.display = "none";
+  iconEl.textContent = "🌙";
+
   if (app.lastSavedGameState && app.lastSavedGameState.date) {
     datePreviewStatus.textContent = "Date night in progress!";
     document.getElementById("datePreviewAction").textContent = "Continue";
@@ -798,14 +806,36 @@ function renderDateNightPreview() {
 
   var scheduled = loadScheduledDate();
   if (scheduled && scheduled.datetime) {
+    card.classList.add("date-preview-has-scheduled");
+    iconEl.textContent = "📅";
+
     var d = new Date(scheduled.datetime);
-    var days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     var hours = d.getHours();
     var ampm = hours >= 12 ? "PM" : "AM";
     hours = hours % 12;
     if (hours === 0) hours = 12;
     var minutes = d.getMinutes();
-    datePreviewStatus.textContent = "Date planned for " + days[d.getDay()] + " at " + hours + ":" + (minutes < 10 ? "0" : "") + minutes + " " + ampm;
+
+    document.getElementById("datePreviewDay").textContent = days[d.getDay()] + ", " + months[d.getMonth()] + " " + d.getDate();
+    document.getElementById("datePreviewTime").textContent = hours + ":" + (minutes < 10 ? "0" : "") + minutes + " " + ampm;
+
+    var themeEl = document.getElementById("datePreviewTheme");
+    if (scheduled.theme) {
+      var t = dateThemes.find(function (th) { return th.id === scheduled.theme; });
+      if (t) {
+        themeEl.textContent = t.emoji + " " + t.name;
+        themeEl.style.display = "";
+      } else {
+        themeEl.style.display = "none";
+      }
+    } else {
+      themeEl.style.display = "none";
+    }
+
+    scheduledEl.style.display = "";
+    datePreviewStatus.textContent = "You have a date coming up!";
     document.getElementById("datePreviewAction").textContent = "View";
     return;
   }

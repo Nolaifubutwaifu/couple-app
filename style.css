@@ -4164,6 +4164,41 @@ h3 {
   opacity: 0.9;
 }
 
+.date-preview-card.date-preview-has-scheduled {
+  background: linear-gradient(135deg, #f5f0fa 0%, #ede4f7 50%, #e8ddf5 100%);
+  border: 1.5px solid rgba(124, 111, 160, 0.25);
+  box-shadow: 0 4px 20px rgba(124, 111, 160, 0.15);
+}
+
+.date-preview-scheduled-detail {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.date-preview-scheduled-day {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+.date-preview-scheduled-time {
+  font-size: 18px;
+  font-weight: 700;
+  color: #7c6fa0;
+}
+
+.date-preview-scheduled-theme {
+  font-size: 13px;
+  font-weight: 700;
+  color: #7c6fa0;
+  background: rgba(124, 111, 160, 0.12);
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
 /* ─── Activity Feed ─── */
 
 .activity-feed-card {
