@@ -1,5 +1,6 @@
 import { app } from "./state.js";
 import { nativePickPhoto } from "./utils.js";
+import { insertMoment } from "./moments.js";
 
 var pendingUploadBlob = null;
 
@@ -95,6 +96,8 @@ export async function uploadAndSendPhoto(fileOrBlob, questionId, callbacks) {
     if (callbacks.renderMessages) callbacks.renderMessages();
     if (callbacks.renderGallery) callbacks.renderGallery();
   }
+
+  insertMoment("photo", null, publicUrl, null, null);
 
   if (callbacks.recordEngagement) callbacks.recordEngagement();
   if (callbacks.scheduleMessagesReload) callbacks.scheduleMessagesReload();

@@ -334,7 +334,7 @@ function closeAddMomentSheet() {
   momentPhotoPanel.style.display = "none";
 }
 
-async function insertMoment(type, text, imageUrl, mood, locationLabel) {
+export async function insertMoment(type, text, imageUrl, mood, locationLabel) {
   if (!app.currentUser || !app.currentCouple) return;
 
   var result = await app.supabase
