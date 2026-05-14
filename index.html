@@ -40,12 +40,7 @@
 
       <section id="appScreen" class="app-screen">
         <div class="app">
-            <header class="app-header">
-                <div>
-                    <p class="brand-mark">couple.</p>
-                    <h1>Connect</h1>
-                </div>
-
+            <header class="app-header" style="display:none">
                 <div class="user-bar" style="display:none">
                     <p id="signedInText">Signed in</p>
                     <p id="coupleStatusText">No couple space yet</p>
@@ -104,11 +99,12 @@
               <p id="appStatusMessage" class="status-message" aria-live="polite"></p>
 
               <section class="home-greeting" id="homeGreeting">
-                <div>
+                <div class="home-greeting-left">
                   <p class="home-greeting-text" id="homeGreetingText">Good morning</p>
                   <h2 class="home-greeting-title" id="homeGreetingTitle"></h2>
                 </div>
-                <p class="home-connected-text" id="homeConnectedText"></p>
+                <div class="home-greeting-avatar" id="homeGreetingAvatar"></div>
+                <p class="home-connected-text" id="homeConnectedText" style="display:none"></p>
               </section>
 
               <section class="timezone-card" id="timezoneCard" style="display:none">
@@ -124,18 +120,10 @@
               </section>
 
 
-              <!-- Today Card -->
-              <section class="today-card anim-fade-up" id="todayCard" style="display:none">
-                <div class="today-card-header">
-                  <span class="today-card-label">today's prompt</span>
-                  <span class="today-card-date" id="todayCardDate"></span>
-                </div>
-                <p class="today-card-prompt" id="todayCardPrompt"></p>
-                <div class="today-card-actions">
-                  <button type="button" class="today-card-action" id="todayAnswerBtn">Answer together</button>
-                  <button type="button" class="today-card-action today-card-action-soft" id="todayChatBtn">Open chat</button>
-                </div>
-              </section>
+              <!-- Today Cards (stacked) -->
+              <div class="today-stack anim-fade-up" id="todayStack" style="display:none">
+                <div class="today-stack-inner" id="todayStackInner"></div>
+              </div>
 
               <!-- Streak Bar -->
               <div class="streak-bar" id="streakBar">
@@ -158,344 +146,270 @@
 
               <!-- TAB: Chat -->
               <div id="tabChat" class="tab-content tab-active">
+                <div id="promptsChatView">
 
-                <!-- Chat Mode Toggle -->
-                <div class="chat-mode-toggle">
-                  <button type="button" class="chat-mode-btn chat-mode-active" id="chatModeDirectBtn">Chat</button>
-                  <button type="button" class="chat-mode-btn" id="chatModePromptsBtn">Prompts</button>
+                  <section class="topics-section" id="topicsSection"></section>
+
+                  <section class="active-chats-section" id="activeChatsSection">
+                    <p class="small-text">conversations</p>
+                    <h2 class="active-chats-heading">Your Answers</h2>
+                    <div class="active-chats-list" id="activeChatsList"></div>
+                  </section>
+
+                </div>
+              </div>
+
+              <!-- TAB: More (Games + Extras + Gallery) -->
+              <div id="tabMore" class="tab-content">
+                <div class="tab-lock-overlay" id="lockMore">
+                  <span class="tab-lock-icon">✦</span>
+                  <p class="tab-lock-text">Games, extras, and memories — unlocks when your partner joins</p>
                 </div>
 
-                <!-- Direct Chat View -->
-                <div id="directChatView">
-                  <div class="direct-chat-header" id="directChatHeader">
-                    <div class="direct-chat-avatar-wrap">
-                      <img id="directChatAvatar" class="direct-chat-avatar" src="" alt="" style="display:none">
-                      <div id="directChatAvatarPlaceholder" class="direct-chat-avatar-placeholder">
-                        <span id="directChatInitials">?</span>
+                <div class="more-sub-nav" id="moreSubNav">
+                  <button type="button" class="more-sub-btn more-sub-active" data-section="moreGames">Games</button>
+                  <button type="button" class="more-sub-btn" data-section="moreExtras">Extras</button>
+                  <button type="button" class="more-sub-btn" data-section="moreGallery">Gallery</button>
+                </div>
+
+                <!-- Games -->
+                <div id="moreGames" class="more-section more-section-active">
+                  <section class="games-header">
+                    <p class="small-text">minigames</p>
+                    <h2>Play together.</h2>
+                    <p class="setup-description">Fun games to play with your partner, even from far away.</p>
+                  </section>
+
+                  <div class="games-grid" id="gamesGrid">
+                    <button type="button" class="game-launcher" data-game="memory">
+                      <span class="game-launcher-icon">🃏</span>
+                      <span class="game-launcher-label">Memory Match</span>
+                      <span class="game-launcher-desc">Find the matching pairs</span>
+                    </button>
+                    <button type="button" class="game-launcher" data-game="tictactoe">
+                      <span class="game-launcher-icon">⭕</span>
+                      <span class="game-launcher-label">Tic Tac Toe</span>
+                      <span class="game-launcher-desc">Hearts vs Stars</span>
+                    </button>
+                    <button type="button" class="game-launcher" data-game="truthdare">
+                      <span class="game-launcher-icon">🎯</span>
+                      <span class="game-launcher-label">Truth or Dare</span>
+                      <span class="game-launcher-desc">Couple's edition</span>
+                    </button>
+                    <button type="button" class="game-launcher" data-game="quiz">
+                      <span class="game-launcher-icon">💡</span>
+                      <span class="game-launcher-label">Love Quiz</span>
+                      <span class="game-launcher-desc">How well do you know each other?</span>
+                    </button>
+                  </div>
+
+                  <section id="gameMemory" class="game-panel" style="display:none">
+                    <div class="game-panel-header">
+                      <h2>🃏 Memory Match</h2>
+                      <button type="button" class="game-back-btn" data-close="memory">Back</button>
+                    </div>
+                    <div class="game-online-bar" id="memoryOnlineBar" style="display:none">
+                      <span id="memoryMyRole"></span>
+                      <span id="memoryTurnText"></span>
+                    </div>
+                    <div class="game-waiting" id="memoryWaiting" style="display:none">You need a partner to play!</div>
+                    <div class="game-stats" id="memoryStats">
+                      <span>You: <strong id="memoryMyScore">0</strong></span>
+                      <span>Partner: <strong id="memoryPartnerScore">0</strong></span>
+                      <span id="memoryPairs">Pairs: 0 / 8</span>
+                    </div>
+                    <div class="memory-grid" id="memoryGrid"></div>
+                    <button type="button" id="memoryRestart" class="game-action-btn">Shuffle &amp; restart</button>
+                  </section>
+
+                  <section id="gameTictactoe" class="game-panel" style="display:none">
+                    <div class="game-panel-header">
+                      <h2>⭕ Tic Tac Toe</h2>
+                      <button type="button" class="game-back-btn" data-close="tictactoe">Back</button>
+                    </div>
+                    <div class="game-online-bar" id="tttOnlineBar" style="display:none">
+                      <span id="tttMyRole"></span>
+                      <span id="tttTurnText"></span>
+                    </div>
+                    <div class="game-waiting" id="tttWaiting" style="display:none">You need a partner to play!</div>
+                    <p id="tttStatus" class="game-status">❤️ goes first</p>
+                    <div class="ttt-grid" id="tttGrid">
+                      <button type="button" class="ttt-cell" data-index="0"></button>
+                      <button type="button" class="ttt-cell" data-index="1"></button>
+                      <button type="button" class="ttt-cell" data-index="2"></button>
+                      <button type="button" class="ttt-cell" data-index="3"></button>
+                      <button type="button" class="ttt-cell" data-index="4"></button>
+                      <button type="button" class="ttt-cell" data-index="5"></button>
+                      <button type="button" class="ttt-cell" data-index="6"></button>
+                      <button type="button" class="ttt-cell" data-index="7"></button>
+                      <button type="button" class="ttt-cell" data-index="8"></button>
+                    </div>
+                    <div class="ttt-score">
+                      <span>❤️ <strong id="tttScoreX">0</strong></span>
+                      <span>Draws <strong id="tttScoreD">0</strong></span>
+                      <span>💜 <strong id="tttScoreO">0</strong></span>
+                    </div>
+                    <button type="button" id="tttRestart" class="game-action-btn">New round</button>
+                  </section>
+
+                  <section id="gameTruthdare" class="game-panel" style="display:none">
+                    <div class="game-panel-header">
+                      <h2>🎯 Truth or Dare</h2>
+                      <button type="button" class="game-back-btn" data-close="truthdare">Back</button>
+                    </div>
+                    <div class="td-choice">
+                      <button type="button" id="truthBtn" class="td-btn td-truth">Truth</button>
+                      <button type="button" id="dareBtn" class="td-btn td-dare">Dare</button>
+                    </div>
+                    <div id="tdResult" class="td-result">
+                      <p class="td-result-label" id="tdResultLabel"></p>
+                      <p class="td-result-text" id="tdResultText">Pick truth or dare to begin!</p>
+                    </div>
+                    <button type="button" id="tdNext" class="game-action-btn" style="display:none">Next</button>
+                  </section>
+
+                  <section id="gameQuiz" class="game-panel" style="display:none">
+                    <div class="game-panel-header">
+                      <h2>💡 Love Quiz</h2>
+                      <button type="button" class="game-back-btn" data-close="quiz">Back</button>
+                    </div>
+                    <div id="quizContent">
+                      <p class="quiz-progress" id="quizProgress">Question 1 / 10</p>
+                      <p class="quiz-question" id="quizQuestion"></p>
+                      <div class="quiz-options" id="quizOptions"></div>
+                      <p class="quiz-note" id="quizNote"></p>
+                    </div>
+                    <div id="quizEnd" style="display:none">
+                      <p class="quiz-end-title">Quiz complete!</p>
+                      <p class="quiz-end-score" id="quizEndScore"></p>
+                      <button type="button" id="quizRestart" class="game-action-btn">Play again</button>
+                    </div>
+                  </section>
+                </div>
+
+                <!-- Extras -->
+                <div id="moreExtras" class="more-section">
+                  <section class="extras-header">
+                    <p class="small-text">extras</p>
+                    <h2>A little more love.</h2>
+                    <p class="setup-description">Countdowns, surprises, and little things that make the distance feel smaller.</p>
+                  </section>
+
+                  <section class="extra-card extra-card-streak">
+                    <p class="small-text">daily streak</p>
+                    <h3>Your Streak</h3>
+                    <div class="streak-detail-stats">
+                      <div class="streak-detail-stat">
+                        <span class="streak-detail-number" id="streakDetailCount">0</span>
+                        <span class="streak-detail-label">🔥 Day streak</span>
                       </div>
-                      <span class="direct-chat-online-dot" id="directChatOnlineDot"></span>
+                      <div class="streak-detail-stat">
+                        <span class="streak-detail-number" id="streakDetailHearts">0</span>
+                        <span class="streak-detail-label">❤️ Hearts earned</span>
+                      </div>
                     </div>
-                    <div class="direct-chat-info">
-                      <span class="direct-chat-name" id="directChatName">Partner</span>
-                      <span class="direct-chat-status" id="directChatStatus">Offline</span>
+                    <div class="streak-detail-status" id="streakDetailStatus">Use the app today to start your streak!</div>
+                    <div class="streak-detail-timer" id="streakDetailTimer"></div>
+                    <div class="streak-next-milestone">
+                      <p class="small-text">next milestone</p>
+                      <div class="streak-milestone-info">
+                        <span id="nextMilestoneName">Week of Love</span>
+                        <span id="nextMilestoneTarget">7 days</span>
+                      </div>
+                      <div class="streak-progress-bar">
+                        <div class="streak-progress-fill" id="streakProgressFill" style="width: 0%"></div>
+                      </div>
+                      <p class="streak-progress-text" id="streakProgressText">0 / 7 days</p>
                     </div>
-                  </div>
-
-                  <div class="direct-chat-messages" id="directChatMessages"></div>
-
-                  <div class="direct-chat-input">
-                    <button id="directNudgeButton" type="button" class="direct-nudge-btn" title="Thinking of you">
-                      <span>💭</span>
-                    </button>
-                    <button id="directPhotoButton" type="button" class="direct-photo-btn" title="Send photo">
-                      <span>📷</span>
-                    </button>
-                    <input id="directMessageInput" type="text" placeholder="Message...">
-                    <button id="directSendButton" type="button" class="direct-send-btn">
-                      <span>➤</span>
-                    </button>
-                    <input type="file" id="directPhotoInput" accept="image/*" style="display:none">
-                  </div>
-                </div>
-
-                <!-- Prompts View (existing) -->
-                <div id="promptsChatView" style="display:none">
-                  <div class="category-sections" id="categorySections"></div>
-
-                  <section class="prompt-panel">
-                    <div class="prompt-panel-header">
-                        <p class="small-text" id="selectedCategoryLabel">daily check-in</p>
-                        <h2 id="selectedCategoryTitle">Start close.</h2>
-                    </div>
-
-                    <div class="question-list" id="questionList"></div>
-                  </section>
-
-                  <section class="chat-panel">
-                    <div class="current-chat-header">
-                      <p class="small-text">Current chat</p>
-                      <h2 id="currentQuestionTitle">What's a shared dream you and your partner are working towards?</h2>
-                    </div>
-
-                    <div class="chat" id="chat"></div>
-
-                    <div class="message-input">
-                      <input id="messageInput" type="text" placeholder="Write your answer...">
-                      <button id="sendButton" type="button">Send</button>
+                    <div class="streak-badges" id="streakBadges">
+                      <p class="small-text">badges</p>
+                      <div class="streak-badge-list" id="streakBadgeList">
+                        <span class="streak-badge locked" data-days="7" title="Week of Love (7 days)">🌱</span>
+                        <span class="streak-badge locked" data-days="14" title="Fortnight of Fire (14 days)">🔥</span>
+                        <span class="streak-badge locked" data-days="30" title="Monthly Magic (30 days)">✨</span>
+                        <span class="streak-badge locked" data-days="50" title="Golden Couple (50 days)">💛</span>
+                        <span class="streak-badge locked" data-days="100" title="Century of Love (100 days)">💎</span>
+                        <span class="streak-badge locked" data-days="365" title="Soulmates (365 days)">👑</span>
+                      </div>
                     </div>
                   </section>
-                </div>
-              </div>
 
-              <!-- TAB: Games -->
-              <div id="tabGames" class="tab-content">
-                <div class="tab-lock-overlay" id="lockGames">
-                  <span class="tab-lock-icon">🎮</span>
-                  <p class="tab-lock-text">Tic-tac-toe, memory match, truth or dare, and more — unlocks when your partner joins</p>
-                </div>
-                <section class="games-header">
-                  <p class="small-text">minigames</p>
-                  <h2>Play together.</h2>
-                  <p class="setup-description">Fun games to play with your partner, even from far away.</p>
-                </section>
+                  <section class="extra-card">
+                    <p class="small-text">countdown</p>
+                    <h3>Next visit</h3>
+                    <div id="countdownMessage" class="countdown-message">Set a date to start counting down!</div>
+                    <div class="countdown-timer" id="countdownTimer" style="display:none">
+                      <div class="countdown-unit"><span id="cdDays">0</span><small>days</small></div>
+                      <div class="countdown-unit"><span id="cdHours">0</span><small>hours</small></div>
+                      <div class="countdown-unit"><span id="cdMinutes">0</span><small>min</small></div>
+                      <div class="countdown-unit"><span id="cdSeconds">0</span><small>sec</small></div>
+                    </div>
+                    <div class="countdown-input-row">
+                      <input type="date" id="countdownDate">
+                      <button type="button" id="countdownSet" class="game-action-btn">Set</button>
+                      <button type="button" id="countdownClear" class="game-action-btn" style="display:none">Clear</button>
+                    </div>
+                  </section>
 
-                <div class="games-grid" id="gamesGrid">
-                  <button type="button" class="game-launcher" data-game="memory">
-                    <span class="game-launcher-icon">🃏</span>
-                    <span class="game-launcher-label">Memory Match</span>
-                    <span class="game-launcher-desc">Find the matching pairs</span>
+                  <section class="extra-card">
+                    <p class="small-text">date idea generator</p>
+                    <h3>Love Dice</h3>
+                    <div class="dice-display">
+                      <div class="die" id="die1">🎲</div>
+                      <div class="die" id="die2">🎲</div>
+                    </div>
+                    <p class="dice-result" id="diceResult">Tap roll to get a fun date idea!</p>
+                    <button type="button" id="rollDice" class="game-action-btn">Roll</button>
+                  </section>
+
+                  <section class="extra-card extra-card-hug">
+                    <p class="small-text">virtual love</p>
+                    <h3>Send a hug</h3>
+                    <div class="hug-zone" id="hugZone">
+                      <button type="button" id="hugButton" class="hug-btn">❤️</button>
+                      <div class="hug-particles" id="hugParticles"></div>
+                    </div>
+                    <p class="hug-counter">Hugs sent: <strong id="hugCount">0</strong></p>
+                  </section>
+
+                  <section class="extra-card">
+                    <p class="small-text">daily fortune</p>
+                    <h3>Love Fortune Cookie</h3>
+                    <div class="fortune-display">
+                      <button type="button" class="fortune-cookie" id="fortuneCookie">🥠</button>
+                      <p class="fortune-text" id="fortuneText">Tap the cookie to reveal your fortune!</p>
+                    </div>
+                    <button type="button" id="newFortune" class="game-action-btn" style="display:none">Another fortune</button>
+                  </section>
+                </div>
+
+                <!-- Gallery -->
+                <div id="moreGallery" class="more-section">
+                  <section class="gallery-header">
+                    <p class="small-text">memories</p>
+                    <h2>Our Memories.</h2>
+                    <p class="setup-description">All the photos you've shared together, in one place.</p>
+                  </section>
+
+                  <button type="button" id="galleryAddBtn" class="gallery-add-btn">
+                    <span>+</span> Add Photo
                   </button>
-                  <button type="button" class="game-launcher" data-game="tictactoe">
-                    <span class="game-launcher-icon">⭕</span>
-                    <span class="game-launcher-label">Tic Tac Toe</span>
-                    <span class="game-launcher-desc">Hearts vs Stars</span>
-                  </button>
-                  <button type="button" class="game-launcher" data-game="truthdare">
-                    <span class="game-launcher-icon">🎯</span>
-                    <span class="game-launcher-label">Truth or Dare</span>
-                    <span class="game-launcher-desc">Couple's edition</span>
-                  </button>
-                  <button type="button" class="game-launcher" data-game="quiz">
-                    <span class="game-launcher-icon">💡</span>
-                    <span class="game-launcher-label">Love Quiz</span>
-                    <span class="game-launcher-desc">How well do you know each other?</span>
-                  </button>
-                </div>
 
-                <!-- Memory Match -->
-                <section id="gameMemory" class="game-panel" style="display:none">
-                  <div class="game-panel-header">
-                    <h2>🃏 Memory Match</h2>
-                    <button type="button" class="game-back-btn" data-close="memory">Back</button>
-                  </div>
-                  <div class="game-online-bar" id="memoryOnlineBar" style="display:none">
-                    <span id="memoryMyRole"></span>
-                    <span id="memoryTurnText"></span>
-                  </div>
-                  <div class="game-waiting" id="memoryWaiting" style="display:none">
-                    You need a partner to play!
-                  </div>
-                  <div class="game-stats" id="memoryStats">
-                    <span>You: <strong id="memoryMyScore">0</strong></span>
-                    <span>Partner: <strong id="memoryPartnerScore">0</strong></span>
-                    <span id="memoryPairs">Pairs: 0 / 8</span>
-                  </div>
-                  <div class="memory-grid" id="memoryGrid"></div>
-                  <button type="button" id="memoryRestart" class="game-action-btn">Shuffle &amp; restart</button>
-                </section>
-
-                <!-- Tic Tac Toe -->
-                <section id="gameTictactoe" class="game-panel" style="display:none">
-                  <div class="game-panel-header">
-                    <h2>⭕ Tic Tac Toe</h2>
-                    <button type="button" class="game-back-btn" data-close="tictactoe">Back</button>
-                  </div>
-                  <div class="game-online-bar" id="tttOnlineBar" style="display:none">
-                    <span id="tttMyRole"></span>
-                    <span id="tttTurnText"></span>
-                  </div>
-                  <div class="game-waiting" id="tttWaiting" style="display:none">
-                    You need a partner to play!
-                  </div>
-                  <p id="tttStatus" class="game-status">❤️ goes first</p>
-                  <div class="ttt-grid" id="tttGrid">
-                    <button type="button" class="ttt-cell" data-index="0"></button>
-                    <button type="button" class="ttt-cell" data-index="1"></button>
-                    <button type="button" class="ttt-cell" data-index="2"></button>
-                    <button type="button" class="ttt-cell" data-index="3"></button>
-                    <button type="button" class="ttt-cell" data-index="4"></button>
-                    <button type="button" class="ttt-cell" data-index="5"></button>
-                    <button type="button" class="ttt-cell" data-index="6"></button>
-                    <button type="button" class="ttt-cell" data-index="7"></button>
-                    <button type="button" class="ttt-cell" data-index="8"></button>
-                  </div>
-                  <div class="ttt-score">
-                    <span>❤️ <strong id="tttScoreX">0</strong></span>
-                    <span>Draws <strong id="tttScoreD">0</strong></span>
-                    <span>💜 <strong id="tttScoreO">0</strong></span>
-                  </div>
-                  <button type="button" id="tttRestart" class="game-action-btn">New round</button>
-                </section>
-
-                <!-- Truth or Dare -->
-                <section id="gameTruthdare" class="game-panel" style="display:none">
-                  <div class="game-panel-header">
-                    <h2>🎯 Truth or Dare</h2>
-                    <button type="button" class="game-back-btn" data-close="truthdare">Back</button>
-                  </div>
-                  <div class="td-choice">
-                    <button type="button" id="truthBtn" class="td-btn td-truth">Truth</button>
-                    <button type="button" id="dareBtn" class="td-btn td-dare">Dare</button>
-                  </div>
-                  <div id="tdResult" class="td-result">
-                    <p class="td-result-label" id="tdResultLabel"></p>
-                    <p class="td-result-text" id="tdResultText">Pick truth or dare to begin!</p>
-                  </div>
-                  <button type="button" id="tdNext" class="game-action-btn" style="display:none">Next</button>
-                </section>
-
-                <!-- Love Quiz -->
-                <section id="gameQuiz" class="game-panel" style="display:none">
-                  <div class="game-panel-header">
-                    <h2>💡 Love Quiz</h2>
-                    <button type="button" class="game-back-btn" data-close="quiz">Back</button>
-                  </div>
-                  <div id="quizContent">
-                    <p class="quiz-progress" id="quizProgress">Question 1 / 10</p>
-                    <p class="quiz-question" id="quizQuestion"></p>
-                    <div class="quiz-options" id="quizOptions"></div>
-                    <p class="quiz-note" id="quizNote"></p>
-                  </div>
-                  <div id="quizEnd" style="display:none">
-                    <p class="quiz-end-title">Quiz complete!</p>
-                    <p class="quiz-end-score" id="quizEndScore"></p>
-                    <button type="button" id="quizRestart" class="game-action-btn">Play again</button>
-                  </div>
-                </section>
-              </div>
-
-              <!-- TAB: Extras -->
-              <div id="tabExtras" class="tab-content">
-                <div class="tab-lock-overlay" id="lockExtras">
-                  <span class="tab-lock-icon">✨</span>
-                  <p class="tab-lock-text">Streaks, hugs, countdowns, and little surprises — unlocks when your partner joins</p>
-                </div>
-                <section class="extras-header">
-                  <p class="small-text">extras</p>
-                  <h2>A little more love.</h2>
-                  <p class="setup-description">Countdowns, surprises, and little things that make the distance feel smaller.</p>
-                </section>
-
-                <!-- Streak Details -->
-                <section class="extra-card extra-card-streak">
-                  <p class="small-text">daily streak</p>
-                  <h3>Your Streak</h3>
-
-                  <div class="streak-detail-stats">
-                    <div class="streak-detail-stat">
-                      <span class="streak-detail-number" id="streakDetailCount">0</span>
-                      <span class="streak-detail-label">🔥 Day streak</span>
-                    </div>
-                    <div class="streak-detail-stat">
-                      <span class="streak-detail-number" id="streakDetailHearts">0</span>
-                      <span class="streak-detail-label">❤️ Hearts earned</span>
+                  <div class="gallery-grid" id="galleryGrid">
+                    <div class="emotional-empty" id="galleryEmpty">
+                      <span class="emotional-empty-icon">📸</span>
+                      <p class="emotional-empty-title">Your gallery is waiting</p>
+                      <p class="emotional-empty-text">Every photo you share in chat will appear here — your little collection of moments together.</p>
                     </div>
                   </div>
 
-                  <div class="streak-detail-status" id="streakDetailStatus">
-                    Use the app today to start your streak!
-                  </div>
-
-                  <div class="streak-detail-timer" id="streakDetailTimer"></div>
-
-                  <div class="streak-next-milestone">
-                    <p class="small-text">next milestone</p>
-                    <div class="streak-milestone-info">
-                      <span id="nextMilestoneName">Week of Love</span>
-                      <span id="nextMilestoneTarget">7 days</span>
+                  <div class="gallery-viewer" id="galleryViewer" style="display:none">
+                    <button type="button" id="galleryViewerClose" class="gallery-viewer-close">&#10005;</button>
+                    <img id="galleryViewerImg" class="gallery-viewer-img" alt="">
+                    <div class="gallery-viewer-info">
+                      <span id="galleryViewerSender"></span>
+                      <span id="galleryViewerDate"></span>
                     </div>
-                    <div class="streak-progress-bar">
-                      <div class="streak-progress-fill" id="streakProgressFill" style="width: 0%"></div>
-                    </div>
-                    <p class="streak-progress-text" id="streakProgressText">0 / 7 days</p>
-                  </div>
-
-                  <div class="streak-badges" id="streakBadges">
-                    <p class="small-text">badges</p>
-                    <div class="streak-badge-list" id="streakBadgeList">
-                      <span class="streak-badge locked" data-days="7" title="Week of Love (7 days)">🌱</span>
-                      <span class="streak-badge locked" data-days="14" title="Fortnight of Fire (14 days)">🔥</span>
-                      <span class="streak-badge locked" data-days="30" title="Monthly Magic (30 days)">✨</span>
-                      <span class="streak-badge locked" data-days="50" title="Golden Couple (50 days)">💛</span>
-                      <span class="streak-badge locked" data-days="100" title="Century of Love (100 days)">💎</span>
-                      <span class="streak-badge locked" data-days="365" title="Soulmates (365 days)">👑</span>
-                    </div>
-                  </div>
-                </section>
-
-                <!-- Visit Countdown -->
-                <section class="extra-card">
-                  <p class="small-text">countdown</p>
-                  <h3>Next visit</h3>
-                  <div id="countdownMessage" class="countdown-message">Set a date to start counting down!</div>
-                  <div class="countdown-timer" id="countdownTimer" style="display:none">
-                    <div class="countdown-unit"><span id="cdDays">0</span><small>days</small></div>
-                    <div class="countdown-unit"><span id="cdHours">0</span><small>hours</small></div>
-                    <div class="countdown-unit"><span id="cdMinutes">0</span><small>min</small></div>
-                    <div class="countdown-unit"><span id="cdSeconds">0</span><small>sec</small></div>
-                  </div>
-                  <div class="countdown-input-row">
-                    <input type="date" id="countdownDate">
-                    <button type="button" id="countdownSet" class="game-action-btn">Set</button>
-                    <button type="button" id="countdownClear" class="game-action-btn" style="display:none">Clear</button>
-                  </div>
-                </section>
-
-                <!-- Love Dice -->
-                <section class="extra-card">
-                  <p class="small-text">date idea generator</p>
-                  <h3>Love Dice</h3>
-                  <div class="dice-display">
-                    <div class="die" id="die1">🎲</div>
-                    <div class="die" id="die2">🎲</div>
-                  </div>
-                  <p class="dice-result" id="diceResult">Tap roll to get a fun date idea!</p>
-                  <button type="button" id="rollDice" class="game-action-btn">Roll</button>
-                </section>
-
-                <!-- Hug Button -->
-                <section class="extra-card extra-card-hug">
-                  <p class="small-text">virtual love</p>
-                  <h3>Send a hug</h3>
-                  <div class="hug-zone" id="hugZone">
-                    <button type="button" id="hugButton" class="hug-btn">❤️</button>
-                    <div class="hug-particles" id="hugParticles"></div>
-                  </div>
-                  <p class="hug-counter">Hugs sent: <strong id="hugCount">0</strong></p>
-                </section>
-
-                <!-- Fortune Cookie -->
-                <section class="extra-card">
-                  <p class="small-text">daily fortune</p>
-                  <h3>Love Fortune Cookie</h3>
-                  <div class="fortune-display">
-                    <button type="button" class="fortune-cookie" id="fortuneCookie">🥠</button>
-                    <p class="fortune-text" id="fortuneText">Tap the cookie to reveal your fortune!</p>
-                  </div>
-                  <button type="button" id="newFortune" class="game-action-btn" style="display:none">Another fortune</button>
-                </section>
-              </div>
-
-              <!-- TAB: Gallery -->
-              <div id="tabGallery" class="tab-content">
-                <div class="tab-lock-overlay" id="lockGallery">
-                  <span class="tab-lock-icon">📸</span>
-                  <p class="tab-lock-text">Photos you share will appear here — unlocks when your partner joins</p>
-                </div>
-                <section class="gallery-header">
-                  <p class="small-text">memories</p>
-                  <h2>Our Memories.</h2>
-                  <p class="setup-description">All the photos you've shared together, in one place.</p>
-                </section>
-
-                <button type="button" id="galleryAddBtn" class="gallery-add-btn">
-                  <span>+</span> Add Photo
-                </button>
-
-                <div class="gallery-grid" id="galleryGrid">
-                  <div class="emotional-empty" id="galleryEmpty">
-                    <span class="emotional-empty-icon">📸</span>
-                    <p class="emotional-empty-title">Your gallery is waiting</p>
-                    <p class="emotional-empty-text">Every photo you share in chat will appear here — your little collection of moments together.</p>
-                  </div>
-                </div>
-
-                <div class="gallery-viewer" id="galleryViewer" style="display:none">
-                  <button type="button" id="galleryViewerClose" class="gallery-viewer-close">&#10005;</button>
-                  <img id="galleryViewerImg" class="gallery-viewer-img" alt="">
-                  <div class="gallery-viewer-info">
-                    <span id="galleryViewerSender"></span>
-                    <span id="galleryViewerDate"></span>
                   </div>
                 </div>
               </div>
@@ -637,25 +551,17 @@
                   <span class="nav-icon">♡</span>
                   <span class="nav-label">Chat</span>
                 </button>
-                <button type="button" class="nav-tab" data-tab="tabGames">
-                  <span class="nav-icon">⚄</span>
-                  <span class="nav-label">Games</span>
-                </button>
-                <button type="button" class="nav-tab" data-tab="tabExtras">
-                  <span class="nav-icon">✦</span>
-                  <span class="nav-label">Extras</span>
-                </button>
                 <button type="button" class="nav-tab" data-tab="tabDate">
                   <span class="nav-icon">◐</span>
                   <span class="nav-label">Date</span>
                 </button>
-                <button type="button" class="nav-tab" data-tab="tabGallery">
-                  <span class="nav-icon">🖼</span>
-                  <span class="nav-label">Gallery</span>
+                <button type="button" class="nav-tab" data-tab="tabMore">
+                  <span class="nav-icon">✦</span>
+                  <span class="nav-label">More</span>
                 </button>
                 <button type="button" class="nav-tab" data-tab="tabProfile">
                   <span class="nav-icon">⚙</span>
-                  <span class="nav-label">Profile</span>
+                  <span class="nav-label">Settings</span>
                 </button>
               </nav>
 
@@ -699,15 +605,36 @@
     <!-- Toast Notification -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Questions Overlay -->
-    <div class="questions-overlay" id="questionsOverlay">
-      <div class="questions-overlay-inner">
-        <div class="questions-overlay-header">
-          <button type="button" class="questions-overlay-back" id="questionsOverlayBack">‹ Back</button>
-          <p class="small-text" id="questionsOverlayLabel"></p>
-          <h2 class="questions-overlay-title" id="questionsOverlayTitle"></h2>
+    <!-- Prompt Chat Overlay -->
+    <div class="prompt-chat-overlay" id="promptChatOverlay">
+      <div class="prompt-chat-overlay-inner">
+        <div class="prompt-chat-header">
+          <button type="button" class="prompt-chat-back" id="promptChatBack">&#8249;</button>
+          <div class="prompt-chat-avatar" id="promptChatAvatar"></div>
+          <div class="prompt-chat-header-info">
+            <span class="prompt-chat-partner-name" id="promptChatPartnerName"></span>
+            <span class="prompt-chat-label" id="promptChatLabel"></span>
+          </div>
+          <div class="prompt-chat-header-actions">
+            <button type="button" class="prompt-chat-call-btn" title="Voice call">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </button>
+            <button type="button" class="prompt-chat-call-btn" title="Video call">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            </button>
+          </div>
         </div>
-        <div class="questions-overlay-cards" id="questionsOverlayCards"></div>
+        <div class="prompt-chat-messages" id="promptChatMessages"></div>
+        <div class="prompt-chat-input">
+          <button type="button" class="prompt-chat-photo-btn" id="promptPhotoButton" title="Send photo">
+            <span>📷</span>
+          </button>
+          <input id="promptMessageInput" type="text" placeholder="Write your answer...">
+          <button id="promptSendButton" type="button" class="prompt-chat-send-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+          <input type="file" id="promptPhotoInput" accept="image/*" style="display:none">
+        </div>
       </div>
     </div>
 
