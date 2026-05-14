@@ -195,6 +195,40 @@ h3 {
 .topic-pill--peach { background: #f5e6d9; }
 .topic-pill--sky { background: #d9e8f5; }
 
+/* ─── Chats Sub Nav ─── */
+
+.chats-sub-nav {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.chats-sub-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: #f0f0f0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.chats-sub-btn.chats-sub-active {
+  background: #1a1a2e;
+  color: #fff;
+}
+
+.chats-section {
+  display: none;
+}
+
+.chats-section.chats-section-active {
+  display: block;
+}
+
 /* ─── Active Conversations ─── */
 
 .active-chats-section {

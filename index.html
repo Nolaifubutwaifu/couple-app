@@ -219,10 +219,6 @@
                   </div>
                 </section>
 
-                <!-- 8. Topics -->
-                <div id="promptsChatView">
-                  <section class="topics-section" id="topicsSection"></section>
-                </div>
               </div>
 
               <!-- TAB: Moments -->
@@ -290,11 +286,26 @@
               </div>
 
               <div id="tabChats" class="tab-content">
-                <section class="active-chats-section" id="activeChatsSection">
-                  <h2 class="active-chats-heading">Your Chats</h2>
-                  <div class="active-chats-list" id="activeChatsList"></div>
-                  <p class="active-chats-empty" id="activeChatsEmpty" style="display:none">No conversations yet. Answer a prompt to start one!</p>
-                </section>
+                <div class="chats-sub-nav" id="chatsSubNav">
+                  <button type="button" class="chats-sub-btn chats-sub-active" data-section="chatsConversations">Chats</button>
+                  <button type="button" class="chats-sub-btn" data-section="chatsPrompts">Prompts</button>
+                </div>
+
+                <div id="chatsConversations" class="chats-section chats-section-active">
+                  <div class="today-stack anim-fade-up" id="chatsTodayStack" style="display:none">
+                    <div class="today-stack-inner" id="chatsTodayStackInner"></div>
+                  </div>
+
+                  <section class="active-chats-section" id="activeChatsSection">
+                    <h3 class="active-chats-heading">Conversations</h3>
+                    <div class="active-chats-list" id="activeChatsList"></div>
+                    <p class="active-chats-empty" id="activeChatsEmpty" style="display:none">No conversations yet. Answer a prompt to start one!</p>
+                  </section>
+                </div>
+
+                <div id="chatsPrompts" class="chats-section">
+                  <section class="topics-section" id="topicsSection"></section>
+                </div>
               </div>
 
               <!-- TAB: More (Games + Extras + Gallery + Settings) -->
