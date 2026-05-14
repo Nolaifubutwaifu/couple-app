@@ -119,6 +119,7 @@ var questionPopupLabel = document.getElementById("questionPopupLabel");
 var questionPopupText = document.getElementById("questionPopupText");
 var questionPopupInput = document.getElementById("questionPopupInput");
 var questionPopupSend = document.getElementById("questionPopupSend");
+var questionPopupSkip = document.getElementById("questionPopupSkip");
 const loginScreen = document.getElementById("loginScreen");
 const appScreen = document.getElementById("appScreen");
 const displayNameInput = document.getElementById("displayNameInput");
@@ -391,6 +392,25 @@ function closeQuestionPopup() {
   questionPopupInput.value = "";
 }
 
+function skipPopupQuestion() {
+  var question = getQuestionById(currentQuestionId);
+  if (!question) return;
+  var qs = getQuestionsForCategory(question.categoryId);
+  var currentIdx = -1;
+  for (var i = 0; i < qs.length; i++) {
+    if (qs[i].id === currentQuestionId) { currentIdx = i; break; }
+  }
+  var nextId = null;
+  for (var j = 1; j < qs.length; j++) {
+    var candidate = qs[(currentIdx + j) % qs.length];
+    var msgs = app.allMessages[candidate.id] || [];
+    var answered = msgs.some(function (m) { return m.sender === "me"; });
+    if (!answered) { nextId = candidate.id; break; }
+  }
+  if (!nextId) nextId = qs[(currentIdx + 1) % qs.length].id;
+  openQuestionPopup(nextId);
+}
+
 async function sendPopupAnswer() {
   var text = questionPopupInput.value.trim();
   if (text === "" || !app.currentUser || !app.currentCouple) return;
@@ -423,6 +443,7 @@ async function sendPopupAnswer() {
 
   closeQuestionPopup();
   renderActiveConversations();
+  currentTodayIndex = 0;
   renderTodayCard();
   recordEngagement();
   scheduleMessagesReload();
@@ -638,8 +659,22 @@ function renderTodayCard() {
   var stack = document.getElementById("todayStack");
   var inner = document.getElementById("todayStackInner");
 
-  var prompts = getTodayPrompts();
-  if (!prompts.length) { stack.style.display = "none"; return; }
+  var allPrompts = getTodayPrompts();
+  var unanswered = [];
+  var answered = [];
+  for (var p = 0; p < allPrompts.length; p++) {
+    var rev = getDailyRevealState(allPrompts[p].id);
+    if (rev.hasMe) {
+      answered.push(allPrompts[p]);
+    } else {
+      unanswered.push(allPrompts[p]);
+    }
+  }
+
+  if (unanswered.length === 0 && answered.length === 0) {
+    stack.style.display = "none";
+    return;
+  }
 
   var now = new Date();
   var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -647,9 +682,26 @@ function renderTodayCard() {
 
   inner.innerHTML = "";
 
-  for (var i = prompts.length - 1; i >= 0; i--) {
-    var prompt = prompts[i];
-    var reveal = getDailyRevealState(prompt.id);
+  if (unanswered.length === 0) {
+    var doneCard = document.createElement("section");
+    doneCard.classList.add("today-card");
+    doneCard.style.zIndex = "1";
+    doneCard.innerHTML =
+      '<div class="today-card-header">' +
+        '<span class="today-card-label">today\'s prompts</span>' +
+        '<span class="today-card-date">' + dateStr + '</span>' +
+      '</div>' +
+      '<p class="today-card-prompt">All done for today!</p>' +
+      '<p class="today-card-status today-card-status-done">You answered all 3 prompts. Come back tomorrow for new ones.</p>';
+    inner.appendChild(doneCard);
+    stack.style.display = "";
+    return;
+  }
+
+  currentTodayIndex = Math.min(currentTodayIndex, unanswered.length - 1);
+
+  for (var i = unanswered.length - 1; i >= 0; i--) {
+    var prompt = unanswered[i];
 
     var card = document.createElement("section");
     card.classList.add("today-card");
@@ -664,30 +716,17 @@ function renderTodayCard() {
       if (offset > 0) card.style.opacity = "1";
     }
 
-    var statusText = "";
-    var statusClass = "today-card-status";
-    if (reveal.bothAnswered) {
-      statusText = "Both answered! Tap to see your answers.";
-      statusClass = "today-card-status today-card-status-done";
-    } else if (reveal.hasMe) {
-      statusText = "You answered — waiting for your partner...";
-      statusClass = "today-card-status today-card-status-waiting";
-    } else if (reveal.hasPartner) {
-      statusText = "Your partner answered — your turn!";
-      statusClass = "today-card-status today-card-status-turn";
-    } else {
-      statusText = "Neither of you have answered yet";
-    }
+    var answeredCount = answered.length;
+    var totalCount = allPrompts.length;
 
     card.innerHTML =
       '<div class="today-card-header">' +
-        '<span class="today-card-label">today\'s prompt <span class="today-card-counter">' + (i + 1) + ' of 3</span></span>' +
+        '<span class="today-card-label">today\'s prompt <span class="today-card-counter">' + (answeredCount + i + 1) + ' of ' + totalCount + '</span></span>' +
         '<span class="today-card-date">' + dateStr + '</span>' +
       '</div>' +
       '<p class="today-card-prompt">' + prompt.text + '</p>' +
-      '<p class="' + statusClass + '">' + statusText + '</p>' +
       '<div class="today-card-actions">' +
-        '<button type="button" class="today-card-action" data-prompt-id="' + prompt.id + '" data-prompt-cat="' + prompt.categoryId + '">Answer together</button>' +
+        '<button type="button" class="today-card-action" data-prompt-id="' + prompt.id + '" data-prompt-cat="' + prompt.categoryId + '">Answer</button>' +
       '</div>';
 
     inner.appendChild(card);
@@ -701,15 +740,7 @@ function renderTodayCard() {
       var catId = this.getAttribute("data-prompt-cat");
       currentCategoryId = catId;
       currentQuestionId = promptId;
-      var reveal = getDailyRevealState(promptId);
-      if (!reveal.hasMe) {
-        openQuestionPopup(promptId);
-      } else {
-        renderPromptExperience();
-        var chatTab = document.getElementById("tabChat");
-        if (chatTab) chatTab.click();
-        openPromptChat(promptId);
-      }
+      openQuestionPopup(promptId);
     });
   });
 
@@ -1418,6 +1449,7 @@ questionPopupInput.addEventListener("keydown", function (event) {
   if (event.key === "Enter") sendPopupAnswer();
 });
 questionPopupClose.addEventListener("click", closeQuestionPopup);
+questionPopupSkip.addEventListener("click", skipPopupQuestion);
 questionPopupBackdrop.addEventListener("click", function (event) {
   if (event.target === questionPopupBackdrop) closeQuestionPopup();
 });

@@ -3477,3 +3477,21 @@ h3 {
 .question-popup-send-btn:active {
   transform: scale(0.92);
 }
+
+.question-popup-skip {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: color 160ms ease;
+}
+
+.question-popup-skip:active {
+  color: #d4a0a0;
+}
