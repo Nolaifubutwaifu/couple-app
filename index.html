@@ -161,6 +161,19 @@
                 </div>
               </div>
 
+              <!-- TAB: Moments -->
+              <div id="tabMoments" class="tab-content">
+                <section class="moments-header">
+                  <p class="small-text">moments</p>
+                  <h2>Your Moments.</h2>
+                  <p class="setup-description">Capture and relive special moments together.</p>
+                </section>
+                <div class="moments-empty">
+                  <span class="moments-empty-icon">📸</span>
+                  <p class="moments-empty-text">Coming soon</p>
+                </div>
+              </div>
+
               <div id="tabChats" class="tab-content">
                 <section class="active-chats-section" id="activeChatsSection">
                   <h2 class="active-chats-heading">Your Chats</h2>
@@ -169,7 +182,7 @@
                 </section>
               </div>
 
-              <!-- TAB: More (Games + Extras + Gallery) -->
+              <!-- TAB: More (Games + Extras + Gallery + Settings) -->
               <div id="tabMore" class="tab-content">
                 <div class="tab-lock-overlay" id="lockMore">
                   <span class="tab-lock-icon">✦</span>
@@ -422,6 +435,15 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Settings access -->
+                <div class="more-settings-row">
+                  <button type="button" class="more-settings-btn" id="openSettingsBtn">
+                    <span class="more-settings-icon">⚙</span>
+                    <span>Settings</span>
+                    <span class="settings-row-chevron">›</span>
+                  </button>
+                </div>
               </div>
 
               <!-- TAB: Date -->
@@ -512,11 +534,12 @@
 
               </div>
 
-              <!-- TAB: Profile -->
-              <div id="tabProfile" class="tab-content">
-                <section class="profile-header">
-                  <h2>Profile Details</h2>
-                </section>
+              <!-- Settings Overlay (accessed from More tab) -->
+              <div class="settings-overlay" id="settingsOverlay">
+                <div class="settings-overlay-header">
+                  <button type="button" class="settings-back-btn" id="settingsBackBtn">‹ Back</button>
+                  <h2>Settings</h2>
+                </div>
 
                 <div class="profile-avatar-section">
                   <div class="profile-avatar-wrap">
@@ -561,21 +584,21 @@
                   <span class="nav-icon">⌂</span>
                   <span class="nav-label">Home</span>
                 </button>
-                <button type="button" class="nav-tab" data-tab="tabChats">
-                  <span class="nav-icon">♡</span>
-                  <span class="nav-label">Chats</span>
+                <button type="button" class="nav-tab" data-tab="tabMoments">
+                  <span class="nav-icon">📸</span>
+                  <span class="nav-label">Moments</span>
                 </button>
                 <button type="button" class="nav-tab" data-tab="tabDate">
                   <span class="nav-icon">◐</span>
                   <span class="nav-label">Date</span>
                 </button>
+                <button type="button" class="nav-tab" data-tab="tabChats">
+                  <span class="nav-icon">💬</span>
+                  <span class="nav-label">Chats</span>
+                </button>
                 <button type="button" class="nav-tab" data-tab="tabMore">
                   <span class="nav-icon">✦</span>
                   <span class="nav-label">More</span>
-                </button>
-                <button type="button" class="nav-tab" data-tab="tabProfile">
-                  <span class="nav-icon">⚙</span>
-                  <span class="nav-label">Settings</span>
                 </button>
               </nav>
 

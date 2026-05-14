@@ -1382,6 +1382,21 @@ navTabs.forEach(function (tab) {
 });
 
 
+// ─── Settings Overlay (from More tab) ───
+
+var settingsOverlay = document.getElementById("settingsOverlay");
+
+document.getElementById("openSettingsBtn").addEventListener("click", function () {
+  hapticLight();
+  settingsOverlay.classList.add("settings-overlay-visible");
+});
+
+document.getElementById("settingsBackBtn").addEventListener("click", function () {
+  hapticLight();
+  settingsOverlay.classList.remove("settings-overlay-visible");
+});
+
+
 // ─── More Tab Sub-Nav ───
 
 var moreSubNav = document.getElementById("moreSubNav");
