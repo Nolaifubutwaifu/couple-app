@@ -227,10 +227,61 @@
                   <h2>Your Moments.</h2>
                   <p class="setup-description">Capture and relive special moments together.</p>
                 </section>
-                <div class="moments-empty">
-                  <span class="moments-empty-icon">📸</span>
-                  <p class="moments-empty-text">Coming soon</p>
+
+                <div class="moments-setup" id="momentsSetup" style="display:none">
+                  <span class="moments-empty-icon">🔧</span>
+                  <p class="moments-empty-text">Moments table not set up yet. Run the migration in Supabase.</p>
                 </div>
+
+                <section class="moments-prompt-card" id="momentsPromptCard" style="display:none">
+                  <p class="moments-prompt-label">moment idea</p>
+                  <p class="moments-prompt-text" id="momentsPromptText"></p>
+                  <button type="button" class="moments-prompt-btn" id="momentsPromptAction">Capture this</button>
+                </section>
+
+                <section class="moments-timeline-section" id="momentsTimelineSection">
+                  <div class="moments-timeline-header">
+                    <h3 class="moments-timeline-title">Today</h3>
+                    <span class="moments-timeline-date" id="momentsTimelineDate"></span>
+                  </div>
+                  <div class="moments-timeline" id="momentsTimeline">
+                    <div class="moments-empty" id="momentsEmpty">
+                      <span class="moments-empty-icon">📸</span>
+                      <p class="moments-empty-text">No moments yet today</p>
+                      <p class="moments-empty-hint">Tap + to capture your first moment</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="moments-recap-card" id="momentsRecapCard" style="display:none">
+                  <div class="moments-recap-header">
+                    <h3 class="moments-recap-title" id="momentsRecapTitle">Our Day</h3>
+                    <span class="moments-recap-date" id="momentsRecapDate"></span>
+                  </div>
+                  <div class="moments-recap-stats" id="momentsRecapStats"></div>
+                </section>
+
+                <section class="moments-archive-section" id="momentsArchiveSection">
+                  <h3 class="moments-archive-title">Archive</h3>
+                  <div class="moments-archive-filters">
+                    <button type="button" class="moments-filter-btn moments-filter-active" data-filter="today">Today</button>
+                    <button type="button" class="moments-filter-btn" data-filter="yesterday">Yesterday</button>
+                    <button type="button" class="moments-filter-btn" data-filter="week">This Week</button>
+                    <button type="button" class="moments-filter-btn" data-filter="month">This Month</button>
+                  </div>
+                  <div class="moments-archive-date-row">
+                    <input type="date" id="momentsArchiveDatePicker" class="moments-date-picker">
+                  </div>
+                  <div class="moments-archive-timeline" id="momentsArchiveTimeline"></div>
+                  <div class="moments-thisday" id="momentsThisDay" style="display:none">
+                    <h4 class="moments-thisday-title">This Day in Our Relationship</h4>
+                    <div class="moments-thisday-timeline" id="momentsThisDayTimeline"></div>
+                  </div>
+                </section>
+
+                <button type="button" class="moments-fab" id="momentsFab" style="display:none">
+                  <span class="moments-fab-icon">+</span>
+                </button>
               </div>
 
               <div id="tabChats" class="tab-content">
@@ -665,6 +716,56 @@
 
         </div>
     </section>
+
+    <!-- Add Moment Bottom Sheet -->
+    <div class="moment-sheet-backdrop" id="momentSheetBackdrop">
+      <div class="moment-sheet" id="momentSheet">
+        <div class="moment-sheet-handle"></div>
+        <h3 class="moment-sheet-title">Add a moment</h3>
+
+        <div class="moment-sheet-actions">
+          <button type="button" class="moment-sheet-action" id="momentAddPhoto">
+            <span class="moment-sheet-action-icon">📷</span>
+            <span class="moment-sheet-action-label">Photo</span>
+          </button>
+          <button type="button" class="moment-sheet-action" id="momentAddText">
+            <span class="moment-sheet-action-icon">✏️</span>
+            <span class="moment-sheet-action-label">Text</span>
+          </button>
+          <button type="button" class="moment-sheet-action" id="momentAddMood">
+            <span class="moment-sheet-action-icon">😊</span>
+            <span class="moment-sheet-action-label">Mood</span>
+          </button>
+          <button type="button" class="moment-sheet-action moment-sheet-action-disabled" disabled>
+            <span class="moment-sheet-action-icon">🎬</span>
+            <span class="moment-sheet-action-label">Video</span>
+            <span class="moment-sheet-action-badge">Soon</span>
+          </button>
+        </div>
+
+        <input type="file" id="momentPhotoInput" accept="image/*" style="display:none">
+
+        <div class="moment-input-panel" id="momentTextPanel" style="display:none">
+          <textarea id="momentTextInput" class="moment-text-input" placeholder="What's happening?" maxlength="280" rows="3"></textarea>
+          <input type="text" id="momentLocationInput" class="moment-location-input" placeholder="📍 Location (optional)" maxlength="100">
+          <button type="button" class="moment-submit-btn" id="momentTextSubmit">Share moment</button>
+        </div>
+
+        <div class="moment-input-panel" id="momentMoodPanel" style="display:none">
+          <p class="moment-mood-label">How are you feeling?</p>
+          <div class="moment-mood-grid" id="momentMoodGrid"></div>
+          <textarea id="momentMoodText" class="moment-text-input" placeholder="Add a note (optional)" maxlength="280" rows="2"></textarea>
+          <button type="button" class="moment-submit-btn" id="momentMoodSubmit">Share mood</button>
+        </div>
+
+        <div class="moment-input-panel" id="momentPhotoPanel" style="display:none">
+          <img id="momentPhotoPreview" class="moment-photo-preview" alt="Preview" style="display:none">
+          <textarea id="momentPhotoText" class="moment-text-input" placeholder="Add a caption (optional)" maxlength="280" rows="2"></textarea>
+          <input type="text" id="momentPhotoLocation" class="moment-location-input" placeholder="📍 Location (optional)" maxlength="100">
+          <button type="button" class="moment-submit-btn" id="momentPhotoSubmit">Share moment</button>
+        </div>
+      </div>
+    </div>
 
     <!-- BeReal Camera Overlay -->
     <div class="camera-overlay" id="cameraOverlay" style="display:none">

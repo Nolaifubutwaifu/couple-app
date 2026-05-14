@@ -383,3 +383,44 @@ begin
 exception
   when duplicate_object then null;
 end $$;
+
+
+-- ═══════════════════════════════════════════════
+-- MOMENTS (daily couple moment timeline)
+-- ═══════════════════════════════════════════════
+
+create table if not exists public.moments (
+  id uuid primary key default gen_random_uuid(),
+  couple_id uuid not null references public.couples(id) on delete cascade,
+  sender_id uuid not null references public.profiles(id) on delete cascade,
+  moment_type text not null check (moment_type in ('photo', 'text', 'mood')),
+  text text,
+  image_url text,
+  mood text,
+  location_label text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists moments_couple_created_idx
+  on public.moments(couple_id, created_at desc);
+
+alter table public.moments enable row level security;
+
+create policy "Moments visible to couple members" on public.moments
+  for select to authenticated
+  using (public.is_couple_member(couple_id));
+
+create policy "Members can create moments" on public.moments
+  for insert to authenticated
+  with check (sender_id = auth.uid() and public.is_couple_member(couple_id));
+
+create policy "Members can delete own moments" on public.moments
+  for delete to authenticated
+  using (sender_id = auth.uid() and public.is_couple_member(couple_id));
+
+grant select, insert, delete on public.moments to authenticated;
+
+do $$ begin
+  alter publication supabase_realtime add table public.moments;
+exception when duplicate_object then null;
+end $$;

@@ -3938,6 +3938,558 @@ h3 {
   font-weight: 500;
 }
 
+.moments-empty-hint {
+  font-size: 13px;
+  color: #c4c4c4;
+  margin-top: 4px;
+}
+
+.moments-setup {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+/* ─── Moments Capture Prompt ─── */
+
+.moments-prompt-card {
+  background: linear-gradient(135deg, #fff 0%, #fdf5f5 100%);
+  border: 1px solid rgba(212, 160, 160, 0.2);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.moments-prompt-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #d4a0a0;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.moments-prompt-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 14px;
+}
+
+.moments-prompt-btn {
+  display: inline-block;
+  padding: 10px 24px;
+  background: #d4a0a0;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.moments-prompt-btn:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+/* ─── Moments Timeline ─── */
+
+.moments-timeline-section {
+  margin-bottom: 16px;
+}
+
+.moments-timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.moments-timeline-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.moments-timeline-date {
+  font-size: 13px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.moments-timeline {
+  position: relative;
+  padding-left: 4px;
+}
+
+.moment-timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.moment-timeline-item:last-child {
+  border-bottom: none;
+}
+
+.moment-timeline-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9ca3af;
+  font-variant-numeric: tabular-nums;
+  min-width: 42px;
+  padding-top: 3px;
+}
+
+.moment-timeline-dot-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.moment-timeline-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.moment-partner .moment-timeline-avatar {
+  background: #d4a0a0;
+}
+
+.moment-timeline-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.moment-timeline-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.moment-timeline-text {
+  font-size: 15px;
+  color: #4b5563;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.moment-timeline-img {
+  display: block;
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 12px;
+  object-fit: cover;
+  margin-bottom: 4px;
+}
+
+.moment-timeline-caption {
+  display: block;
+  font-size: 14px;
+  color: #4b5563;
+  margin-top: 4px;
+}
+
+.moment-timeline-mood {
+  font-size: 36px;
+  line-height: 1.2;
+}
+
+.moment-timeline-location {
+  display: block;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+/* ─── Moments Recap ─── */
+
+.moments-recap-card {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.moments-recap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.moments-recap-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.moments-recap-date {
+  font-size: 13px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.moments-recap-total {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 4px;
+}
+
+.moments-recap-breakdown {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* ─── Moments Archive ─── */
+
+.moments-archive-section {
+  margin-bottom: 80px;
+}
+
+.moments-archive-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 12px;
+}
+
+.moments-archive-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.moments-filter-btn {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.moments-filter-btn.moments-filter-active {
+  background: #1a1a2e;
+  color: #fff;
+  border-color: #1a1a2e;
+}
+
+.moments-archive-date-row {
+  margin-bottom: 16px;
+}
+
+.moments-date-picker {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 12px;
+  font-size: 14px;
+  background: #fff;
+  color: #1a1a2e;
+}
+
+.moments-archive-timeline {
+  min-height: 40px;
+}
+
+.moments-archive-empty {
+  font-size: 14px;
+  color: #9ca3af;
+  text-align: center;
+  padding: 24px 0;
+}
+
+.moments-archive-date-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: #d4a0a0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 12px 0 4px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  margin-bottom: 4px;
+}
+
+.moments-thisday {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.moments-thisday-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #d4a0a0;
+  margin: 0 0 12px;
+}
+
+/* ─── Moments FAB ─── */
+
+.moments-fab {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #d4a0a0;
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 16px rgba(212, 160, 160, 0.4);
+  z-index: 90;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.moments-fab:active {
+  transform: scale(0.93);
+}
+
+.moments-fab-icon {
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* ─── Add Moment Bottom Sheet ─── */
+
+.moment-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 980;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.moment-sheet-backdrop.visible {
+  display: flex;
+}
+
+.moment-sheet {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  padding: 12px 20px max(20px, env(safe-area-inset-bottom));
+  animation: sheetSlideUp 0.3s ease both;
+}
+
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.moment-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: #d1d5db;
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+.moment-sheet-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 16px;
+}
+
+.moment-sheet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.moment-sheet-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 12px;
+  background: #faf5f0;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  cursor: pointer;
+  position: relative;
+}
+
+.moment-sheet-action:active {
+  background: #f0e8e0;
+}
+
+.moment-sheet-action-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.moment-sheet-action-disabled:active {
+  background: #faf5f0;
+}
+
+.moment-sheet-action-icon {
+  font-size: 28px;
+}
+
+.moment-sheet-action-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.moment-sheet-action-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #d4a0a0;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+/* ─── Moment Input Panels ─── */
+
+.moment-input-panel {
+  padding-top: 8px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.moment-text-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: none;
+  margin-bottom: 10px;
+  background: #faf5f0;
+}
+
+.moment-text-input:focus {
+  outline: none;
+  border-color: #d4a0a0;
+}
+
+.moment-location-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  margin-bottom: 12px;
+  background: #faf5f0;
+}
+
+.moment-location-input:focus {
+  outline: none;
+  border-color: #d4a0a0;
+}
+
+.moment-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: #d4a0a0;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.moment-submit-btn:active {
+  opacity: 0.9;
+}
+
+.moment-submit-btn:disabled {
+  opacity: 0.5;
+}
+
+.moment-photo-preview {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+/* ─── Mood Grid ─── */
+
+.moment-mood-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 12px;
+}
+
+.moment-mood-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.moment-mood-btn {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: #faf5f0;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.moment-mood-btn:active {
+  transform: scale(0.9);
+}
+
+.moment-mood-btn.mood-selected {
+  border-color: #d4a0a0;
+  background: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(212, 160, 160, 0.3);
+}
+
 /* ─── More Tab Settings Button ─── */
 
 .more-settings-row {

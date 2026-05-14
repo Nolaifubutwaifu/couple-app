@@ -3,7 +3,7 @@ import { nativePickPhoto } from "./utils.js";
 
 var pendingUploadBlob = null;
 
-async function compressImage(file, maxDimension) {
+export async function compressImage(file, maxDimension) {
   maxDimension = maxDimension || 1200;
   return new Promise(function (resolve) {
     var reader = new FileReader();

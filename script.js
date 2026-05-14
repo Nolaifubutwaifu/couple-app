@@ -38,6 +38,7 @@ import { addOrReplaceMessage, formatMessageRow, uploadAndSendPhoto, dataUrlToBlo
 import { cleanupDateCall, onDateStateFromDB, checkExistingDateSession } from "./date-night.js";
 import { renderGallery, initGalleryAddButton } from "./gallery.js";
 import { renderProfileTab, initProfile, loadSettings, initSettings, initInviteButtons } from "./profile.js";
+import { initMoments, loadTodayMoments, getMomentsCount, cleanupMomentsChannel } from "./moments.js";
 
 
 // ─── Supabase ───
@@ -758,6 +759,10 @@ function renderCoupleLog() {
     }
   }
 
+  var mc = getMomentsCount();
+  myCount += mc.myCount;
+  partnerCount += mc.partnerCount;
+
   coupleLogSummary.innerHTML = "";
 
   if (myCount === 0 && partnerCount === 0) {
@@ -772,14 +777,14 @@ function renderCoupleLog() {
     var line = document.createElement("div");
     line.className = "couple-log-line";
     line.innerHTML = '<span class="couple-log-avatar">' + myName.charAt(0).toUpperCase() + '</span>' +
-      '<span>' + myName + ' answered ' + myCount + ' prompt' + (myCount > 1 ? 's' : '') + '</span>';
+      '<span>' + myName + ': ' + myCount + ' moment' + (myCount > 1 ? 's' : '') + '</span>';
     coupleLogSummary.appendChild(line);
   }
   if (partnerCount > 0) {
     var line2 = document.createElement("div");
     line2.className = "couple-log-line";
     line2.innerHTML = '<span class="couple-log-avatar">' + partnerName.charAt(0).toUpperCase() + '</span>' +
-      '<span>' + partnerName + ' answered ' + partnerCount + ' prompt' + (partnerCount > 1 ? 's' : '') + '</span>';
+      '<span>' + partnerName + ': ' + partnerCount + ' moment' + (partnerCount > 1 ? 's' : '') + '</span>';
     coupleLogSummary.appendChild(line2);
   }
 }
@@ -838,9 +843,12 @@ function renderRelationshipStats() {
     if (msgs && msgs.length > 0) questionsAnswered++;
   }
 
+  var mc = getMomentsCount();
+  var totalMoments = mc.myCount + mc.partnerCount;
+
   document.getElementById("statQuestionsAnswered").textContent = questionsAnswered;
   document.getElementById("statDateNights").textContent = "0";
-  document.getElementById("statMomentsShared").textContent = "0";
+  document.getElementById("statMomentsShared").textContent = totalMoments;
   document.getElementById("statLongestStreak").textContent = getLongestStreak();
 }
 
@@ -1150,6 +1158,7 @@ async function loadCouple() {
   await subscribeToGameStates(onDateStateFromDB);
   await subscribeToPresence();
   await checkExistingDateSession();
+  await loadTodayMoments();
 }
 
 async function loadMessages() {
@@ -1309,6 +1318,7 @@ async function handleSignedOut() {
 
   await cleanupPresence();
   cleanupDateCall();
+  cleanupMomentsChannel();
 
   app.myTttRole = null;
   app.myMemoryRole = null;
@@ -1577,6 +1587,11 @@ navTabs.forEach(function (tab) {
       panel.classList.remove("tab-active");
     });
     document.getElementById(targetId).classList.add("tab-active");
+
+    var fab = document.getElementById("momentsFab");
+    if (fab) {
+      fab.style.display = targetId === "tabMoments" ? "" : "none";
+    }
   });
 });
 
@@ -1639,6 +1654,7 @@ import { initGames } from "./games.js";
 import { initCamera } from "./camera.js";
 
 initSettings();
+initMoments({ recordEngagement: recordEngagement });
 initGames(recordEngagement);
 initCountdownListeners(saveCoupleStats);
 initDice(recordEngagement);
@@ -1808,6 +1824,7 @@ document.addEventListener("visibilitychange", function () {
   if (document.visibilityState === "visible" && app.currentCouple) {
     loadCouple();
     loadMessages();
+    loadTodayMoments();
   }
 });
 

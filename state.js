@@ -16,6 +16,7 @@ export const app = {
   presenceChannel: null,
   gameChannel: null,
   messagesChannel: null,
+  momentsChannel: null,
   myTttRole: null,
   myMemoryRole: null,
   lastSavedGameState: { tictactoe: null, memory: null, date: null },
