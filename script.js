@@ -113,6 +113,12 @@ var promptMessageInput = document.getElementById("promptMessageInput");
 var promptSendButton = document.getElementById("promptSendButton");
 var promptPhotoButton = document.getElementById("promptPhotoButton");
 var promptPhotoInput = document.getElementById("promptPhotoInput");
+var questionPopupBackdrop = document.getElementById("questionPopupBackdrop");
+var questionPopupClose = document.getElementById("questionPopupClose");
+var questionPopupLabel = document.getElementById("questionPopupLabel");
+var questionPopupText = document.getElementById("questionPopupText");
+var questionPopupInput = document.getElementById("questionPopupInput");
+var questionPopupSend = document.getElementById("questionPopupSend");
 const loginScreen = document.getElementById("loginScreen");
 const appScreen = document.getElementById("appScreen");
 const displayNameInput = document.getElementById("displayNameInput");
@@ -260,7 +266,11 @@ function showCategories() {
           }
           var target = unanswered.length > 0 ? unanswered[0] : qs[0];
           currentQuestionId = target.id;
-          openPromptChat(currentQuestionId);
+          if (unanswered.length > 0) {
+            openQuestionPopup(currentQuestionId);
+          } else {
+            openPromptChat(currentQuestionId);
+          }
         });
       })(cat.id);
 
@@ -361,6 +371,61 @@ function renderActiveConversations() {
       });
     })(q.id);
   }
+}
+
+// ─── Question Answer Popup ───
+
+function openQuestionPopup(questionId) {
+  currentQuestionId = questionId;
+  var question = getQuestionById(questionId);
+  var cat = getCategoryById(question ? question.categoryId : "");
+  questionPopupLabel.textContent = cat ? cat.label : "";
+  questionPopupText.textContent = question ? question.text : "";
+  questionPopupInput.value = "";
+  questionPopupBackdrop.classList.add("visible");
+  setTimeout(function () { questionPopupInput.focus(); }, 350);
+}
+
+function closeQuestionPopup() {
+  questionPopupBackdrop.classList.remove("visible");
+  questionPopupInput.value = "";
+}
+
+async function sendPopupAnswer() {
+  var text = questionPopupInput.value.trim();
+  if (text === "" || !app.currentUser || !app.currentCouple) return;
+
+  questionPopupSend.disabled = true;
+
+  var result = await supabase
+    .from("messages")
+    .insert({
+      couple_id: app.currentCouple.id,
+      question_id: currentQuestionId,
+      sender_id: app.currentUser.id,
+      text: text
+    })
+    .select("id, question_id, text, image_url, sender_id, created_at, profiles:sender_id(display_name)")
+    .single();
+
+  questionPopupSend.disabled = false;
+
+  if (result.error) {
+    showToast("Could not send. Try again.");
+    return;
+  }
+
+  questionPopupInput.value = "";
+
+  if (result.data) {
+    addOrReplaceMessage(result.data);
+  }
+
+  closeQuestionPopup();
+  renderActiveConversations();
+  renderTodayCard();
+  recordEngagement();
+  scheduleMessagesReload();
 }
 
 // ─── Prompt Chat Overlay ───
@@ -636,10 +701,15 @@ function renderTodayCard() {
       var catId = this.getAttribute("data-prompt-cat");
       currentCategoryId = catId;
       currentQuestionId = promptId;
-      renderPromptExperience();
-      var chatTab = document.getElementById("tabChat");
-      if (chatTab) chatTab.click();
-      openPromptChat(promptId);
+      var reveal = getDailyRevealState(promptId);
+      if (!reveal.hasMe) {
+        openQuestionPopup(promptId);
+      } else {
+        renderPromptExperience();
+        var chatTab = document.getElementById("tabChat");
+        if (chatTab) chatTab.click();
+        openPromptChat(promptId);
+      }
     });
   });
 
@@ -1342,6 +1412,15 @@ logoutButton.addEventListener("click", logout);
 createCoupleButton.addEventListener("click", createCouple);
 joinCoupleButton.addEventListener("click", joinCouple);
 promptSendButton.addEventListener("click", sendMessage);
+
+questionPopupSend.addEventListener("click", sendPopupAnswer);
+questionPopupInput.addEventListener("keydown", function (event) {
+  if (event.key === "Enter") sendPopupAnswer();
+});
+questionPopupClose.addEventListener("click", closeQuestionPopup);
+questionPopupBackdrop.addEventListener("click", function (event) {
+  if (event.target === questionPopupBackdrop) closeQuestionPopup();
+});
 
 passwordInput.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {

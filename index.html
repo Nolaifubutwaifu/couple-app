@@ -605,6 +605,21 @@
     <!-- Toast Notification -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Question Answer Popup -->
+    <div class="question-popup-backdrop" id="questionPopupBackdrop">
+      <div class="question-popup" id="questionPopup">
+        <button type="button" class="question-popup-close" id="questionPopupClose">&times;</button>
+        <p class="question-popup-label" id="questionPopupLabel"></p>
+        <p class="question-popup-text" id="questionPopupText"></p>
+        <div class="question-popup-input-row">
+          <input id="questionPopupInput" type="text" placeholder="Type your answer...">
+          <button id="questionPopupSend" type="button" class="question-popup-send-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Prompt Chat Overlay -->
     <div class="prompt-chat-overlay" id="promptChatOverlay">
       <div class="prompt-chat-overlay-inner">

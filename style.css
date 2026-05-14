@@ -3363,3 +3363,117 @@ h3 {
   padding: 0;
   flex-shrink: 0;
 }
+
+/* ─── Question Answer Popup ─── */
+
+.question-popup-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 980;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.question-popup-backdrop.visible {
+  display: flex;
+  animation: overlayFadeIn 300ms ease;
+}
+
+.question-popup {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  padding: 28px 24px 20px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  animation: milestonePopIn 400ms ease;
+}
+
+.question-popup-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #f0ebe5;
+  color: #9ca3af;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 160ms ease;
+}
+
+.question-popup-close:active {
+  background: #e5ddd5;
+}
+
+.question-popup-label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #d4a0a0;
+}
+
+.question-popup-text {
+  margin: 0 0 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1.4;
+}
+
+.question-popup-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.question-popup-input-row input {
+  flex: 1;
+  height: 44px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 22px;
+  padding: 0 18px;
+  font-size: 15px;
+  background: #f5f0eb;
+  outline: none;
+  color: #1a1a2e;
+}
+
+.question-popup-input-row input::placeholder {
+  color: #9ca3af;
+}
+
+.question-popup-input-row input:focus {
+  border-color: #d4a0a0;
+}
+
+.question-popup-send-btn {
+  width: 42px;
+  height: 42px;
+  border: none;
+  background: #d4a0a0;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  transition: transform 120ms ease;
+}
+
+.question-popup-send-btn:active {
+  transform: scale(0.92);
+}
