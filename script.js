@@ -35,7 +35,7 @@ import {
   getLongestStreak
 } from "./extras.js";
 import { addOrReplaceMessage, formatMessageRow, uploadAndSendPhoto, dataUrlToBlob } from "./chat.js";
-import { cleanupDateCall, onDateStateFromDB, checkExistingDateSession } from "./date-night.js";
+import { cleanupDateCall, onDateStateFromDB, checkExistingDateSession, loadScheduledDate, renderDateLanding, loadDateHistory } from "./date-night.js";
 import { renderGallery, initGalleryAddButton } from "./gallery.js";
 import { renderProfileTab, initProfile, loadSettings, initSettings, initInviteButtons } from "./profile.js";
 import { initMoments, loadTodayMoments, getMomentsCount, cleanupMomentsChannel } from "./moments.js";
@@ -793,10 +793,25 @@ function renderDateNightPreview() {
   if (app.lastSavedGameState && app.lastSavedGameState.date) {
     datePreviewStatus.textContent = "Date night in progress!";
     document.getElementById("datePreviewAction").textContent = "Continue";
-  } else {
-    datePreviewStatus.textContent = "Plan your next date night together";
-    document.getElementById("datePreviewAction").textContent = "Start a date night";
+    return;
   }
+
+  var scheduled = loadScheduledDate();
+  if (scheduled && scheduled.datetime) {
+    var d = new Date(scheduled.datetime);
+    var days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    var hours = d.getHours();
+    var ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    var minutes = d.getMinutes();
+    datePreviewStatus.textContent = "Date planned for " + days[d.getDay()] + " at " + hours + ":" + (minutes < 10 ? "0" : "") + minutes + " " + ampm;
+    document.getElementById("datePreviewAction").textContent = "View";
+    return;
+  }
+
+  datePreviewStatus.textContent = "Plan your next date night together";
+  document.getElementById("datePreviewAction").textContent = "Start a date night";
 }
 
 function renderPartnerFeed() {
@@ -1159,6 +1174,7 @@ async function loadCouple() {
   await subscribeToPresence();
   await checkExistingDateSession();
   await loadTodayMoments();
+  renderDateLanding();
 }
 
 async function loadMessages() {

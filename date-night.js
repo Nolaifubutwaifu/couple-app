@@ -1,8 +1,8 @@
 import { app } from "./state.js";
-import { setStatus } from "./utils.js";
+import { setStatus, showToast, hapticLight } from "./utils.js";
 import { loadGameState, saveGameState } from "./games.js";
 import { recordEngagement, addBonusHearts } from "./extras.js";
-import { dateNightSteps } from "./data.js";
+import { dateNightSteps, dateThemes } from "./data.js";
 
 var dateChannel = null;
 var datePeerConnection = null;
@@ -11,6 +11,9 @@ var dateTimerInterval = null;
 var dateCurrentStep = 0;
 var dateIsActive = false;
 var shuffledSteps = [];
+var dateMode = "full";
+var dateTheme = null;
+var selectedThemeId = null;
 
 function shuffleArray(arr) {
   var a = arr.slice();
@@ -21,30 +24,56 @@ function shuffleArray(arr) {
   return a;
 }
 
-function buildShuffledDate() {
-  var qs = shuffleArray(dateNightSteps.filter(function (s) { return s.type === "question"; }));
-  var cs = shuffleArray(dateNightSteps.filter(function (s) { return s.type === "challenge"; }));
-  var ws = shuffleArray(dateNightSteps.filter(function (s) { return s.type === "wouldyourather"; }));
+function buildShuffledDate(theme, stepCount) {
+  var pool = dateNightSteps;
+  if (theme) {
+    pool = dateNightSteps.filter(function (s) {
+      return s.themes && s.themes.indexOf(theme) >= 0;
+    });
+  }
 
+  var qs = shuffleArray(pool.filter(function (s) { return s.type === "question"; }));
+  var cs = shuffleArray(pool.filter(function (s) { return s.type === "challenge"; }));
+  var ws = shuffleArray(pool.filter(function (s) { return s.type === "wouldyourather"; }));
+
+  var total = stepCount || 20;
   var result = [];
-  var qi = 0, ci = 0, wi = 0;
-  for (var i = 0; i < 20; i++) {
-    if (i % 5 === 3 && ci < cs.length) {
-      result.push(cs[ci++]);
-    } else if (i % 5 === 0 && i > 0 && wi < ws.length) {
-      result.push(ws[wi++]);
-    } else if (qi < qs.length) {
-      result.push(qs[qi++]);
-    } else if (ci < cs.length) {
-      result.push(cs[ci++]);
-    } else if (wi < ws.length) {
-      result.push(ws[wi++]);
+
+  if (total <= 5) {
+    var qi = 0, ci = 0, wi = 0;
+    if (cs.length > 0) result.push(cs[ci++]);
+    if (qs.length > qi) result.push(qs[qi++]);
+    if (qs.length > qi) result.push(qs[qi++]);
+    if (ws.length > 0) result.push(ws[wi++]);
+    if (qs.length > qi) result.push(qs[qi++]);
+    return result.slice(0, total);
+  }
+
+  var qi2 = 0, ci2 = 0, wi2 = 0;
+  for (var i = 0; i < total; i++) {
+    if (i % 5 === 3 && ci2 < cs.length) {
+      result.push(cs[ci2++]);
+    } else if (i % 5 === 0 && i > 0 && wi2 < ws.length) {
+      result.push(ws[wi2++]);
+    } else if (qi2 < qs.length) {
+      result.push(qs[qi2++]);
+    } else if (ci2 < cs.length) {
+      result.push(cs[ci2++]);
+    } else if (wi2 < ws.length) {
+      result.push(ws[wi2++]);
     }
   }
   return result;
 }
 
-var dateStartBtn = document.getElementById("dateStartBtn");
+// ─── DOM Elements ───
+
+var dateScreenLanding = document.getElementById("dateLanding");
+var dateScreenInvite = document.getElementById("dateInvite");
+var dateScreenActive = document.getElementById("dateActive");
+var dateScreenEnd = document.getElementById("dateEnd");
+var dateThemeModal = document.getElementById("dateThemeModal");
+
 var dateStartMessage = document.getElementById("dateStartMessage");
 var dateJoinBtn = document.getElementById("dateJoinBtn");
 var dateDeclineBtn = document.getElementById("dateDeclineBtn");
@@ -69,18 +98,16 @@ var dateStepWYR = document.getElementById("dateStepWYR");
 var dateWYROptionA = document.getElementById("dateWYROptionA");
 var dateWYROptionB = document.getElementById("dateWYROptionB");
 
-var dateScreenStart = document.getElementById("dateStart");
-var dateScreenInvite = document.getElementById("dateInvite");
-var dateScreenActive = document.getElementById("dateActive");
-var dateScreenEnd = document.getElementById("dateEnd");
-
 function showDateScreen(screen) {
-  dateScreenStart.style.display = "none";
+  dateScreenLanding.style.display = "none";
   dateScreenInvite.style.display = "none";
   dateScreenActive.style.display = "none";
   dateScreenEnd.style.display = "none";
+  dateThemeModal.style.display = "none";
   screen.style.display = "";
 }
+
+// ─── Video / WebRTC ───
 
 async function startLocalVideo() {
   try {
@@ -205,33 +232,39 @@ export function cleanupDateCall() {
   dateCurrentStep = 0;
 }
 
-async function startDateNight() {
+// ─── Start / Join / End ───
+
+async function startDateNight(mode, theme) {
   if (!app.currentCouple || app.currentCouple.memberCount < 2) {
     setStatus(dateStartMessage, "You need a partner to start a date.", "error");
     return;
   }
 
-  dateStartBtn.disabled = true;
-  setStatus(dateStartMessage, "", "");
+  dateMode = mode || "full";
+  dateTheme = theme || null;
 
+  var stepCount = dateMode === "quick" ? 5 : 20;
+  shuffledSteps = buildShuffledDate(dateTheme, stepCount);
+
+  setStatus(dateStartMessage, "", "");
   await startLocalVideo();
   setupDateChannel();
 
   dateCurrentStep = 0;
   dateIsActive = true;
-  shuffledSteps = buildShuffledDate();
 
   await saveGameState("date", {
     status: "waiting",
     currentStep: 0,
     initiatedBy: app.currentUser.id,
-    startedAt: new Date().toISOString()
+    startedAt: new Date().toISOString(),
+    mode: dateMode,
+    theme: dateTheme
   });
 
+  clearScheduledDate();
   showDateScreen(dateScreenActive);
   renderDateStep(0);
-
-  dateStartBtn.disabled = false;
 }
 
 async function joinDateNight() {
@@ -239,16 +272,23 @@ async function joinDateNight() {
   setupDateChannel();
 
   dateIsActive = true;
-  if (shuffledSteps.length === 0) shuffledSteps = buildShuffledDate();
-
   var existing = await loadGameState("date");
   dateCurrentStep = existing ? (existing.currentStep || 0) : 0;
+  dateMode = existing && existing.mode ? existing.mode : "full";
+  dateTheme = existing && existing.theme ? existing.theme : null;
+
+  if (shuffledSteps.length === 0) {
+    var stepCount = dateMode === "quick" ? 5 : 20;
+    shuffledSteps = buildShuffledDate(dateTheme, stepCount);
+  }
 
   await saveGameState("date", {
     status: "active",
     currentStep: dateCurrentStep,
     initiatedBy: existing ? existing.initiatedBy : app.currentUser.id,
-    startedAt: existing ? existing.startedAt : new Date().toISOString()
+    startedAt: existing ? existing.startedAt : new Date().toISOString(),
+    mode: dateMode,
+    theme: dateTheme
   });
 
   showDateScreen(dateScreenActive);
@@ -259,11 +299,41 @@ async function joinDateNight() {
   }, 500);
 }
 
-function onPartnerEndedDate() {
-  cleanupDateCall();
+function getHeartsForMode(mode) {
+  return mode === "quick" ? 5 : 10;
+}
+
+function showEndScreen() {
+  var hearts = getHeartsForMode(dateMode);
+  var totalSteps = shuffledSteps.length || (dateMode === "quick" ? 5 : 20);
+  var stepsCompleted = Math.min(dateCurrentStep + 1, totalSteps);
+
+  document.getElementById("dateEndSteps").textContent = stepsCompleted + "/" + totalSteps;
+  document.getElementById("dateEndHearts").textContent = "+" + hearts + " ❤️";
+
+  var badge = document.getElementById("dateEndThemeBadge");
+  if (dateTheme) {
+    var themeObj = dateThemes.find(function (t) { return t.id === dateTheme; });
+    if (themeObj) {
+      badge.textContent = themeObj.emoji + " " + themeObj.name;
+      badge.style.display = "";
+    } else {
+      badge.style.display = "none";
+    }
+  } else {
+    badge.style.display = "none";
+  }
+
   showDateScreen(dateScreenEnd);
+}
+
+function onPartnerEndedDate() {
+  var hearts = getHeartsForMode(dateMode);
+  saveDateToHistory();
+  cleanupDateCall();
+  showEndScreen();
   recordEngagement();
-  addBonusHearts(5);
+  addBonusHearts(hearts);
 }
 
 async function endDateNight() {
@@ -275,6 +345,9 @@ async function endDateNight() {
     });
   }
 
+  var hearts = getHeartsForMode(dateMode);
+  saveDateToHistory();
+
   await saveGameState("date", {
     status: "ended",
     currentStep: dateCurrentStep,
@@ -283,9 +356,9 @@ async function endDateNight() {
   });
 
   cleanupDateCall();
-  showDateScreen(dateScreenEnd);
+  showEndScreen();
   recordEngagement();
-  addBonusHearts(5);
+  addBonusHearts(hearts);
 }
 
 async function closeDateEnd() {
@@ -297,7 +370,8 @@ async function closeDateEnd() {
       .eq("game_type", "date");
   }
 
-  showDateScreen(dateScreenStart);
+  showDateScreen(dateScreenLanding);
+  renderDateLanding();
 }
 
 async function declineDateNight() {
@@ -309,13 +383,15 @@ async function declineDateNight() {
       .eq("game_type", "date");
   }
 
-  showDateScreen(dateScreenStart);
+  showDateScreen(dateScreenLanding);
 }
 
 export function onDateStateFromDB(state) {
   if (!state) return;
 
   if (state.status === "waiting" && state.initiatedBy !== app.currentUser.id) {
+    dateMode = state.mode || "full";
+    dateTheme = state.theme || null;
     showDateScreen(dateScreenInvite);
     switchToDateTab();
     return;
@@ -360,6 +436,8 @@ function switchToDateTab() {
   }
 }
 
+// ─── Step Navigation & Rendering ───
+
 async function navigateDateStep(direction) {
   var newStep = dateCurrentStep + direction;
   var steps = shuffledSteps.length > 0 ? shuffledSteps : dateNightSteps;
@@ -373,7 +451,9 @@ async function navigateDateStep(direction) {
     status: existing ? existing.status : "active",
     currentStep: dateCurrentStep,
     initiatedBy: existing ? existing.initiatedBy : app.currentUser.id,
-    startedAt: existing ? existing.startedAt : new Date().toISOString()
+    startedAt: existing ? existing.startedAt : new Date().toISOString(),
+    mode: dateMode,
+    theme: dateTheme
   });
 }
 
@@ -472,8 +552,13 @@ export async function checkExistingDateSession() {
   var state = await loadGameState("date");
   if (!state) return;
 
+  dateMode = state.mode || "full";
+  dateTheme = state.theme || null;
+
   if (state.status === "waiting") {
     if (state.initiatedBy === app.currentUser.id) {
+      var stepCount = dateMode === "quick" ? 5 : 20;
+      shuffledSteps = buildShuffledDate(dateTheme, stepCount);
       await startLocalVideo();
       setupDateChannel();
       dateIsActive = true;
@@ -486,6 +571,8 @@ export async function checkExistingDateSession() {
       switchToDateTab();
     }
   } else if (state.status === "active") {
+    var stepCount2 = dateMode === "quick" ? 5 : 20;
+    shuffledSteps = buildShuffledDate(dateTheme, stepCount2);
     dateCurrentStep = state.currentStep || 0;
     await startLocalVideo();
     setupDateChannel();
@@ -499,7 +586,212 @@ export async function checkExistingDateSession() {
   }
 }
 
-dateStartBtn.addEventListener("click", startDateNight);
+// ─── Scheduling ───
+
+function scheduleDate(datetime, theme) {
+  var obj = { datetime: datetime, theme: theme || null };
+  localStorage.setItem("couple_scheduled_date", JSON.stringify(obj));
+  renderScheduledDate();
+  showToast("Date scheduled!");
+}
+
+export function loadScheduledDate() {
+  try {
+    var raw = localStorage.getItem("couple_scheduled_date");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+function clearScheduledDate() {
+  localStorage.removeItem("couple_scheduled_date");
+  renderScheduledDate();
+}
+
+function renderScheduledDate() {
+  var indicator = document.getElementById("dateScheduledIndicator");
+  var textEl = document.getElementById("dateScheduledText");
+  var scheduled = loadScheduledDate();
+
+  if (!scheduled || !scheduled.datetime) {
+    indicator.style.display = "none";
+    return;
+  }
+
+  var d = new Date(scheduled.datetime);
+  var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var hours = d.getHours();
+  var ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+  var minutes = d.getMinutes();
+  var timeStr = hours + ":" + (minutes < 10 ? "0" : "") + minutes + " " + ampm;
+  var dateStr = days[d.getDay()] + ", " + months[d.getMonth()] + " " + d.getDate() + " at " + timeStr;
+
+  var themeName = "";
+  if (scheduled.theme) {
+    var t = dateThemes.find(function (th) { return th.id === scheduled.theme; });
+    if (t) themeName = " · " + t.emoji + " " + t.name;
+  }
+
+  textEl.textContent = dateStr + themeName;
+  indicator.style.display = "";
+}
+
+// ─── Date History ───
+
+async function saveDateToHistory() {
+  if (!app.currentUser || !app.currentCouple) return;
+
+  var hearts = getHeartsForMode(dateMode);
+  var totalSteps = shuffledSteps.length || (dateMode === "quick" ? 5 : 20);
+  var stepsCompleted = Math.min(dateCurrentStep + 1, totalSteps);
+
+  app.supabase.from("date_history").insert({
+    couple_id: app.currentCouple.id,
+    completed_by: app.currentUser.id,
+    date_mode: dateMode,
+    theme: dateTheme,
+    steps_completed: stepsCompleted,
+    total_steps: totalSteps,
+    hearts_earned: hearts
+  });
+}
+
+export async function loadDateHistory() {
+  if (!app.currentCouple) return;
+
+  var result = await app.supabase
+    .from("date_history")
+    .select("id, date_mode, theme, steps_completed, total_steps, hearts_earned, completed_at")
+    .eq("couple_id", app.currentCouple.id)
+    .order("completed_at", { ascending: false })
+    .limit(20);
+
+  if (result.error || !result.data) {
+    renderDateHistory([]);
+    return;
+  }
+
+  renderDateHistory(result.data);
+}
+
+function renderDateHistory(rows) {
+  var list = document.getElementById("dateHistoryList");
+  var empty = document.getElementById("dateHistoryEmpty");
+
+  if (!rows || rows.length === 0) {
+    list.innerHTML = "";
+    list.appendChild(empty);
+    empty.style.display = "";
+    return;
+  }
+
+  list.innerHTML = "";
+  empty.style.display = "none";
+
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var d = new Date(row.completed_at);
+    var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    var dateStr = months[d.getMonth()] + " " + d.getDate();
+
+    var themeBadge = "";
+    if (row.theme) {
+      var t = dateThemes.find(function (th) { return th.id === row.theme; });
+      if (t) themeBadge = '<span class="date-history-badge">' + t.emoji + " " + t.name + '</span>';
+    }
+
+    var modeLabel = row.date_mode === "quick" ? "Quick Date" : "Full Date Night";
+
+    var el = document.createElement("div");
+    el.className = "date-history-row";
+    el.innerHTML =
+      '<span class="date-history-date">' + dateStr + '</span>' +
+      '<div class="date-history-body">' +
+        '<div class="date-history-title">' + themeBadge + modeLabel + '</div>' +
+        '<div class="date-history-meta">' + row.steps_completed + '/' + row.total_steps + ' steps</div>' +
+      '</div>' +
+      '<span class="date-history-hearts">+' + row.hearts_earned + ' ❤️</span>';
+    list.appendChild(el);
+  }
+}
+
+// ─── Landing Page Rendering ───
+
+export function renderDateLanding() {
+  renderThemeCards();
+  renderScheduledDate();
+  populateThemeSelect();
+  loadDateHistory();
+}
+
+function renderThemeCards() {
+  var scroll = document.getElementById("dateThemesScroll");
+  scroll.innerHTML = "";
+
+  for (var i = 0; i < dateThemes.length; i++) {
+    var t = dateThemes[i];
+    var card = document.createElement("div");
+    card.className = "date-theme-card";
+    card.innerHTML =
+      '<span class="date-theme-card-emoji">' + t.emoji + '</span>' +
+      '<p class="date-theme-card-name">' + t.name + '</p>' +
+      '<p class="date-theme-card-tagline">' + t.tagline + '</p>';
+
+    (function (themeId) {
+      card.addEventListener("click", function () {
+        hapticLight();
+        openThemeModal(themeId);
+      });
+    })(t.id);
+
+    scroll.appendChild(card);
+  }
+}
+
+function populateThemeSelect() {
+  var select = document.getElementById("dateScheduleTheme");
+  select.innerHTML = '<option value="">Any theme</option>';
+  for (var i = 0; i < dateThemes.length; i++) {
+    var opt = document.createElement("option");
+    opt.value = dateThemes[i].id;
+    opt.textContent = dateThemes[i].emoji + " " + dateThemes[i].name;
+    select.appendChild(opt);
+  }
+}
+
+function openThemeModal(themeId) {
+  selectedThemeId = themeId;
+  var t = dateThemes.find(function (th) { return th.id === themeId; });
+  if (!t) return;
+
+  document.getElementById("dateThemeModalEmoji").textContent = t.emoji;
+  document.getElementById("dateThemeModalName").textContent = t.name;
+  document.getElementById("dateThemeModalTagline").textContent = t.tagline;
+  dateThemeModal.style.display = "flex";
+}
+
+function closeThemeModal() {
+  dateThemeModal.style.display = "none";
+  selectedThemeId = null;
+}
+
+// ─── Event Listeners ───
+
+document.getElementById("dateStartQuick").addEventListener("click", function () {
+  hapticLight();
+  startDateNight("quick", null);
+});
+
+document.getElementById("dateStartFull").addEventListener("click", function () {
+  hapticLight();
+  startDateNight("full", null);
+});
+
 dateJoinBtn.addEventListener("click", joinDateNight);
 dateDeclineBtn.addEventListener("click", declineDateNight);
 dateMuteBtn.addEventListener("click", toggleDateMute);
@@ -529,3 +821,44 @@ dateWYROptionB.addEventListener("click", function () {
   dateWYROptionB.classList.add("selected");
   dateWYROptionA.classList.remove("selected");
 });
+
+// Theme modal
+document.getElementById("dateThemeQuickBtn").addEventListener("click", function () {
+  hapticLight();
+  closeThemeModal();
+  startDateNight("quick", selectedThemeId);
+});
+
+document.getElementById("dateThemeFullBtn").addEventListener("click", function () {
+  hapticLight();
+  closeThemeModal();
+  startDateNight("full", selectedThemeId);
+});
+
+document.getElementById("dateThemeCancelBtn").addEventListener("click", function () {
+  closeThemeModal();
+});
+
+dateThemeModal.addEventListener("click", function (e) {
+  if (e.target === dateThemeModal) closeThemeModal();
+});
+
+// Schedule
+document.getElementById("dateScheduleBtn").addEventListener("click", function () {
+  var input = document.getElementById("dateScheduleInput");
+  if (!input.value) {
+    showToast("Pick a date and time first");
+    return;
+  }
+  hapticLight();
+  var theme = document.getElementById("dateScheduleTheme").value || null;
+  scheduleDate(input.value, theme);
+  input.value = "";
+});
+
+document.getElementById("dateScheduledCancel").addEventListener("click", function () {
+  hapticLight();
+  clearScheduledDate();
+});
+
+renderDateLanding();

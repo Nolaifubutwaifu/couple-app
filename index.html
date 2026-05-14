@@ -563,16 +563,76 @@
                   <p class="tab-lock-text">Video date nights with guided questions and challenges — unlocks when your partner joins</p>
                 </div>
 
-                <!-- Start Screen -->
-                <section id="dateStart" class="date-screen">
+                <!-- Landing Page -->
+                <section id="dateLanding" class="date-screen date-landing">
                   <section class="date-header">
                     <p class="small-text">date night</p>
                     <h2>Date Night.</h2>
-                    <p class="setup-description">Start a guided video date with your partner. You'll go through questions, challenges, and surprises together.</p>
                   </section>
-                  <button type="button" id="dateStartBtn" class="date-start-btn">Start Date Night</button>
+
+                  <div class="date-mode-card date-mode-quick">
+                    <div class="date-mode-card-icon">⚡</div>
+                    <div class="date-mode-card-body">
+                      <h3 class="date-mode-card-title">Quick Date</h3>
+                      <p class="date-mode-card-desc">5 steps, ~5 min — for busy days</p>
+                      <p class="date-mode-card-detail">Quick questions and mini challenges</p>
+                    </div>
+                    <button type="button" id="dateStartQuick" class="date-mode-btn">Start</button>
+                  </div>
+
+                  <div class="date-mode-card date-mode-full">
+                    <div class="date-mode-card-icon">🌙</div>
+                    <div class="date-mode-card-body">
+                      <h3 class="date-mode-card-title">Full Date Night</h3>
+                      <p class="date-mode-card-desc">20 steps — for proper dates</p>
+                      <p class="date-mode-card-detail">Questions, challenges, surprises, and rewards</p>
+                    </div>
+                    <button type="button" id="dateStartFull" class="date-mode-btn">Start</button>
+                  </div>
+
+                  <section class="date-schedule-card">
+                    <h3 class="date-section-title">Schedule a Date</h3>
+                    <p class="date-schedule-desc">Plan ahead — great for long-distance</p>
+                    <div class="date-schedule-row">
+                      <input type="datetime-local" id="dateScheduleInput" class="date-schedule-input">
+                      <select id="dateScheduleTheme" class="date-schedule-select">
+                        <option value="">Any theme</option>
+                      </select>
+                    </div>
+                    <button type="button" id="dateScheduleBtn" class="date-schedule-btn">Schedule</button>
+                    <div id="dateScheduledIndicator" class="date-scheduled-indicator" style="display:none">
+                      <span class="date-scheduled-icon">📅</span>
+                      <span id="dateScheduledText" class="date-scheduled-text"></span>
+                      <button type="button" id="dateScheduledCancel" class="date-scheduled-cancel">✕</button>
+                    </div>
+                  </section>
+
+                  <section class="date-themes-section">
+                    <h3 class="date-section-title">Date Themes</h3>
+                    <div class="date-themes-scroll" id="dateThemesScroll"></div>
+                  </section>
+
+                  <section class="date-history-section">
+                    <h3 class="date-section-title">Date History</h3>
+                    <div id="dateHistoryList" class="date-history-list">
+                      <p class="date-history-empty" id="dateHistoryEmpty">No dates yet — start your first one!</p>
+                    </div>
+                  </section>
+
                   <p id="dateStartMessage" class="status-message" aria-live="polite"></p>
                 </section>
+
+                <!-- Theme Modal -->
+                <div class="date-theme-modal-backdrop" id="dateThemeModal" style="display:none">
+                  <div class="date-theme-modal">
+                    <span class="date-theme-modal-emoji" id="dateThemeModalEmoji"></span>
+                    <h3 class="date-theme-modal-name" id="dateThemeModalName"></h3>
+                    <p class="date-theme-modal-tagline" id="dateThemeModalTagline"></p>
+                    <button type="button" id="dateThemeQuickBtn" class="date-mode-btn date-theme-modal-btn">Quick Date (5 steps)</button>
+                    <button type="button" id="dateThemeFullBtn" class="date-mode-btn date-theme-modal-btn">Full Date (20 steps)</button>
+                    <button type="button" id="dateThemeCancelBtn" class="date-theme-cancel-btn">Cancel</button>
+                  </div>
+                </div>
 
                 <!-- Invite Screen -->
                 <section id="dateInvite" class="date-screen" style="display:none">
@@ -636,9 +696,19 @@
                   <section class="date-header">
                     <p class="small-text">complete</p>
                     <h2>Date Night complete!</h2>
-                    <p class="setup-description">That was lovely. You earned some hearts for spending quality time together.</p>
+                    <p class="setup-description">You're building something beautiful together.</p>
                   </section>
-                  <p class="date-end-hearts">+5 ❤️</p>
+                  <div id="dateEndThemeBadge" class="date-end-theme-badge" style="display:none"></div>
+                  <div class="date-end-stats">
+                    <div class="date-end-stat">
+                      <span class="date-end-stat-value" id="dateEndSteps">0/0</span>
+                      <span class="date-end-stat-label">steps</span>
+                    </div>
+                    <div class="date-end-stat">
+                      <span class="date-end-stat-value date-end-hearts" id="dateEndHearts">+10</span>
+                      <span class="date-end-stat-label">hearts earned</span>
+                    </div>
+                  </div>
                   <button type="button" id="dateDoneBtn" class="date-start-btn">Done</button>
                 </section>
 

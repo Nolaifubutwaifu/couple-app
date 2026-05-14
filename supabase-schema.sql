@@ -424,3 +424,35 @@ do $$ begin
   alter publication supabase_realtime add table public.moments;
 exception when duplicate_object then null;
 end $$;
+
+
+-- ═══════════════════════════════════════════════
+-- DATE HISTORY (completed date night records)
+-- ═══════════════════════════════════════════════
+
+create table if not exists public.date_history (
+  id uuid primary key default gen_random_uuid(),
+  couple_id uuid not null references public.couples(id) on delete cascade,
+  completed_by uuid not null references auth.users(id),
+  date_mode text not null check (date_mode in ('quick', 'full')),
+  theme text,
+  steps_completed integer not null default 0,
+  total_steps integer not null default 20,
+  hearts_earned integer not null default 0,
+  completed_at timestamptz not null default now()
+);
+
+create index if not exists date_history_couple_idx
+  on public.date_history(couple_id, completed_at desc);
+
+alter table public.date_history enable row level security;
+
+create policy "Date history visible to couple members" on public.date_history
+  for select to authenticated
+  using (public.is_couple_member(couple_id));
+
+create policy "Members can insert date history" on public.date_history
+  for insert to authenticated
+  with check (completed_by = auth.uid() and public.is_couple_member(couple_id));
+
+grant select, insert on public.date_history to authenticated;
