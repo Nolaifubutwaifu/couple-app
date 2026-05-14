@@ -98,65 +98,64 @@
             <main id="mainExperience" class="main-experience">
               <p id="appStatusMessage" class="status-message" aria-live="polite"></p>
 
-              <section class="home-greeting" id="homeGreeting">
-                <div class="home-greeting-left">
-                  <p class="home-greeting-text" id="homeGreetingText">Good morning</p>
-                  <h2 class="home-greeting-title" id="homeGreetingTitle"></h2>
-                </div>
-                <div class="home-greeting-avatar" id="homeGreetingAvatar"></div>
-                <p class="home-connected-text" id="homeConnectedText" style="display:none"></p>
-              </section>
-
-              <section class="timezone-card" id="timezoneCard" style="display:none">
-                <div class="timezone-slot">
-                  <span class="timezone-label" id="tzYourLabel">Your Time</span>
-                  <span class="timezone-time" id="tzYourTime">--:--</span>
-                </div>
-                <div class="timezone-divider"></div>
-                <div class="timezone-slot">
-                  <span class="timezone-label" id="tzPartnerLabel">Partner's Time</span>
-                  <span class="timezone-time" id="tzPartnerTime">--:--</span>
-                </div>
-              </section>
-
-
-              <!-- Today Cards (stacked) -->
-              <div class="today-stack anim-fade-up" id="todayStack" style="display:none">
-                <div class="today-stack-inner" id="todayStackInner"></div>
-              </div>
-
-              <!-- Streak Bar -->
-              <div class="streak-bar" id="streakBar">
-                <div class="streak-bar-item">
-                  <span class="streak-fire" id="streakFire">🔥</span>
-                  <span class="streak-count" id="streakCount">0</span>
-                  <span class="streak-label">day streak</span>
-                </div>
-                <div class="streak-bar-divider"></div>
-                <div class="streak-bar-item">
-                  <span class="streak-heart">❤️</span>
-                  <span class="streak-count" id="heartsCount">0</span>
-                  <span class="streak-label">hearts</span>
-                </div>
-                <div class="streak-bar-right">
-                  <div class="streak-bar-status" id="streakStatus">Do something today!</div>
-                  <div class="streak-bar-timer" id="streakBarTimer"></div>
-                </div>
-              </div>
-
-              <!-- TAB: Chat -->
+              <!-- TAB: Home -->
               <div id="tabChat" class="tab-content tab-active">
-                <div id="promptsChatView">
 
-                  <section class="topics-section" id="topicsSection"></section>
+                <section class="home-greeting" id="homeGreeting">
+                  <div class="home-greeting-left">
+                    <p class="home-greeting-text" id="homeGreetingText">Good morning</p>
+                    <h2 class="home-greeting-title" id="homeGreetingTitle"></h2>
+                  </div>
+                  <div class="home-greeting-avatar" id="homeGreetingAvatar"></div>
+                  <p class="home-connected-text" id="homeConnectedText" style="display:none"></p>
+                </section>
 
-                  <section class="active-chats-section" id="activeChatsSection">
-                    <p class="small-text">conversations</p>
-                    <h2 class="active-chats-heading">Your Answers</h2>
-                    <div class="active-chats-list" id="activeChatsList"></div>
-                  </section>
+                <section class="timezone-card" id="timezoneCard" style="display:none">
+                  <div class="timezone-slot">
+                    <span class="timezone-label" id="tzYourLabel">Your Time</span>
+                    <span class="timezone-time" id="tzYourTime">--:--</span>
+                  </div>
+                  <div class="timezone-divider"></div>
+                  <div class="timezone-slot">
+                    <span class="timezone-label" id="tzPartnerLabel">Partner's Time</span>
+                    <span class="timezone-time" id="tzPartnerTime">--:--</span>
+                  </div>
+                </section>
 
+                <!-- Today Cards (stacked) -->
+                <div class="today-stack anim-fade-up" id="todayStack" style="display:none">
+                  <div class="today-stack-inner" id="todayStackInner"></div>
                 </div>
+
+                <!-- Streak Bar -->
+                <div class="streak-bar" id="streakBar">
+                  <div class="streak-bar-item">
+                    <span class="streak-fire" id="streakFire">🔥</span>
+                    <span class="streak-count" id="streakCount">0</span>
+                    <span class="streak-label">day streak</span>
+                  </div>
+                  <div class="streak-bar-divider"></div>
+                  <div class="streak-bar-item">
+                    <span class="streak-heart">❤️</span>
+                    <span class="streak-count" id="heartsCount">0</span>
+                    <span class="streak-label">hearts</span>
+                  </div>
+                  <div class="streak-bar-right">
+                    <div class="streak-bar-status" id="streakStatus">Do something today!</div>
+                  </div>
+                </div>
+
+                <div id="promptsChatView">
+                  <section class="topics-section" id="topicsSection"></section>
+                </div>
+              </div>
+
+              <div id="tabChats" class="tab-content">
+                <section class="active-chats-section" id="activeChatsSection">
+                  <h2 class="active-chats-heading">Your Chats</h2>
+                  <div class="active-chats-list" id="activeChatsList"></div>
+                  <p class="active-chats-empty" id="activeChatsEmpty" style="display:none">No conversations yet. Answer a prompt to start one!</p>
+                </section>
               </div>
 
               <!-- TAB: More (Games + Extras + Gallery) -->
@@ -548,8 +547,12 @@
               <!-- Bottom Navigation -->
               <nav class="bottom-nav" id="bottomNav">
                 <button type="button" class="nav-tab nav-tab-active" data-tab="tabChat">
+                  <span class="nav-icon">⌂</span>
+                  <span class="nav-label">Home</span>
+                </button>
+                <button type="button" class="nav-tab" data-tab="tabChats">
                   <span class="nav-icon">♡</span>
-                  <span class="nav-label">Chat</span>
+                  <span class="nav-label">Chats</span>
                 </button>
                 <button type="button" class="nav-tab" data-tab="tabDate">
                   <span class="nav-icon">◐</span>

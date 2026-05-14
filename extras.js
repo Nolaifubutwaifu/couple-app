@@ -354,11 +354,9 @@ function updateStreakTimer() {
   var formatted = formatCountdown(ms);
 
   if (engagedToday) {
-    streakBarTimerEl.textContent = "Resets in " + formatted;
-    streakDetailTimerEl.textContent = "Next streak window opens in " + formatted;
+    if (streakDetailTimerEl) streakDetailTimerEl.textContent = "Next streak window opens in " + formatted;
   } else {
-    streakBarTimerEl.textContent = formatted + " left";
-    streakDetailTimerEl.textContent = "Interact within " + formatted + " to keep your streak!";
+    if (streakDetailTimerEl) streakDetailTimerEl.textContent = "Interact within " + formatted + " to keep your streak!";
   }
 
   if (ms <= 0) {

@@ -296,12 +296,12 @@ function renderActiveConversations() {
     }
   }
 
+  var emptyEl = document.getElementById("activeChatsEmpty");
   if (answered.length === 0) {
-    activeChatsSection.style.display = "none";
+    if (emptyEl) emptyEl.style.display = "";
     return;
   }
-
-  activeChatsSection.style.display = "";
+  if (emptyEl) emptyEl.style.display = "none";
 
   for (var i = 0; i < answered.length; i++) {
     var q = answered[i].question;

@@ -198,15 +198,20 @@ h3 {
 /* ─── Active Conversations ─── */
 
 .active-chats-section {
-  margin-top: 12px;
-  padding-top: 20px;
-  border-top: 1px solid #e5ddd5;
+  padding-top: 8px;
 }
 
 .active-chats-heading {
   font-size: 20px;
   margin: 4px 0 14px;
   color: #1a1a2e;
+}
+
+.active-chats-empty {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+  padding: 40px 20px;
 }
 
 .active-chats-list {
