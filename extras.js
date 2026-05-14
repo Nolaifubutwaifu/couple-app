@@ -273,12 +273,15 @@ export async function loadCoupleStats() {
   var mergedHugs = Math.max(localHugs, remoteHugs);
   var mergedLastDate = localLastDate > remoteLastDate ? localLastDate : remoteLastDate;
   var mergedMilestones = Array.from(new Set(localMilestones.concat(remoteMilestones)));
+  var localLongest = parseInt(localStorage.getItem("couple_longest_streak") || "0");
+  var mergedLongest = Math.max(localLongest, remote.longest_streak || 0, mergedStreak);
 
   localStorage.setItem("couple_streak_count", mergedStreak.toString());
   localStorage.setItem("couple_streak_hearts", mergedHearts.toString());
   localStorage.setItem("couple_hug_count", mergedHugs.toString());
   localStorage.setItem("couple_streak_last_date", mergedLastDate);
   localStorage.setItem("couple_streak_milestones_reached", JSON.stringify(mergedMilestones));
+  localStorage.setItem("couple_longest_streak", mergedLongest.toString());
 
   hugCount = mergedHugs;
   hugCountEl.textContent = hugCount;
@@ -310,7 +313,8 @@ async function saveCoupleStatsNow() {
     hearts: parseInt(localStorage.getItem("couple_streak_hearts") || "0"),
     milestones_reached: milestones,
     hug_count: parseInt(localStorage.getItem("couple_hug_count") || "0"),
-    countdown_date: localStorage.getItem("couple_countdown_date") || null
+    countdown_date: localStorage.getItem("couple_countdown_date") || null,
+    longest_streak: parseInt(localStorage.getItem("couple_longest_streak") || "0")
   };
 
   await saveGameState("stats", state);
@@ -401,6 +405,11 @@ export function recordEngagement() {
   localStorage.setItem("couple_streak_last_date", today);
   localStorage.setItem("couple_streak_count", newStreak.toString());
   localStorage.setItem("couple_streak_hearts", (totalHearts + heartsEarned).toString());
+
+  var longestStreak = parseInt(localStorage.getItem("couple_longest_streak") || "0");
+  if (newStreak > longestStreak) {
+    localStorage.setItem("couple_longest_streak", newStreak.toString());
+  }
 
   updateStreakUI();
   saveCoupleStats();
@@ -494,6 +503,10 @@ function markMilestoneReached(days) {
     localStorage.setItem("couple_streak_milestones_reached", JSON.stringify(reached));
     saveCoupleStats();
   }
+}
+
+export function getLongestStreak() {
+  return parseInt(localStorage.getItem("couple_longest_streak") || "0");
 }
 
 function showMilestoneCelebration(milestone) {

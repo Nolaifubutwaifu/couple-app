@@ -571,9 +571,8 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
-  padding-top: 8px;
-  animation: fadeInUp 0.4s ease both;
+  padding-top: 0;
+  margin-bottom: 0;
 }
 
 .home-greeting-left {
@@ -623,16 +622,16 @@ h3 {
   color: #9ca3af;
 }
 
-.timezone-card {
+.timezone-card,
+.couple-card-tz {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
-  padding: 16px;
-  border: 1px solid rgba(0,0,0,0.06);
-  border-radius: 16px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  animation: fadeInUp 0.4s 0.05s ease both;
+  padding: 12px 0;
+  margin-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
 .timezone-slot {
@@ -1753,25 +1752,27 @@ h3 {
 
 /* ─── Streak System ─── */
 
-.streak-bar {
+.streak-bar,
+.couple-card-stats {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 24px;
-  padding: 14px 18px;
-  border: 1px solid rgba(0,0,0,0.06);
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  animation: fadeInUp 0.4s 0.15s ease both;
+  margin: 0;
+  padding: 14px 0 0;
+  border: none;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
-.streak-bar.active-today {
+.streak-bar.active-today,
+.couple-card-stats.active-today {
   border-color: #d4a0a0;
-  box-shadow: 0 2px 20px rgba(212, 160, 160, 0.18);
 }
 
-.streak-bar-item {
+.streak-bar-item,
+.couple-card-stat {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1782,7 +1783,8 @@ h3 {
   line-height: 1;
 }
 
-.streak-bar.active-today .streak-fire {
+.streak-bar.active-today .streak-fire,
+.couple-card-stats.active-today .streak-fire {
   animation: fireGlow 1.5s ease-in-out infinite;
 }
 
@@ -1808,25 +1810,29 @@ h3 {
   font-weight: 600;
 }
 
-.streak-bar-divider {
+.streak-bar-divider,
+.couple-card-stat-divider {
   width: 1px;
   height: 24px;
   background: #e5ddd5;
 }
 
-.streak-bar-right {
+.streak-bar-right,
+.couple-card-stat-status {
   margin-left: auto;
   text-align: right;
 }
 
-.streak-bar-status {
+.streak-bar-status,
+.couple-card-stat-status span {
   font-size: 12px;
   font-weight: 700;
   color: #9ca3af;
   white-space: nowrap;
 }
 
-.streak-bar.active-today .streak-bar-status {
+.streak-bar.active-today .streak-bar-status,
+.couple-card-stats.active-today .couple-card-stat-status span {
   color: #4a9e6e;
 }
 
@@ -3538,6 +3544,357 @@ h3 {
 .widget-placeholder-icon {
   font-size: 20px;
   font-weight: 300;
+}
+
+/* ─── Couple Card (consolidated greeting/tz/streak) ─── */
+
+.couple-card {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  animation: fadeInUp 0.4s ease both;
+}
+
+.couple-card-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.couple-card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d1d5db;
+  flex-shrink: 0;
+}
+
+.couple-card-dot.online {
+  background: #4ade80;
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+}
+
+.couple-card-status-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.couple-card-dot.online + .couple-card-status-text {
+  color: #4ade80;
+}
+
+/* ─── Today's Connection Card ─── */
+
+.connection-card {
+  background: linear-gradient(135deg, #fff 0%, #fdf5f5 100%);
+  border: 1px solid rgba(212, 160, 160, 0.2);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  animation: fadeInUp 0.4s 0.05s ease both;
+}
+
+.connection-card-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #d4a0a0;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.connection-card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 4px;
+}
+
+.connection-card-subtitle {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0 0 16px;
+}
+
+.connection-card-btn {
+  display: inline-block;
+  padding: 10px 24px;
+  background: #d4a0a0;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.connection-card-btn:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+/* ─── Couple Log Preview ─── */
+
+.couple-log-card {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  animation: fadeInUp 0.4s 0.15s ease both;
+}
+
+.couple-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.couple-log-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.couple-log-date {
+  font-size: 13px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.couple-log-summary {
+  margin-bottom: 14px;
+}
+
+.couple-log-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.couple-log-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.couple-log-empty {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.couple-log-action {
+  display: inline-block;
+  padding: 8px 20px;
+  background: none;
+  color: #d4a0a0;
+  border: 1.5px solid #d4a0a0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.couple-log-action:active {
+  background: rgba(212, 160, 160, 0.1);
+}
+
+/* ─── Date Night Preview ─── */
+
+.date-preview-card {
+  background: linear-gradient(135deg, #fff 0%, #f5f0fa 100%);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  animation: fadeInUp 0.4s 0.2s ease both;
+}
+
+.date-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.date-preview-icon {
+  font-size: 20px;
+}
+
+.date-preview-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.date-preview-status {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0 0 14px;
+}
+
+.date-preview-btn {
+  display: inline-block;
+  padding: 10px 24px;
+  background: #7c6fa0;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.date-preview-btn:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+/* ─── Activity Feed ─── */
+
+.activity-feed-card {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  animation: fadeInUp 0.4s 0.25s ease both;
+}
+
+.activity-feed-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 12px;
+}
+
+.activity-feed-list {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.activity-feed-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.activity-feed-row:last-child {
+  border-bottom: none;
+}
+
+.activity-feed-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d4a0a0;
+  flex-shrink: 0;
+}
+
+.activity-feed-dot.type-game {
+  background: #6ba4e8;
+}
+
+.activity-feed-dot.type-streak {
+  background: #4ade80;
+}
+
+.activity-feed-dot.type-photo {
+  background: #f59e0b;
+}
+
+.activity-feed-text {
+  flex: 1;
+  font-size: 14px;
+  color: #4b5563;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-feed-time {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.activity-feed-empty {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* ─── Relationship Stats ─── */
+
+.rel-stats-card {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  animation: fadeInUp 0.4s 0.3s ease both;
+}
+
+.rel-stats-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 16px;
+}
+
+.rel-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.rel-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 12px 8px;
+  background: #faf5f0;
+  border-radius: 14px;
+}
+
+.rel-stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a2e;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.rel-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-top: 4px;
 }
 
 /* ─── Moments Tab ─── */

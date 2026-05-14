@@ -101,61 +101,120 @@
               <!-- TAB: Home -->
               <div id="tabChat" class="tab-content tab-active">
 
-                <section class="home-greeting" id="homeGreeting">
-                  <div class="home-greeting-left">
-                    <p class="home-greeting-text" id="homeGreetingText">Good morning</p>
-                    <h2 class="home-greeting-title" id="homeGreetingTitle"></h2>
+                <!-- 1. Today's Couple Card -->
+                <section class="couple-card" id="coupleCard">
+                  <div class="home-greeting" id="homeGreeting">
+                    <div class="home-greeting-left">
+                      <p class="home-greeting-text" id="homeGreetingText">Good morning</p>
+                      <h2 class="home-greeting-title" id="homeGreetingTitle"></h2>
+                      <div class="couple-card-status" id="coupleCardStatus">
+                        <span class="couple-card-dot" id="coupleCardDot"></span>
+                        <span class="couple-card-status-text" id="coupleCardStatusText">Offline</span>
+                      </div>
+                    </div>
+                    <div class="home-greeting-avatar" id="homeGreetingAvatar">
+                      <img class="home-greeting-avatar-img" id="homeGreetingAvatarImg" style="display:none" alt="">
+                    </div>
+                    <p class="home-connected-text" id="homeConnectedText" style="display:none"></p>
                   </div>
-                  <div class="home-greeting-avatar" id="homeGreetingAvatar">
-                    <img class="home-greeting-avatar-img" id="homeGreetingAvatarImg" style="display:none" alt="">
+
+                  <div class="couple-card-tz" id="timezoneCard" style="display:none">
+                    <div class="timezone-slot">
+                      <span class="timezone-label" id="tzYourLabel">Your Time</span>
+                      <span class="timezone-time" id="tzYourTime">--:--</span>
+                    </div>
+                    <div class="timezone-divider"></div>
+                    <div class="timezone-slot">
+                      <span class="timezone-label" id="tzPartnerLabel">Partner's Time</span>
+                      <span class="timezone-time" id="tzPartnerTime">--:--</span>
+                    </div>
                   </div>
-                  <p class="home-connected-text" id="homeConnectedText" style="display:none"></p>
+
+                  <div class="couple-card-stats" id="streakBar">
+                    <div class="couple-card-stat">
+                      <span class="streak-fire" id="streakFire">🔥</span>
+                      <span class="streak-count" id="streakCount">0</span>
+                      <span class="streak-label">day streak</span>
+                    </div>
+                    <div class="couple-card-stat-divider"></div>
+                    <div class="couple-card-stat">
+                      <span class="streak-heart">❤️</span>
+                      <span class="streak-count" id="heartsCount">0</span>
+                      <span class="streak-label">hearts</span>
+                    </div>
+                    <div class="couple-card-stat-status">
+                      <span id="streakStatus">Do something today!</span>
+                    </div>
+                  </div>
                 </section>
 
-                <section class="timezone-card" id="timezoneCard" style="display:none">
-                  <div class="timezone-slot">
-                    <span class="timezone-label" id="tzYourLabel">Your Time</span>
-                    <span class="timezone-time" id="tzYourTime">--:--</span>
-                  </div>
-                  <div class="timezone-divider"></div>
-                  <div class="timezone-slot">
-                    <span class="timezone-label" id="tzPartnerLabel">Partner's Time</span>
-                    <span class="timezone-time" id="tzPartnerTime">--:--</span>
-                  </div>
+                <!-- 2. Today's Connection -->
+                <section class="connection-card" id="connectionCard">
+                  <p class="connection-card-label">today's connection</p>
+                  <p class="connection-card-title" id="connectionTitle">Answer today's question</p>
+                  <p class="connection-card-subtitle" id="connectionSubtitle"></p>
+                  <button type="button" class="connection-card-btn" id="connectionAction">Let's go</button>
                 </section>
 
-                <!-- Today Cards (stacked) -->
+                <!-- 3. Today's Prompts (stacked) -->
                 <div class="today-stack anim-fade-up" id="todayStack" style="display:none">
                   <div class="today-stack-inner" id="todayStackInner"></div>
                 </div>
 
-                <!-- Streak Bar -->
-                <div class="streak-bar" id="streakBar">
-                  <div class="streak-bar-item">
-                    <span class="streak-fire" id="streakFire">🔥</span>
-                    <span class="streak-count" id="streakCount">0</span>
-                    <span class="streak-label">day streak</span>
+                <!-- 4. Couple Log Preview -->
+                <section class="couple-log-card" id="coupleLogCard">
+                  <div class="couple-log-header">
+                    <h3 class="couple-log-title">Our Day</h3>
+                    <span class="couple-log-date" id="coupleLogDate"></span>
                   </div>
-                  <div class="streak-bar-divider"></div>
-                  <div class="streak-bar-item">
-                    <span class="streak-heart">❤️</span>
-                    <span class="streak-count" id="heartsCount">0</span>
-                    <span class="streak-label">hearts</span>
+                  <div class="couple-log-summary" id="coupleLogSummary">
+                    <p class="couple-log-empty">No moments today yet</p>
                   </div>
-                  <div class="streak-bar-right">
-                    <div class="streak-bar-status" id="streakStatus">Do something today!</div>
-                  </div>
-                </div>
+                  <button type="button" class="couple-log-action" id="coupleLogAction">Add a moment</button>
+                </section>
 
-                <!-- Widgets -->
-                <section class="widgets-section" id="widgetsSection">
-                  <h2 class="widgets-heading">Widgets</h2>
-                  <div class="widget-placeholder">
-                    <span class="widget-placeholder-icon">+</span>
-                    <span class="widget-placeholder-text">Coming soon</span>
+                <!-- 5. Date Night Preview -->
+                <section class="date-preview-card" id="datePreviewCard">
+                  <div class="date-preview-header">
+                    <span class="date-preview-icon">🌙</span>
+                    <h3 class="date-preview-title">Date Night</h3>
+                  </div>
+                  <p class="date-preview-status" id="datePreviewStatus">Plan your next date night together</p>
+                  <button type="button" class="date-preview-btn" id="datePreviewAction">Start a date night</button>
+                </section>
+
+                <!-- 6. Partner Activity Feed -->
+                <section class="activity-feed-card" id="activityFeedCard">
+                  <h3 class="activity-feed-title">Recent Activity</h3>
+                  <div class="activity-feed-list" id="activityFeedList">
+                    <p class="activity-feed-empty" id="activityFeedEmpty">No activity yet</p>
                   </div>
                 </section>
 
+                <!-- 7. Relationship Stats -->
+                <section class="rel-stats-card" id="relStatsCard">
+                  <h3 class="rel-stats-title">Your Journey</h3>
+                  <div class="rel-stats-grid">
+                    <div class="rel-stat">
+                      <span class="rel-stat-value" id="statQuestionsAnswered">0</span>
+                      <span class="rel-stat-label">Questions answered</span>
+                    </div>
+                    <div class="rel-stat">
+                      <span class="rel-stat-value" id="statDateNights">0</span>
+                      <span class="rel-stat-label">Date nights</span>
+                    </div>
+                    <div class="rel-stat">
+                      <span class="rel-stat-value" id="statMomentsShared">0</span>
+                      <span class="rel-stat-label">Moments shared</span>
+                    </div>
+                    <div class="rel-stat">
+                      <span class="rel-stat-value" id="statLongestStreak">0</span>
+                      <span class="rel-stat-label">Longest streak</span>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- 8. Topics -->
                 <div id="promptsChatView">
                   <section class="topics-section" id="topicsSection"></section>
                 </div>

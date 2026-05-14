@@ -17,7 +17,7 @@ import {
   nativePickPhoto,
   escapeHTML
 } from "./utils.js";
-import { subscribeToPresence, cleanupPresence } from "./presence.js";
+import { subscribeToPresence, cleanupPresence, isPartnerOnline, setPresenceChangeCallback } from "./presence.js";
 import { getMyGameRole, subscribeToGameStates } from "./games.js";
 import {
   loadCountdown,
@@ -31,7 +31,8 @@ import {
   initFortune,
   clearCountdownInterval,
   clearStreakTimerInterval,
-  setHugCount
+  setHugCount,
+  getLongestStreak
 } from "./extras.js";
 import { addOrReplaceMessage, formatMessageRow, uploadAndSendPhoto, dataUrlToBlob } from "./chat.js";
 import { cleanupDateCall, onDateStateFromDB, checkExistingDateSession } from "./date-night.js";
@@ -619,8 +620,7 @@ function showCoupleSetup() {
 function showMainExperience() {
   coupleSetup.style.display = "none";
   mainExperience.style.display = "block";
-  renderGreeting();
-  renderTodayCard();
+  renderHomeScreen();
   updateFeatureLocks();
   setStatus(appStatusMessage, "", "");
 }
@@ -654,6 +654,206 @@ function renderGreeting() {
     homeGreetingAvatar.insertBefore(document.createTextNode(firstName.charAt(0).toUpperCase()), homeGreetingAvatar.firstChild);
   }
 }
+
+// ─── Home Dashboard Sections ───
+
+var coupleCardDot = document.getElementById("coupleCardDot");
+var coupleCardStatusText = document.getElementById("coupleCardStatusText");
+var connectionTitle = document.getElementById("connectionTitle");
+var connectionSubtitle = document.getElementById("connectionSubtitle");
+var connectionAction = document.getElementById("connectionAction");
+var coupleLogSummary = document.getElementById("coupleLogSummary");
+var coupleLogDate = document.getElementById("coupleLogDate");
+var datePreviewStatus = document.getElementById("datePreviewStatus");
+var activityFeedList = document.getElementById("activityFeedList");
+var activityFeedEmpty = document.getElementById("activityFeedEmpty");
+
+function renderCoupleCard() {
+  renderGreeting();
+
+  var online = isPartnerOnline();
+  if (online) {
+    coupleCardDot.classList.add("online");
+    coupleCardStatusText.textContent = "Online now";
+  } else {
+    coupleCardDot.classList.remove("online");
+    coupleCardStatusText.textContent = app.currentCouple && app.currentCouple.partnerName ? "Offline" : "";
+  }
+}
+
+setPresenceChangeCallback(function () {
+  renderCoupleCard();
+});
+
+var connectionActionType = null;
+
+function renderTodayConnection() {
+  var allPrompts = getTodayPrompts();
+  var unansweredCount = 0;
+  for (var i = 0; i < allPrompts.length; i++) {
+    var rev = getDailyRevealState(allPrompts[i].id);
+    if (!rev.hasMe) unansweredCount++;
+  }
+
+  if (unansweredCount > 0) {
+    connectionActionType = "prompt";
+    connectionTitle.textContent = "Answer today's question";
+    connectionSubtitle.textContent = "You have " + unansweredCount + " unanswered prompt" + (unansweredCount > 1 ? "s" : "") + " waiting";
+    connectionAction.textContent = "Let's go";
+    return;
+  }
+
+  var lastDate = localStorage.getItem("couple_streak_last_date") || "";
+  var today = new Date().toISOString().split("T")[0];
+  var streak = parseInt(localStorage.getItem("couple_streak_count") || "0");
+  if (lastDate !== today && streak > 2) {
+    connectionActionType = "streak";
+    connectionTitle.textContent = "Keep your streak going!";
+    connectionSubtitle.textContent = streak + "-day streak at risk — do something together";
+    connectionAction.textContent = "Let's go";
+    return;
+  }
+
+  var dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  var actions = [
+    { type: "hug", title: "Send a hug", subtitle: "A little love goes a long way", btn: "Send" },
+    { type: "moment", title: "Add a moment", subtitle: "Capture something from your day", btn: "Open Moments" },
+    { type: "date", title: "Start a quick date", subtitle: "Spend some quality time together", btn: "Start date" },
+    { type: "game", title: "Play a mini-game", subtitle: "Challenge your partner to a game", btn: "Play" }
+  ];
+  var pick = actions[dayOfYear % actions.length];
+  connectionActionType = pick.type;
+  connectionTitle.textContent = pick.title;
+  connectionSubtitle.textContent = pick.subtitle;
+  connectionAction.textContent = pick.btn;
+}
+
+function timeAgo(dateStr) {
+  var diff = Date.now() - new Date(dateStr).getTime();
+  var minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return minutes + "m ago";
+  var hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + "h ago";
+  var days = Math.floor(hours / 24);
+  return days + "d ago";
+}
+
+function renderCoupleLog() {
+  var now = new Date();
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  coupleLogDate.textContent = months[now.getMonth()] + " " + now.getDate();
+
+  var todayStr = now.toISOString().split("T")[0];
+  var myCount = 0;
+  var partnerCount = 0;
+  var keys = Object.keys(app.allMessages);
+  for (var i = 0; i < keys.length; i++) {
+    var msgs = app.allMessages[keys[i]];
+    for (var j = 0; j < msgs.length; j++) {
+      if (msgs[j].createdAt && msgs[j].createdAt.startsWith(todayStr)) {
+        if (msgs[j].sender === "me") myCount++;
+        else partnerCount++;
+      }
+    }
+  }
+
+  coupleLogSummary.innerHTML = "";
+
+  if (myCount === 0 && partnerCount === 0) {
+    coupleLogSummary.innerHTML = '<p class="couple-log-empty">No moments today yet — be the first!</p>';
+    return;
+  }
+
+  var myName = (app.currentProfile && app.currentProfile.display_name || "You").split(" ")[0];
+  var partnerName = (app.currentCouple && app.currentCouple.partnerName || "Partner").split(" ")[0];
+
+  if (myCount > 0) {
+    var line = document.createElement("div");
+    line.className = "couple-log-line";
+    line.innerHTML = '<span class="couple-log-avatar">' + myName.charAt(0).toUpperCase() + '</span>' +
+      '<span>' + myName + ' answered ' + myCount + ' prompt' + (myCount > 1 ? 's' : '') + '</span>';
+    coupleLogSummary.appendChild(line);
+  }
+  if (partnerCount > 0) {
+    var line2 = document.createElement("div");
+    line2.className = "couple-log-line";
+    line2.innerHTML = '<span class="couple-log-avatar">' + partnerName.charAt(0).toUpperCase() + '</span>' +
+      '<span>' + partnerName + ' answered ' + partnerCount + ' prompt' + (partnerCount > 1 ? 's' : '') + '</span>';
+    coupleLogSummary.appendChild(line2);
+  }
+}
+
+function renderDateNightPreview() {
+  if (app.lastSavedGameState && app.lastSavedGameState.date) {
+    datePreviewStatus.textContent = "Date night in progress!";
+    document.getElementById("datePreviewAction").textContent = "Continue";
+  } else {
+    datePreviewStatus.textContent = "Plan your next date night together";
+    document.getElementById("datePreviewAction").textContent = "Start a date night";
+  }
+}
+
+function renderPartnerFeed() {
+  var items = [];
+  var keys = Object.keys(app.allMessages);
+  for (var i = 0; i < keys.length; i++) {
+    var questionId = keys[i];
+    var msgs = app.allMessages[questionId];
+    for (var j = 0; j < msgs.length; j++) {
+      var msg = msgs[j];
+      var name = msg.sender === "me"
+        ? (app.currentProfile && app.currentProfile.display_name || "You").split(" ")[0]
+        : (app.currentCouple && app.currentCouple.partnerName || "Partner").split(" ")[0];
+      var action = msg.imageUrl ? "shared a photo" : "answered a prompt";
+      items.push({ text: name + " " + action, time: msg.createdAt, type: msg.imageUrl ? "photo" : "prompt" });
+    }
+  }
+
+  items.sort(function (a, b) { return new Date(b.time) - new Date(a.time); });
+  items = items.slice(0, 8);
+
+  activityFeedList.innerHTML = "";
+  if (items.length === 0) {
+    activityFeedList.innerHTML = '<p class="activity-feed-empty">No activity yet — answer a prompt to get started!</p>';
+    return;
+  }
+
+  for (var k = 0; k < items.length; k++) {
+    var row = document.createElement("div");
+    row.className = "activity-feed-row";
+    row.innerHTML =
+      '<span class="activity-feed-dot type-' + items[k].type + '"></span>' +
+      '<span class="activity-feed-text">' + escapeHTML(items[k].text) + '</span>' +
+      '<span class="activity-feed-time">' + timeAgo(items[k].time) + '</span>';
+    activityFeedList.appendChild(row);
+  }
+}
+
+function renderRelationshipStats() {
+  var questionsAnswered = 0;
+  var keys = Object.keys(app.allMessages);
+  for (var i = 0; i < keys.length; i++) {
+    var msgs = app.allMessages[keys[i]];
+    if (msgs && msgs.length > 0) questionsAnswered++;
+  }
+
+  document.getElementById("statQuestionsAnswered").textContent = questionsAnswered;
+  document.getElementById("statDateNights").textContent = "0";
+  document.getElementById("statMomentsShared").textContent = "0";
+  document.getElementById("statLongestStreak").textContent = getLongestStreak();
+}
+
+function renderHomeScreen() {
+  renderCoupleCard();
+  renderTodayConnection();
+  renderTodayCard();
+  renderCoupleLog();
+  renderDateNightPreview();
+  renderPartnerFeed();
+  renderRelationshipStats();
+}
+
 
 function getTodayPrompts() {
   var today = new Date();
@@ -929,8 +1129,7 @@ async function loadCouple() {
   showMainExperience();
   renderProfileTab();
   await loadPartnerTimezone();
-  renderGreeting();
-  renderTodayCard();
+  renderHomeScreen();
   startTimezoneWidget();
   await loadCoupleStats();
   await loadMessages();
@@ -991,7 +1190,7 @@ async function loadMessages() {
 
   renderPromptExperience();
   renderGallery();
-  renderTodayCard();
+  renderHomeScreen();
 }
 
 function scheduleMessagesReload() {
@@ -1470,6 +1669,57 @@ logoutButton.addEventListener("click", logout);
 createCoupleButton.addEventListener("click", createCouple);
 joinCoupleButton.addEventListener("click", joinCouple);
 promptSendButton.addEventListener("click", sendMessage);
+
+// Home dashboard buttons
+connectionAction.addEventListener("click", function () {
+  hapticLight();
+  if (connectionActionType === "prompt") {
+    var allPrompts = getTodayPrompts();
+    for (var i = 0; i < allPrompts.length; i++) {
+      var rev = getDailyRevealState(allPrompts[i].id);
+      if (!rev.hasMe) {
+        currentCategoryId = allPrompts[i].categoryId;
+        currentQuestionId = allPrompts[i].id;
+        openQuestionPopup(allPrompts[i].id);
+        return;
+      }
+    }
+  } else if (connectionActionType === "hug") {
+    document.querySelector('[data-tab="tabMore"]').click();
+    setTimeout(function () {
+      var hugBtn = document.getElementById("hugButton");
+      if (hugBtn) hugBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  } else if (connectionActionType === "moment") {
+    document.querySelector('[data-tab="tabMoments"]').click();
+  } else if (connectionActionType === "date") {
+    document.querySelector('[data-tab="tabDate"]').click();
+  } else if (connectionActionType === "game") {
+    document.querySelector('[data-tab="tabMore"]').click();
+  } else if (connectionActionType === "streak") {
+    var allPrompts2 = getTodayPrompts();
+    for (var j = 0; j < allPrompts2.length; j++) {
+      var rev2 = getDailyRevealState(allPrompts2[j].id);
+      if (!rev2.hasMe) {
+        currentCategoryId = allPrompts2[j].categoryId;
+        currentQuestionId = allPrompts2[j].id;
+        openQuestionPopup(allPrompts2[j].id);
+        return;
+      }
+    }
+    document.querySelector('[data-tab="tabMore"]').click();
+  }
+});
+
+document.getElementById("coupleLogAction").addEventListener("click", function () {
+  hapticLight();
+  document.querySelector('[data-tab="tabMoments"]').click();
+});
+
+document.getElementById("datePreviewAction").addEventListener("click", function () {
+  hapticLight();
+  document.querySelector('[data-tab="tabDate"]').click();
+});
 
 questionPopupSend.addEventListener("click", sendPopupAnswer);
 questionPopupInput.addEventListener("keydown", function (event) {

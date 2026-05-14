@@ -5,6 +5,11 @@ var partnerOnline = false;
 var partnerTyping = false;
 var typingTimeout = null;
 var lastTypingBroadcast = 0;
+var onPresenceChange = null;
+
+export function isPartnerOnline() { return partnerOnline; }
+
+export function setPresenceChangeCallback(fn) { onPresenceChange = fn; }
 
 export async function subscribeToPresence() {
   if (!app.currentCouple || !app.currentUser) return;
@@ -29,6 +34,7 @@ export async function subscribeToPresence() {
     }
     var wasOffline = !partnerOnline;
     partnerOnline = partnerPresent;
+    if (onPresenceChange) onPresenceChange(partnerOnline);
     if (wasOffline && partnerOnline && app.settingToggles.settingPartnerActivity) {
       showToast("Your partner is now online");
       sendLocalNotification("Partner Online", "Your partner just opened the app");
