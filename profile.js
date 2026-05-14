@@ -78,6 +78,7 @@ export function initProfile(logout, renderGreeting) {
 
     app.currentProfile.avatar_url = publicUrl;
     renderProfileTab();
+    renderGreeting();
     setStatus(profileMessage, "Photo updated!", "success");
     profileAvatarInput.value = "";
   });

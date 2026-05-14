@@ -640,7 +640,19 @@ function renderGreeting() {
     homeGreetingTitle.textContent = firstName;
   }
 
-  homeGreetingAvatar.textContent = firstName.charAt(0).toUpperCase();
+  var avatarImg = document.getElementById("homeGreetingAvatarImg");
+  if (app.currentProfile.avatar_url) {
+    avatarImg.src = app.currentProfile.avatar_url;
+    avatarImg.style.display = "";
+    homeGreetingAvatar.style.fontSize = "0";
+  } else {
+    avatarImg.style.display = "none";
+    homeGreetingAvatar.style.fontSize = "";
+    homeGreetingAvatar.childNodes.forEach(function (n) {
+      if (n.nodeType === 3) n.remove();
+    });
+    homeGreetingAvatar.insertBefore(document.createTextNode(firstName.charAt(0).toUpperCase()), homeGreetingAvatar.firstChild);
+  }
 }
 
 function getTodayPrompts() {

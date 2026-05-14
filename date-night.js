@@ -10,6 +10,39 @@ var dateLocalStream = null;
 var dateTimerInterval = null;
 var dateCurrentStep = 0;
 var dateIsActive = false;
+var shuffledSteps = [];
+
+function shuffleArray(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+function buildShuffledDate() {
+  var qs = shuffleArray(dateNightSteps.filter(function (s) { return s.type === "question"; }));
+  var cs = shuffleArray(dateNightSteps.filter(function (s) { return s.type === "challenge"; }));
+  var ws = shuffleArray(dateNightSteps.filter(function (s) { return s.type === "wouldyourather"; }));
+
+  var result = [];
+  var qi = 0, ci = 0, wi = 0;
+  for (var i = 0; i < 20; i++) {
+    if (i % 5 === 3 && ci < cs.length) {
+      result.push(cs[ci++]);
+    } else if (i % 5 === 0 && i > 0 && wi < ws.length) {
+      result.push(ws[wi++]);
+    } else if (qi < qs.length) {
+      result.push(qs[qi++]);
+    } else if (ci < cs.length) {
+      result.push(cs[ci++]);
+    } else if (wi < ws.length) {
+      result.push(ws[wi++]);
+    }
+  }
+  return result;
+}
 
 var dateStartBtn = document.getElementById("dateStartBtn");
 var dateStartMessage = document.getElementById("dateStartMessage");
@@ -186,6 +219,7 @@ async function startDateNight() {
 
   dateCurrentStep = 0;
   dateIsActive = true;
+  shuffledSteps = buildShuffledDate();
 
   await saveGameState("date", {
     status: "waiting",
@@ -205,6 +239,7 @@ async function joinDateNight() {
   setupDateChannel();
 
   dateIsActive = true;
+  if (shuffledSteps.length === 0) shuffledSteps = buildShuffledDate();
 
   var existing = await loadGameState("date");
   dateCurrentStep = existing ? (existing.currentStep || 0) : 0;
@@ -327,7 +362,8 @@ function switchToDateTab() {
 
 async function navigateDateStep(direction) {
   var newStep = dateCurrentStep + direction;
-  if (newStep < 0 || newStep >= dateNightSteps.length) return;
+  var steps = shuffledSteps.length > 0 ? shuffledSteps : dateNightSteps;
+  if (newStep < 0 || newStep >= steps.length) return;
 
   dateCurrentStep = newStep;
   renderDateStep(dateCurrentStep);
@@ -342,10 +378,11 @@ async function navigateDateStep(direction) {
 }
 
 function renderDateStep(index) {
-  if (index < 0 || index >= dateNightSteps.length) return;
+  var steps = shuffledSteps.length > 0 ? shuffledSteps : dateNightSteps;
+  if (index < 0 || index >= steps.length) return;
 
-  var step = dateNightSteps[index];
-  dateStepProgress.textContent = (index + 1) + " / " + dateNightSteps.length;
+  var step = steps[index];
+  dateStepProgress.textContent = (index + 1) + " / " + steps.length;
 
   dateStepQuestion.style.display = "none";
   dateStepChallenge.style.display = "none";
@@ -354,7 +391,7 @@ function renderDateStep(index) {
 
   datePrevBtn.disabled = index === 0;
 
-  if (index >= dateNightSteps.length - 1) {
+  if (index >= steps.length - 1) {
     dateNextBtn.textContent = "Finish";
   } else {
     dateNextBtn.textContent = "Next";
@@ -475,7 +512,8 @@ datePrevBtn.addEventListener("click", function () {
 });
 
 dateNextBtn.addEventListener("click", function () {
-  if (dateCurrentStep >= dateNightSteps.length - 1) {
+  var steps = shuffledSteps.length > 0 ? shuffledSteps : dateNightSteps;
+  if (dateCurrentStep >= steps.length - 1) {
     endDateNight();
   } else {
     navigateDateStep(1);
