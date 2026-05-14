@@ -926,52 +926,7 @@ function renderTodayCard() {
 }
 
 function renderChatsTodayCard() {
-  var stack = document.getElementById("chatsTodayStack");
-  var inner = document.getElementById("chatsTodayStackInner");
-  if (!stack || !inner) return;
-
-  var allPrompts = getTodayPrompts();
-  var unanswered = [];
-  for (var p = 0; p < allPrompts.length; p++) {
-    var rev = getDailyRevealState(allPrompts[p].id);
-    if (!rev.hasMe) unanswered.push(allPrompts[p]);
-  }
-
-  if (unanswered.length === 0) {
-    stack.style.display = "none";
-    return;
-  }
-
-  var now = new Date();
-  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  var dateStr = months[now.getMonth()] + " " + now.getDate();
-  var prompt = unanswered[0];
-
-  inner.innerHTML = "";
-  var card = document.createElement("section");
-  card.classList.add("today-card");
-  card.style.zIndex = "1";
-  card.innerHTML =
-    '<div class="today-card-header">' +
-      '<span class="today-card-label">today\'s prompt <span class="today-card-counter">' + unanswered.length + ' left</span></span>' +
-      '<span class="today-card-date">' + dateStr + '</span>' +
-    '</div>' +
-    '<p class="today-card-prompt">' + prompt.text + '</p>' +
-    '<div class="today-card-actions">' +
-      '<button type="button" class="today-card-action" data-prompt-id="' + prompt.id + '" data-prompt-cat="' + prompt.categoryId + '">Answer</button>' +
-    '</div>';
-  inner.appendChild(card);
-  stack.style.display = "";
-
-  inner.querySelectorAll(".today-card-action").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var promptId = this.getAttribute("data-prompt-id");
-      var catId = this.getAttribute("data-prompt-cat");
-      currentCategoryId = catId;
-      currentQuestionId = promptId;
-      openQuestionPopup(promptId);
-    });
-  });
+  renderTodayCardInto("chatsTodayStack", "chatsTodayStackInner");
 }
 
 function renderTodayCardInto(stackId, innerId) {
