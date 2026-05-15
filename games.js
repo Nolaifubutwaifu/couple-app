@@ -4,7 +4,9 @@ import {
   memoryMatchEmojis,
   truthPrompts,
   darePrompts,
-  loveQuizQuestions
+  loveQuizQuestions,
+  wordChainStarters,
+  drawingPrompts
 } from "./data.js";
 
 export function getMyGameRole() {
@@ -625,6 +627,207 @@ function showQuizQuestion() {
 quizRestartBtn.addEventListener("click", initQuiz);
 
 
+// ─── Word Chain ───
+
+const wcChain = document.getElementById("wcChain");
+const wcInput = document.getElementById("wcInput");
+const wcSubmit = document.getElementById("wcSubmit");
+const wcError = document.getElementById("wcError");
+const wcScoreEl = document.getElementById("wcScore");
+const wcBestEl = document.getElementById("wcBest");
+const wcRestart = document.getElementById("wcRestart");
+
+let wcWords = [];
+let wcBest = parseInt(localStorage.getItem("couple_wc_best") || "0");
+
+function initWordChain() {
+  wcWords = [];
+  wcError.textContent = "";
+  wcInput.value = "";
+
+  var starter = wordChainStarters[Math.floor(Math.random() * wordChainStarters.length)];
+  wcWords.push(starter);
+  renderWordChain();
+  wcBestEl.textContent = wcBest;
+}
+
+function renderWordChain() {
+  var html = "";
+  for (var i = 0; i < wcWords.length; i++) {
+    var word = wcWords[i];
+    var lastChar = word.charAt(word.length - 1).toUpperCase();
+    html += '<div class="wc-word">';
+    html += '<span class="wc-word-text">' + word + '</span>';
+    if (i < wcWords.length - 1 || true) {
+      html += '<span class="wc-word-letter">' + lastChar + '</span>';
+    }
+    html += '</div>';
+  }
+  wcChain.innerHTML = html;
+  wcChain.scrollTop = wcChain.scrollHeight;
+  wcScoreEl.textContent = wcWords.length - 1;
+}
+
+function submitWordChain() {
+  var word = wcInput.value.trim().toLowerCase();
+  if (!word) return;
+
+  var lastWord = wcWords[wcWords.length - 1];
+  var requiredLetter = lastWord.charAt(lastWord.length - 1).toLowerCase();
+
+  if (word.charAt(0) !== requiredLetter) {
+    wcError.textContent = 'Must start with "' + requiredLetter.toUpperCase() + '"';
+    return;
+  }
+
+  if (word.length < 2) {
+    wcError.textContent = "Word must be at least 2 letters";
+    return;
+  }
+
+  if (wcWords.indexOf(word) >= 0) {
+    wcError.textContent = "Already used!";
+    return;
+  }
+
+  wcError.textContent = "";
+  wcWords.push(word);
+  wcInput.value = "";
+  renderWordChain();
+
+  var score = wcWords.length - 1;
+  if (score > wcBest) {
+    wcBest = score;
+    wcBestEl.textContent = wcBest;
+    localStorage.setItem("couple_wc_best", String(wcBest));
+  }
+}
+
+wcSubmit.addEventListener("click", submitWordChain);
+wcInput.addEventListener("keydown", function (e) {
+  if (e.key === "Enter") submitWordChain();
+});
+wcRestart.addEventListener("click", function () { initWordChain(); });
+
+
+// ─── Drawing Challenge ───
+
+const drawCanvas = document.getElementById("drawCanvas");
+const drawCtx = drawCanvas.getContext("2d");
+const drawPromptText = document.getElementById("drawPromptText");
+const drawColors = document.getElementById("drawColors");
+const drawClear = document.getElementById("drawClear");
+const drawGotIt = document.getElementById("drawGotIt");
+const drawSkip = document.getElementById("drawSkip");
+const drawCorrectEl = document.getElementById("drawCorrect");
+const drawSkippedEl = document.getElementById("drawSkipped");
+
+let drawColor = "#1a1a2e";
+let drawIsDrawing = false;
+let drawCorrect = 0;
+let drawSkipped = 0;
+let drawUsedPrompts = [];
+
+function initDrawing() {
+  drawCorrect = 0;
+  drawSkipped = 0;
+  drawCorrectEl.textContent = "0";
+  drawSkippedEl.textContent = "0";
+  drawUsedPrompts = [];
+  nextDrawPrompt();
+}
+
+function nextDrawPrompt() {
+  if (drawUsedPrompts.length >= drawingPrompts.length) {
+    drawUsedPrompts = [];
+  }
+  var available = drawingPrompts.filter(function (p) { return drawUsedPrompts.indexOf(p) < 0; });
+  var prompt = available[Math.floor(Math.random() * available.length)];
+  drawUsedPrompts.push(prompt);
+  drawPromptText.textContent = prompt;
+  clearCanvas();
+}
+
+function clearCanvas() {
+  drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  drawCtx.fillStyle = "#ffffff";
+  drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+}
+
+function resizeCanvas() {
+  var wrap = drawCanvas.parentElement;
+  if (!wrap) return;
+  var size = Math.min(wrap.clientWidth, 320);
+  drawCanvas.width = size;
+  drawCanvas.height = size;
+  clearCanvas();
+}
+
+function getCanvasPos(e) {
+  var rect = drawCanvas.getBoundingClientRect();
+  var scaleX = drawCanvas.width / rect.width;
+  var scaleY = drawCanvas.height / rect.height;
+  if (e.touches && e.touches.length > 0) {
+    return { x: (e.touches[0].clientX - rect.left) * scaleX, y: (e.touches[0].clientY - rect.top) * scaleY };
+  }
+  return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+}
+
+function startDraw(e) {
+  e.preventDefault();
+  drawIsDrawing = true;
+  var pos = getCanvasPos(e);
+  drawCtx.beginPath();
+  drawCtx.moveTo(pos.x, pos.y);
+}
+
+function moveDraw(e) {
+  if (!drawIsDrawing) return;
+  e.preventDefault();
+  var pos = getCanvasPos(e);
+  drawCtx.strokeStyle = drawColor;
+  drawCtx.lineWidth = 3;
+  drawCtx.lineCap = "round";
+  drawCtx.lineJoin = "round";
+  drawCtx.lineTo(pos.x, pos.y);
+  drawCtx.stroke();
+}
+
+function stopDraw() {
+  drawIsDrawing = false;
+}
+
+drawCanvas.addEventListener("mousedown", startDraw);
+drawCanvas.addEventListener("mousemove", moveDraw);
+drawCanvas.addEventListener("mouseup", stopDraw);
+drawCanvas.addEventListener("mouseleave", stopDraw);
+drawCanvas.addEventListener("touchstart", startDraw, { passive: false });
+drawCanvas.addEventListener("touchmove", moveDraw, { passive: false });
+drawCanvas.addEventListener("touchend", stopDraw);
+
+drawColors.addEventListener("click", function (e) {
+  var btn = e.target.closest(".draw-color");
+  if (!btn) return;
+  drawColor = btn.dataset.color;
+  drawColors.querySelectorAll(".draw-color").forEach(function (b) { b.classList.remove("draw-color-active"); });
+  btn.classList.add("draw-color-active");
+});
+
+drawClear.addEventListener("click", clearCanvas);
+
+drawGotIt.addEventListener("click", function () {
+  drawCorrect++;
+  drawCorrectEl.textContent = drawCorrect;
+  nextDrawPrompt();
+});
+
+drawSkip.addEventListener("click", function () {
+  drawSkipped++;
+  drawSkippedEl.textContent = drawSkipped;
+  nextDrawPrompt();
+});
+
+
 // ─── Game Launcher ───
 
 const gamesGrid = document.getElementById("gamesGrid");
@@ -632,12 +835,16 @@ const gamePanels = {
   memory: document.getElementById("gameMemory"),
   tictactoe: document.getElementById("gameTictactoe"),
   truthdare: document.getElementById("gameTruthdare"),
-  quiz: document.getElementById("gameQuiz")
+  quiz: document.getElementById("gameQuiz"),
+  wordchain: document.getElementById("gameWordchain"),
+  drawing: document.getElementById("gameDrawing")
 };
 
 const gameInitFunctions = {
   truthdare: function () {},
-  quiz: initQuiz
+  quiz: initQuiz,
+  wordchain: initWordChain,
+  drawing: function () { resizeCanvas(); initDrawing(); }
 };
 
 export function initGames(recordEngagement) {

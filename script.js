@@ -229,15 +229,26 @@ function getCategoryProgress(categoryId) {
 function showCategories() {
   topicsSection.innerHTML = "";
 
+  var sectionColors = ["rose", "lavender", "mint", "peach", "sky", "rose", "lavender"];
+
   for (var i = 0; i < promptCategorySections.length; i++) {
     var section = promptCategorySections[i];
+
+    var headingRow = document.createElement("div");
+    headingRow.classList.add("topics-heading-row");
 
     var heading = document.createElement("h2");
     heading.classList.add("topics-heading");
     heading.textContent = section.title;
-    topicsSection.appendChild(heading);
+    headingRow.appendChild(heading);
 
-    var sectionColors = ["rose", "lavender", "mint", "peach", "sky"];
+    var seeAll = document.createElement("span");
+    seeAll.classList.add("topics-see-all");
+    seeAll.textContent = "See all";
+    headingRow.appendChild(seeAll);
+
+    topicsSection.appendChild(headingRow);
+
     var grid = document.createElement("div");
     grid.classList.add("topic-pill-grid");
 
@@ -629,10 +640,10 @@ function renderGreeting() {
   var greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   var firstName = (app.currentProfile.display_name || "").split(" ")[0];
 
-  homeGreetingText.textContent = greeting + ", " + firstName;
+  homeGreetingText.textContent = greeting + ", " + firstName + " 👋";
 
   if (app.currentCouple && app.currentCouple.partnerName) {
-    homeGreetingTitle.textContent = firstName + " & " + app.currentCouple.partnerName.split(" ")[0];
+    homeGreetingTitle.textContent = "You & " + app.currentCouple.partnerName.split(" ")[0];
   } else {
     homeGreetingTitle.textContent = firstName;
   }
@@ -928,6 +939,7 @@ function renderChatsTodayCard() {
 function renderTodayCardInto(stackId, innerId) {
   var stack = document.getElementById(stackId);
   var inner = document.getElementById(innerId);
+  if (!stack || !inner) return;
 
   var allPrompts = getTodayPrompts();
   var unanswered = [];
@@ -958,11 +970,11 @@ function renderTodayCardInto(stackId, innerId) {
     doneCard.style.zIndex = "1";
     doneCard.innerHTML =
       '<div class="today-card-header">' +
-        '<span class="today-card-label">today\'s prompts</span>' +
+        '<span class="today-card-label">today\'s progress</span>' +
         '<span class="today-card-date">' + dateStr + '</span>' +
       '</div>' +
-      '<p class="today-card-prompt">All done for today!</p>' +
-      '<p class="today-card-status today-card-status-done">You answered all 3 prompts. Come back tomorrow for new ones.</p>';
+      '<p class="today-card-prompt"><span class="today-card-check">✓</span> All done for today!</p>' +
+      '<p class="today-card-status today-card-status-done">You answered all ' + answered.length + ' prompts. Come back tomorrow for new ones.</p>';
     inner.appendChild(doneCard);
     stack.style.display = "";
     return;
@@ -1191,6 +1203,8 @@ async function loadCouple() {
   startTimezoneWidget();
   await loadCoupleStats();
   updateShopBalance();
+  var moreHeartsEl = document.getElementById("moreHeartsCount");
+  if (moreHeartsEl) moreHeartsEl.textContent = localStorage.getItem("couple_streak_hearts") || "0";
   renderAchievements();
 
   var profileInviteCode = document.getElementById("profileInviteCode");
@@ -1694,6 +1708,46 @@ chatsSubBtns.forEach(function (btn) {
   });
 });
 
+var chatsExploreBrowse = document.getElementById("chatsExploreBrowse");
+if (chatsExploreBrowse) {
+  chatsExploreBrowse.addEventListener("click", function () {
+    hapticLight();
+    chatsSubBtns.forEach(function (b) { b.classList.remove("chats-sub-active"); });
+    chatsSubBtns[1].classList.add("chats-sub-active");
+    document.querySelectorAll(".chats-section").forEach(function (s) {
+      s.classList.remove("chats-section-active");
+    });
+    document.getElementById("chatsPrompts").classList.add("chats-section-active");
+  });
+}
+
+var surpriseMeBtn = document.getElementById("surpriseMeBtn");
+if (surpriseMeBtn) {
+  surpriseMeBtn.addEventListener("click", function () {
+    hapticLight();
+    var allQs = questions;
+    if (allQs.length === 0) return;
+    var unanswered = [];
+    for (var i = 0; i < allQs.length; i++) {
+      var msgs = app.allMessages[allQs[i].id] || [];
+      var iAnswered = false;
+      for (var m = 0; m < msgs.length; m++) {
+        if (msgs[m].sender === "me") { iAnswered = true; break; }
+      }
+      if (!iAnswered) unanswered.push(allQs[i]);
+    }
+    var pool = unanswered.length > 0 ? unanswered : allQs;
+    var pick = pool[Math.floor(Math.random() * pool.length)];
+    currentQuestionId = pick.id;
+    currentCategoryId = pick.categoryId;
+    if (unanswered.length > 0) {
+      openQuestionPopup(currentQuestionId);
+    } else {
+      openPromptChat(currentQuestionId);
+    }
+  });
+}
+
 
 // ─── Feature Locks ───
 
@@ -1725,6 +1779,51 @@ initGames(recordEngagement);
 initProfile(logout, renderGreeting);
 initInviteButtons(coupleMessage);
 initShop();
+
+var moreHubMap = [
+  ["moreHubGames", "moreGames"],
+  ["moreHubShop", "moreShop"],
+  ["moreMenuShop", "moreShop"],
+  ["moreHubAchievements", "moreAchievements"],
+  ["moreHubProfile", "moreProfile"],
+  ["moreHubThemes", "moreThemes"],
+  ["moreHubSettings", "moreSettings"]
+];
+
+var tabMore = document.getElementById("tabMore");
+
+function showMoreDetail(sectionId) {
+  hapticLight();
+  tabMore.classList.add("more-detail-active");
+  var target = document.querySelector('.more-sub-btn[data-section="' + sectionId + '"]');
+  if (target) target.click();
+}
+
+function showMoreLanding() {
+  hapticLight();
+  tabMore.classList.remove("more-detail-active");
+}
+
+moreHubMap.forEach(function (pair) {
+  var btn = document.getElementById(pair[0]);
+  if (btn) {
+    btn.addEventListener("click", function () {
+      showMoreDetail(pair[1]);
+    });
+  }
+});
+
+var moreBackBtn = document.getElementById("moreBackBtn");
+if (moreBackBtn) {
+  moreBackBtn.addEventListener("click", showMoreLanding);
+}
+
+var moreGoToShop = document.getElementById("moreGoToShop");
+if (moreGoToShop) {
+  moreGoToShop.addEventListener("click", function () {
+    showMoreDetail("moreShop");
+  });
+}
 
 var profileCopyInviteBtn = document.getElementById("profileCopyInviteBtn");
 if (profileCopyInviteBtn) {

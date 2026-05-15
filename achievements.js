@@ -65,15 +65,13 @@ export function renderAchievements() {
     var complete = current >= a.target;
 
     html += '<div class="achievement-card' + (complete ? ' achievement-complete' : '') + '">';
-    html += '<div class="achievement-card-header">';
     html += '<span class="achievement-card-icon">' + a.icon + '</span>';
-    html += '<div class="achievement-card-info">';
+    html += '<div class="achievement-card-body">';
     html += '<div class="achievement-card-title">' + a.title + '</div>';
     html += '<div class="achievement-card-desc">' + a.desc + '</div>';
-    html += '</div></div>';
     html += '<div class="achievement-progress-bar"><div class="achievement-progress-fill" style="width:' + pct + '%"></div></div>';
     html += '<div class="achievement-card-status"><span>' + Math.min(current, a.target) + ' / ' + a.target + '</span><span>' + (complete ? '✓ Complete' : pct + '%') + '</span></div>';
-    html += '</div>';
+    html += '</div></div>';
   }
 
   list.innerHTML = html;

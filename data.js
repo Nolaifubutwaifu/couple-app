@@ -2048,6 +2048,40 @@ export const dateNightSteps = [
   { type: "wouldyourather", optionA: "Receive a heartfelt handwritten letter every week", optionB: "Get a surprise gift once a month", themes: ["romantic", "flirty"] }
 ];
 
+export const wordChainStarters = [
+  "love", "heart", "smile", "dream", "star", "moon", "kiss", "flame",
+  "rose", "dance", "ocean", "light", "sweet", "charm", "glow", "bloom",
+  "spark", "cloud", "angel", "bliss"
+];
+
+export const drawingPrompts = [
+  "Draw your partner's smile",
+  "Draw your dream vacation together",
+  "Draw your first date",
+  "Draw your partner as a superhero",
+  "Draw your favourite meal together",
+  "Draw what love looks like",
+  "Draw your partner's favourite animal",
+  "Draw a house you'd live in together",
+  "Draw your partner sleeping",
+  "Draw the funniest moment you've shared",
+  "Draw your partner's morning face",
+  "Draw a sunset you'd watch together",
+  "Draw your partner as a cartoon character",
+  "Draw the best gift you've received from them",
+  "Draw your partner's favourite hobby",
+  "Draw what you'd look like in 50 years",
+  "Draw your ideal weekend together",
+  "Draw your partner's laugh",
+  "Draw a place you want to visit together",
+  "Draw your partner cooking",
+  "Draw your relationship as a weather forecast",
+  "Draw the emoji that represents your partner",
+  "Draw your favourite memory together",
+  "Draw your partner's eyes",
+  "Draw a love letter as a picture"
+];
+
 export const diceActivities = [
   "Cook together",
   "Watch a movie",

@@ -101,7 +101,10 @@
               <!-- TAB: Home -->
               <div id="tabChat" class="tab-content tab-active">
 
-                <!-- 1. Today's Couple Card -->
+                <!-- Home tab label -->
+                <p class="home-tab-label">H O M E</p>
+
+                <!-- 1. Couple Status Card -->
                 <section class="couple-card" id="coupleCard">
                   <div class="home-greeting" id="homeGreeting">
                     <div class="home-greeting-left">
@@ -120,12 +123,12 @@
 
                   <div class="couple-card-tz" id="timezoneCard" style="display:none">
                     <div class="timezone-slot">
-                      <span class="timezone-label" id="tzYourLabel">Your Time</span>
+                      <span class="timezone-label" id="tzYourLabel">Local Time</span>
                       <span class="timezone-time" id="tzYourTime">--:--</span>
                     </div>
                     <div class="timezone-divider"></div>
                     <div class="timezone-slot">
-                      <span class="timezone-label" id="tzPartnerLabel">Partner's Time</span>
+                      <span class="timezone-label" id="tzPartnerLabel">Their Time</span>
                       <span class="timezone-time" id="tzPartnerTime">--:--</span>
                     </div>
                   </div>
@@ -150,10 +153,15 @@
 
                 <!-- 2. Today's Connection -->
                 <section class="connection-card" id="connectionCard">
-                  <p class="connection-card-label">today's connection</p>
-                  <p class="connection-card-title" id="connectionTitle">Answer today's question</p>
-                  <p class="connection-card-subtitle" id="connectionSubtitle"></p>
-                  <button type="button" class="connection-card-btn" id="connectionAction">Let's go</button>
+                  <div class="connection-card-inner">
+                    <p class="connection-card-label">today's connection</p>
+                    <p class="connection-card-title" id="connectionTitle">Answer today's question</p>
+                    <p class="connection-card-subtitle" id="connectionSubtitle"></p>
+                    <button type="button" class="connection-card-btn" id="connectionAction">Start now <span class="connection-card-btn-arrow">→</span></button>
+                  </div>
+                  <div class="connection-card-illustration">
+                    <img src="public/graphics/hearts-cloud.png" alt="" class="connection-card-img">
+                  </div>
                 </section>
 
                 <!-- 3. Today's Prompts (stacked) -->
@@ -161,7 +169,7 @@
                   <div class="today-stack-inner" id="todayStackInner"></div>
                 </div>
 
-                <!-- 4. Couple Log Preview -->
+                <!-- 4. Couple Log Preview (Our Day) -->
                 <section class="couple-log-card" id="coupleLogCard">
                   <div class="couple-log-header">
                     <h3 class="couple-log-title">Our Day</h3>
@@ -175,30 +183,36 @@
 
                 <!-- 5. Date Night Preview -->
                 <section class="date-preview-card" id="datePreviewCard">
-                  <div class="date-preview-header">
-                    <span class="date-preview-icon" id="datePreviewIcon">🌙</span>
-                    <h3 class="date-preview-title">Date Night</h3>
+                  <div class="date-preview-body">
+                    <p class="date-preview-label">upcoming date night</p>
+                    <div class="date-preview-header">
+                      <span class="date-preview-icon" id="datePreviewIcon">🌙</span>
+                      <h3 class="date-preview-title">Date Night</h3>
+                    </div>
+                    <div class="date-preview-scheduled-detail" id="datePreviewScheduled" style="display:none">
+                      <span class="date-preview-scheduled-day" id="datePreviewDay"></span>
+                      <span class="date-preview-scheduled-time" id="datePreviewTime"></span>
+                      <span class="date-preview-scheduled-theme" id="datePreviewTheme"></span>
+                    </div>
+                    <p class="date-preview-status" id="datePreviewStatus">Plan your next date night together</p>
+                    <button type="button" class="date-preview-btn" id="datePreviewAction">View details</button>
                   </div>
-                  <div class="date-preview-scheduled-detail" id="datePreviewScheduled" style="display:none">
-                    <span class="date-preview-scheduled-day" id="datePreviewDay"></span>
-                    <span class="date-preview-scheduled-time" id="datePreviewTime"></span>
-                    <span class="date-preview-scheduled-theme" id="datePreviewTheme"></span>
+                  <div class="date-preview-illustration">
+                    <img src="public/graphics/window.png" alt="" class="date-preview-img">
                   </div>
-                  <p class="date-preview-status" id="datePreviewStatus">Plan your next date night together</p>
-                  <button type="button" class="date-preview-btn" id="datePreviewAction">Start a date night</button>
                 </section>
 
-                <!-- 6. Partner Activity Feed -->
+                <!-- 6. Recent Activity -->
                 <section class="activity-feed-card" id="activityFeedCard">
-                  <h3 class="activity-feed-title">Recent Activity</h3>
+                  <p class="activity-feed-label">recent activity</p>
                   <div class="activity-feed-list" id="activityFeedList">
                     <p class="activity-feed-empty" id="activityFeedEmpty">No activity yet</p>
                   </div>
                 </section>
 
-                <!-- 7. Relationship Stats -->
+                <!-- 7. Your Journey -->
                 <section class="rel-stats-card" id="relStatsCard">
-                  <h3 class="rel-stats-title">Your Journey</h3>
+                  <p class="rel-stats-label">your journey</p>
                   <div class="rel-stats-grid">
                     <div class="rel-stat">
                       <span class="rel-stat-value" id="statQuestionsAnswered">0</span>
@@ -221,12 +235,22 @@
 
               </div>
 
-              <!-- TAB: Moments -->
+              <!-- TAB: Our Day -->
               <div id="tabMoments" class="tab-content">
+                <p class="moments-tab-label">O U R &nbsp; D A Y</p>
+
                 <section class="moments-header">
-                  <p class="small-text">moments</p>
-                  <h2>Your Moments.</h2>
-                  <p class="setup-description">Capture and relive special moments together.</p>
+                  <div class="moments-header-row">
+                    <h2>Our Day</h2>
+                    <button type="button" class="moments-header-cal-btn" id="momentsCalToggle">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </button>
+                  </div>
+                  <p class="moments-header-subtitle">Share the small moments that make your day</p>
+                </section>
+
+                <section class="moments-date-strip" id="momentsDateStrip">
+                  <div class="moments-date-strip-row" id="momentsDateStripRow"></div>
                 </section>
 
                 <div class="moments-setup" id="momentsSetup" style="display:none">
@@ -235,9 +259,17 @@
                 </div>
 
                 <section class="moments-prompt-card" id="momentsPromptCard" style="display:none">
-                  <p class="moments-prompt-label">moment idea</p>
-                  <p class="moments-prompt-text" id="momentsPromptText"></p>
-                  <button type="button" class="moments-prompt-btn" id="momentsPromptAction">Capture this</button>
+                  <div class="moments-prompt-body">
+                    <p class="moments-prompt-label">moment idea</p>
+                    <p class="moments-prompt-text" id="momentsPromptText"></p>
+                    <button type="button" class="moments-prompt-btn" id="momentsPromptAction">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                      Capture this
+                    </button>
+                  </div>
+                  <div class="moments-prompt-illustration">
+                    <img src="public/graphics/sun-cloud.png" alt="" class="moments-prompt-img">
+                  </div>
                 </section>
 
                 <section class="moments-timeline-section" id="momentsTimelineSection">
@@ -255,15 +287,24 @@
                 </section>
 
                 <section class="moments-recap-card" id="momentsRecapCard" style="display:none">
-                  <div class="moments-recap-header">
-                    <h3 class="moments-recap-title" id="momentsRecapTitle">Our Day</h3>
-                    <span class="moments-recap-date" id="momentsRecapDate"></span>
+                  <div class="moments-recap-body">
+                    <p class="moments-recap-label">our day recap</p>
+                    <div class="moments-recap-header">
+                      <h3 class="moments-recap-title" id="momentsRecapTitle">Our Day</h3>
+                      <span class="moments-recap-date" id="momentsRecapDate"></span>
+                    </div>
+                    <div class="moments-recap-stats" id="momentsRecapStats"></div>
                   </div>
-                  <div class="moments-recap-stats" id="momentsRecapStats"></div>
+                  <div class="moments-recap-illustration">
+                    <img src="public/graphics/heart-burst.png" alt="" class="moments-recap-img">
+                  </div>
                 </section>
 
                 <section class="moments-archive-section" id="momentsArchiveSection">
-                  <h3 class="moments-archive-title">Archive</h3>
+                  <div class="moments-archive-header">
+                    <h3 class="moments-archive-title">Look Back</h3>
+                    <p class="moments-archive-subtitle">Relive your shared moments</p>
+                  </div>
                   <div class="moments-archive-filters">
                     <button type="button" class="moments-filter-btn moments-filter-active" data-filter="today">Today</button>
                     <button type="button" class="moments-filter-btn" data-filter="yesterday">Yesterday</button>
@@ -286,71 +327,198 @@
               </div>
 
               <div id="tabChats" class="tab-content">
+                <p class="chats-tab-label">C H A T S</p>
+
+                <section class="chats-header">
+                  <div class="chats-header-row">
+                    <h2 class="chats-header-title">Chats</h2>
+                    <span class="chats-header-icon">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </span>
+                  </div>
+                  <p class="chats-header-subtitle">Conversations that bring you closer</p>
+                </section>
+
                 <div class="today-stack anim-fade-up" id="chatsTodayStack" style="display:none">
                   <div class="today-stack-inner" id="chatsTodayStackInner"></div>
                 </div>
 
                 <div class="chats-sub-nav" id="chatsSubNav">
-                  <button type="button" class="chats-sub-btn chats-sub-active" data-section="chatsConversations">Chats</button>
+                  <button type="button" class="chats-sub-btn chats-sub-active" data-section="chatsConversations">Conversations</button>
                   <button type="button" class="chats-sub-btn" data-section="chatsPrompts">Prompts</button>
                 </div>
 
                 <div id="chatsConversations" class="chats-section chats-section-active">
                   <section class="active-chats-section" id="activeChatsSection">
-                    <h3 class="active-chats-heading">Conversations</h3>
+                    <h3 class="active-chats-heading">Your Conversations</h3>
                     <div class="active-chats-list" id="activeChatsList"></div>
                     <p class="active-chats-empty" id="activeChatsEmpty" style="display:none">No conversations yet. Answer a prompt to start one!</p>
+                  </section>
+
+                  <section class="chats-explore-card">
+                    <p class="chats-explore-title">Explore more conversations</p>
+                    <p class="chats-explore-subtitle">Browse handpicked topics to spark deeper talks.</p>
+                    <button type="button" class="chats-explore-btn" id="chatsExploreBrowse">Browse</button>
                   </section>
                 </div>
 
                 <div id="chatsPrompts" class="chats-section">
+                  <section class="prompts-intro">
+                    <h3 class="prompts-intro-title">Pick a mood for today</h3>
+                    <p class="prompts-intro-subtitle">Browse topics that inspire connection</p>
+                  </section>
                   <section class="topics-section" id="topicsSection"></section>
+                  <section class="surprise-me-card" id="surpriseMeCard">
+                    <div class="surprise-me-body">
+                      <p class="surprise-me-label">Surprise me</p>
+                      <p class="surprise-me-text">Not sure what to ask?</p>
+                      <p class="surprise-me-subtitle">We'll pick a great prompt for you.</p>
+                    </div>
+                    <button type="button" class="surprise-me-btn" id="surpriseMeBtn">Surprise me</button>
+                  </section>
                 </div>
               </div>
 
-              <!-- TAB: More (Games + Extras + Gallery + Settings) -->
+              <!-- TAB: More -->
               <div id="tabMore" class="tab-content">
                 <div class="tab-lock-overlay" id="lockMore">
                   <span class="tab-lock-icon">✦</span>
                   <p class="tab-lock-text">Games, shop, achievements, and more — unlocks when your partner joins</p>
                 </div>
 
+                <!-- More Landing Overview -->
+                <section class="more-landing">
+
+                  <div class="more-header">
+                    <h2 class="more-header-title">More</h2>
+                    <p class="more-header-tagline">For the two of you.</p>
+                    <p class="more-header-subtitle">Discover games, earn rewards, and make this space feel like you.</p>
+                  </div>
+
+                  <div class="more-hearts-card">
+                    <div class="more-hearts-left">
+                      <span class="more-hearts-icon">❤️</span>
+                      <span class="more-hearts-count" id="moreHeartsCount">0</span>
+                      <span class="more-hearts-label">shared hearts</span>
+                    </div>
+                    <button type="button" class="more-hearts-topup" id="moreHubShop">Top Up</button>
+                  </div>
+
+                  <div class="more-cta-card" id="moreGoToShop">
+                    <div class="more-cta-body">
+                      <p class="more-cta-title">Unlock something sweet</p>
+                      <p class="more-cta-text">New rewards are waiting in the Heart Shop.</p>
+                      <button type="button" class="more-cta-btn">Explore Shop</button>
+                    </div>
+                    <div class="more-cta-illustration">
+                      <img src="public/graphics/gift.png" alt="" class="more-cta-img">
+                    </div>
+                  </div>
+
+                  <div class="more-menu">
+                    <button type="button" class="more-menu-item" id="moreHubGames">
+                      <span class="more-menu-icon">🎮</span>
+                      <div class="more-menu-text">
+                        <span class="more-menu-label">Games</span>
+                      </div>
+                      <span class="more-menu-arrow">›</span>
+                    </button>
+                    <button type="button" class="more-menu-item" id="moreMenuShop">
+                      <span class="more-menu-icon">🎁</span>
+                      <div class="more-menu-text">
+                        <span class="more-menu-label">Heart Shop</span>
+                        <span class="more-menu-desc">Spend hearts on rewards</span>
+                      </div>
+                      <span class="more-menu-arrow">›</span>
+                    </button>
+                    <button type="button" class="more-menu-item" id="moreHubAchievements">
+                      <span class="more-menu-icon">🏆</span>
+                      <div class="more-menu-text">
+                        <span class="more-menu-label">Achievements</span>
+                      </div>
+                      <span class="more-menu-arrow">›</span>
+                    </button>
+                    <button type="button" class="more-menu-item" id="moreHubProfile">
+                      <span class="more-menu-icon">👤</span>
+                      <div class="more-menu-text">
+                        <span class="more-menu-label">Profile</span>
+                        <span class="more-menu-desc">Edit profile & invite code</span>
+                      </div>
+                      <span class="more-menu-arrow">›</span>
+                    </button>
+                    <button type="button" class="more-menu-item" id="moreHubThemes">
+                      <span class="more-menu-icon">🎨</span>
+                      <div class="more-menu-text">
+                        <span class="more-menu-label">Themes</span>
+                        <span class="more-menu-desc">Personalise your space</span>
+                      </div>
+                      <span class="more-menu-arrow">›</span>
+                    </button>
+                    <button type="button" class="more-menu-item" id="moreHubSettings">
+                      <span class="more-menu-icon">⚙️</span>
+                      <div class="more-menu-text">
+                        <span class="more-menu-label">Settings</span>
+                        <span class="more-menu-desc">Notifications & preferences</span>
+                      </div>
+                      <span class="more-menu-arrow">›</span>
+                    </button>
+                  </div>
+                </section>
+
                 <div class="more-sub-nav" id="moreSubNav">
-                  <button type="button" class="more-sub-btn more-sub-active" data-section="moreGames">Games</button>
+                  <button type="button" class="more-sub-btn more-sub-active" data-section="moreGames">Play</button>
                   <button type="button" class="more-sub-btn" data-section="moreShop">Shop</button>
-                  <button type="button" class="more-sub-btn" data-section="moreAchievements">Achieve</button>
+                  <button type="button" class="more-sub-btn" data-section="moreAchievements">Journey</button>
                   <button type="button" class="more-sub-btn" data-section="moreProfile">Profile</button>
+                  <button type="button" class="more-sub-btn" data-section="moreThemes">Themes</button>
                   <button type="button" class="more-sub-btn" data-section="moreSettings">Settings</button>
                 </div>
+
+                <button type="button" class="more-back-btn" id="moreBackBtn">‹ Back</button>
 
                 <!-- Games -->
                 <div id="moreGames" class="more-section more-section-active">
                   <section class="games-header">
-                    <p class="small-text">minigames</p>
-                    <h2>Play together.</h2>
-                    <p class="setup-description">Fun games to play with your partner, even from far away.</p>
+                    <h2 class="games-header-title">Play together.</h2>
+                    <p class="games-header-subtitle">Fun little games to spark laughs and connection.</p>
                   </section>
 
                   <div class="games-grid" id="gamesGrid">
                     <button type="button" class="game-launcher" data-game="memory">
                       <span class="game-launcher-icon">🃏</span>
                       <span class="game-launcher-label">Memory Match</span>
-                      <span class="game-launcher-desc">Find the matching pairs</span>
+                      <span class="game-launcher-desc">Find the matching pairs.</span>
+                      <span class="game-launcher-tag game-launcher-tag--rose">Popular!</span>
                     </button>
                     <button type="button" class="game-launcher" data-game="tictactoe">
                       <span class="game-launcher-icon">⭕</span>
                       <span class="game-launcher-label">Tic Tac Toe</span>
-                      <span class="game-launcher-desc">Hearts vs Stars</span>
+                      <span class="game-launcher-desc">Hearts vs Stars.</span>
+                      <span class="game-launcher-tag game-launcher-tag--lavender">Quick!</span>
                     </button>
                     <button type="button" class="game-launcher" data-game="truthdare">
                       <span class="game-launcher-icon">🎯</span>
                       <span class="game-launcher-label">Truth or Dare</span>
-                      <span class="game-launcher-desc">Couple's edition</span>
+                      <span class="game-launcher-desc">Couple's edition.</span>
+                      <span class="game-launcher-tag game-launcher-tag--mint">Fun!</span>
                     </button>
                     <button type="button" class="game-launcher" data-game="quiz">
                       <span class="game-launcher-icon">💡</span>
                       <span class="game-launcher-label">Love Quiz</span>
                       <span class="game-launcher-desc">How well do you know each other?</span>
+                      <span class="game-launcher-tag game-launcher-tag--peach">New!</span>
+                    </button>
+                    <button type="button" class="game-launcher" data-game="wordchain">
+                      <span class="game-launcher-icon">🔗</span>
+                      <span class="game-launcher-label">Word Chain</span>
+                      <span class="game-launcher-desc">Link words letter by letter.</span>
+                      <span class="game-launcher-tag game-launcher-tag--mint">New!</span>
+                    </button>
+                    <button type="button" class="game-launcher" data-game="drawing">
+                      <span class="game-launcher-icon">🎨</span>
+                      <span class="game-launcher-label">Drawing Challenge</span>
+                      <span class="game-launcher-desc">Draw and guess together.</span>
+                      <span class="game-launcher-tag game-launcher-tag--rose">Creative!</span>
                     </button>
                   </div>
 
@@ -436,20 +604,73 @@
                       <button type="button" id="quizRestart" class="game-action-btn">Play again</button>
                     </div>
                   </section>
+
+                  <section id="gameWordchain" class="game-panel" style="display:none">
+                    <div class="game-panel-header">
+                      <h2>🔗 Word Chain</h2>
+                      <button type="button" class="game-back-btn" data-close="wordchain">Back</button>
+                    </div>
+                    <p class="wc-instructions">Type a word that starts with the last letter of the previous word.</p>
+                    <div class="wc-chain" id="wcChain"></div>
+                    <div class="wc-input-row">
+                      <input type="text" id="wcInput" class="wc-input" placeholder="Your word..." autocomplete="off" autocapitalize="none">
+                      <button type="button" id="wcSubmit" class="wc-submit-btn">Add</button>
+                    </div>
+                    <p class="wc-error" id="wcError"></p>
+                    <div class="wc-score-row">
+                      <span>Chain length: <strong id="wcScore">0</strong></span>
+                      <span>Best: <strong id="wcBest">0</strong></span>
+                    </div>
+                    <button type="button" id="wcRestart" class="game-action-btn">New game</button>
+                  </section>
+
+                  <section id="gameDrawing" class="game-panel" style="display:none">
+                    <div class="game-panel-header">
+                      <h2>🎨 Drawing Challenge</h2>
+                      <button type="button" class="game-back-btn" data-close="drawing">Back</button>
+                    </div>
+                    <div class="draw-prompt-card">
+                      <p class="draw-prompt-label">Draw this:</p>
+                      <p class="draw-prompt-text" id="drawPromptText"></p>
+                    </div>
+                    <div class="draw-canvas-wrap">
+                      <canvas id="drawCanvas" class="draw-canvas" width="320" height="320"></canvas>
+                    </div>
+                    <div class="draw-tools">
+                      <div class="draw-colors" id="drawColors">
+                        <button type="button" class="draw-color draw-color-active" data-color="#1a1a2e" style="background:#1a1a2e"></button>
+                        <button type="button" class="draw-color" data-color="#d4a0a0" style="background:#d4a0a0"></button>
+                        <button type="button" class="draw-color" data-color="#7c6fa0" style="background:#7c6fa0"></button>
+                        <button type="button" class="draw-color" data-color="#6bab90" style="background:#6bab90"></button>
+                        <button type="button" class="draw-color" data-color="#e8935a" style="background:#e8935a"></button>
+                      </div>
+                      <button type="button" id="drawClear" class="draw-clear-btn">Clear</button>
+                    </div>
+                    <div class="draw-actions">
+                      <button type="button" id="drawGotIt" class="draw-action-btn draw-action-correct">Got it!</button>
+                      <button type="button" id="drawSkip" class="draw-action-btn draw-action-skip">Skip</button>
+                    </div>
+                    <div class="draw-score-row">
+                      <span>Correct: <strong id="drawCorrect">0</strong></span>
+                      <span>Skipped: <strong id="drawSkipped">0</strong></span>
+                    </div>
+                  </section>
                 </div>
 
                 <!-- Heart Shop -->
                 <div id="moreShop" class="more-section">
                   <section class="shop-header">
-                    <p class="small-text">heart shop</p>
-                    <h2>Spend your hearts.</h2>
-                    <p class="setup-description">Earn hearts from streaks, games, and dates. Spend them on fun extras for the two of you.</p>
-                    <div class="shop-balance">
-                      <span class="shop-balance-icon">❤️</span>
-                      <span class="shop-balance-count" id="shopHeartsBalance">0</span>
-                      <span class="shop-balance-label">hearts</span>
-                    </div>
+                    <h2 class="shop-title">Heart Shop <img src="public/graphics/gift.png" alt="" class="shop-title-icon"></h2>
+                    <p class="shop-subtitle">Spend hearts on fun extras for the two of you</p>
                   </section>
+
+                  <div class="shop-balance-card">
+                    <div class="shop-balance-left">
+                      <span class="shop-balance-count" id="shopHeartsBalance">0</span>
+                      <span class="shop-balance-label">hearts available</span>
+                    </div>
+                    <span class="shop-balance-icon">❤️</span>
+                  </div>
 
                   <div class="shop-categories" id="shopCategories">
                     <button type="button" class="shop-category-btn shop-category-active" data-category="all">All</button>
@@ -468,26 +689,28 @@
                 <!-- Achievements -->
                 <div id="moreAchievements" class="more-section">
                   <section class="achievements-header">
-                    <p class="small-text">achievements</p>
-                    <h2>Your journey together.</h2>
-                    <p class="setup-description">Milestones, badges, and progress from everything you do as a couple.</p>
+                    <h2 class="achievements-title">Your journey together.</h2>
+                    <p class="achievements-subtitle">Milestones, badges, and progress from everything you do as a couple.</p>
                   </section>
 
                   <section class="achievements-streak-summary">
                     <div class="achievement-streak-row">
                       <span class="achievement-streak-icon">🔥</span>
-                      <div class="achievement-streak-info">
-                        <span class="achievement-streak-count" id="achieveStreakCount">0</span>
-                        <span class="achievement-streak-label">day streak</span>
-                      </div>
-                      <div class="achievement-streak-info">
-                        <span class="achievement-streak-count" id="achieveStreakLongest">0</span>
-                        <span class="achievement-streak-label">longest</span>
+                      <div class="achievement-streak-stats">
+                        <div class="achievement-streak-info">
+                          <span class="achievement-streak-count" id="achieveStreakCount">0</span>
+                          <span class="achievement-streak-label">day streak</span>
+                        </div>
+                        <div class="achievement-streak-divider"></div>
+                        <div class="achievement-streak-info">
+                          <span class="achievement-streak-count" id="achieveStreakLongest">0</span>
+                          <span class="achievement-streak-label">longest streak</span>
+                        </div>
                       </div>
                     </div>
                     <div class="streak-detail-timer" id="achieveStreakTimer"></div>
                     <div class="streak-next-milestone">
-                      <p class="small-text">next streak milestone</p>
+                      <p class="small-text" style="letter-spacing:1px">next milestone</p>
                       <div class="streak-milestone-info">
                         <span id="achieveNextMilestoneName">Week of Love</span>
                         <span id="achieveNextMilestoneTarget">7 days</span>
@@ -499,8 +722,8 @@
                     </div>
                   </section>
 
-                  <section class="achievements-badges">
-                    <p class="small-text">streak badges</p>
+                  <section class="achievements-badges-card">
+                    <p class="small-text" style="letter-spacing:1px">streak badges</p>
                     <div class="streak-badge-list" id="achieveStreakBadgeList">
                       <span class="streak-badge locked" data-days="7" title="Week of Love (7 days)">🌱</span>
                       <span class="streak-badge locked" data-days="14" title="Fortnight of Fire (14 days)">🔥</span>
@@ -517,7 +740,6 @@
                 <!-- Profile -->
                 <div id="moreProfile" class="more-section">
                   <section class="profile-tab-header">
-                    <p class="small-text">your profile</p>
                     <h2>Profile.</h2>
                   </section>
 
@@ -560,10 +782,40 @@
                   <p id="profileMessage" class="status-message" aria-live="polite"></p>
                 </div>
 
+                <!-- Themes (placeholder) -->
+                <div id="moreThemes" class="more-section">
+                  <section class="themes-header">
+                    <h2>Themes.</h2>
+                    <p class="setup-description">Customise the look and feel of your shared space.</p>
+                  </section>
+
+                  <div class="themes-grid">
+                    <div class="theme-preview-card theme-preview-active">
+                      <div class="theme-preview-swatch" style="background: linear-gradient(135deg, #faf5f0, #f0ebe5)"></div>
+                      <span class="theme-preview-name">Warm Light</span>
+                      <span class="theme-preview-badge">Active</span>
+                    </div>
+                    <div class="theme-preview-card">
+                      <div class="theme-preview-swatch" style="background: linear-gradient(135deg, #1a1a2e, #2d2d3a)"></div>
+                      <span class="theme-preview-name">Dark Mode</span>
+                      <span class="theme-preview-badge">Coming soon</span>
+                    </div>
+                    <div class="theme-preview-card">
+                      <div class="theme-preview-swatch" style="background: linear-gradient(135deg, #e8c4a0, #c97b8b)"></div>
+                      <span class="theme-preview-name">Sunset</span>
+                      <span class="theme-preview-badge">Coming soon</span>
+                    </div>
+                    <div class="theme-preview-card">
+                      <div class="theme-preview-swatch" style="background: linear-gradient(135deg, #dde8f0, #b8cfe0)"></div>
+                      <span class="theme-preview-name">Ocean Breeze</span>
+                      <span class="theme-preview-badge">Coming soon</span>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Settings -->
                 <div id="moreSettings" class="more-section">
                   <section class="settings-tab-header">
-                    <p class="small-text">preferences</p>
                     <h2>Settings.</h2>
                   </section>
 
@@ -639,41 +891,58 @@
 
                 <!-- Landing Page -->
                 <section id="dateLanding" class="date-screen date-landing">
-                  <section class="date-header">
-                    <p class="small-text">date night</p>
-                    <h2>Date Night.</h2>
+                  <p class="date-tab-label">D A T E &nbsp; N I G H T</p>
+
+                  <section class="date-hero-card">
+                    <div class="date-hero-content">
+                      <h2 class="date-hero-title">Date Night</h2>
+                      <p class="date-hero-subtitle">Plan something special together.</p>
+                    </div>
+                    <div class="date-hero-illustration">
+                      <img src="public/graphics/moon-pink.png" alt="" class="date-hero-img">
+                    </div>
+                    <div class="date-hero-stars">
+                      <span class="date-hero-star date-hero-star-1">✦</span>
+                      <span class="date-hero-star date-hero-star-2">✦</span>
+                      <span class="date-hero-star date-hero-star-3">·</span>
+                      <span class="date-hero-star date-hero-star-4">·</span>
+                      <span class="date-hero-star date-hero-star-5">✦</span>
+                    </div>
                   </section>
 
                   <div class="date-mode-card date-mode-quick">
                     <div class="date-mode-card-icon">⚡</div>
                     <div class="date-mode-card-body">
                       <h3 class="date-mode-card-title">Quick Date</h3>
-                      <p class="date-mode-card-desc">5 steps, ~5 min — for busy days</p>
-                      <p class="date-mode-card-detail">Quick questions and mini challenges</p>
+                      <p class="date-mode-card-desc">5 steps · ~5 min</p>
+                      <p class="date-mode-card-detail">For busy days</p>
                     </div>
-                    <button type="button" id="dateStartQuick" class="date-mode-btn">Start</button>
+                    <button type="button" id="dateStartQuick" class="date-mode-btn date-mode-btn-rose">Start</button>
                   </div>
 
                   <div class="date-mode-card date-mode-full">
                     <div class="date-mode-card-icon">🌙</div>
                     <div class="date-mode-card-body">
                       <h3 class="date-mode-card-title">Full Date Night</h3>
-                      <p class="date-mode-card-desc">20 steps — for proper dates</p>
-                      <p class="date-mode-card-detail">Questions, challenges, surprises, and rewards</p>
+                      <p class="date-mode-card-desc">20 steps · ~30 min</p>
+                      <p class="date-mode-card-detail">For deeper connection</p>
                     </div>
-                    <button type="button" id="dateStartFull" class="date-mode-btn">Start</button>
+                    <button type="button" id="dateStartFull" class="date-mode-btn date-mode-btn-lavender">Start</button>
                   </div>
 
                   <section class="date-schedule-card">
-                    <h3 class="date-section-title">Schedule a Date</h3>
-                    <p class="date-schedule-desc">Plan ahead — great for long-distance</p>
+                    <h3 class="date-schedule-title">Schedule a Date</h3>
+                    <p class="date-schedule-desc">Plan ahead for quality time</p>
                     <div class="date-schedule-row">
-                      <input type="datetime-local" id="dateScheduleInput" class="date-schedule-input">
+                      <div class="date-schedule-field">
+                        <svg class="date-schedule-field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <input type="datetime-local" id="dateScheduleInput" class="date-schedule-input">
+                      </div>
                       <select id="dateScheduleTheme" class="date-schedule-select">
                         <option value="">Any theme</option>
                       </select>
                     </div>
-                    <button type="button" id="dateScheduleBtn" class="date-schedule-btn">Schedule</button>
+                    <button type="button" id="dateScheduleBtn" class="date-schedule-btn">Schedule Date</button>
                     <div id="dateScheduledIndicator" class="date-scheduled-indicator" style="display:none">
                       <span class="date-scheduled-icon">📅</span>
                       <span id="dateScheduledText" class="date-scheduled-text"></span>
@@ -682,7 +951,10 @@
                   </section>
 
                   <section class="date-themes-section">
-                    <h3 class="date-section-title">Date Themes</h3>
+                    <div class="date-themes-header">
+                      <h3 class="date-section-title">Date Themes</h3>
+                      <span class="date-themes-see-all">See all</span>
+                    </div>
                     <div class="date-themes-scroll" id="dateThemesScroll"></div>
                   </section>
 
@@ -793,23 +1065,23 @@
               <!-- Bottom Navigation -->
               <nav class="bottom-nav" id="bottomNav">
                 <button type="button" class="nav-tab nav-tab-active" data-tab="tabChat">
-                  <span class="nav-icon">⌂</span>
+                  <span class="nav-icon-wrap"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 4l9 5.5"/><path d="M19 9.5v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8"/></svg></span>
                   <span class="nav-label">Home</span>
                 </button>
                 <button type="button" class="nav-tab" data-tab="tabMoments">
-                  <span class="nav-icon">📸</span>
-                  <span class="nav-label">Moments</span>
+                  <span class="nav-icon-wrap"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg></span>
+                  <span class="nav-label">Our Day</span>
                 </button>
                 <button type="button" class="nav-tab" data-tab="tabDate">
-                  <span class="nav-icon">◐</span>
-                  <span class="nav-label">Date</span>
+                  <span class="nav-icon-wrap"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></span>
+                  <span class="nav-label">Date Night</span>
                 </button>
                 <button type="button" class="nav-tab" data-tab="tabChats">
-                  <span class="nav-icon">💬</span>
+                  <span class="nav-icon-wrap"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                   <span class="nav-label">Chats</span>
                 </button>
                 <button type="button" class="nav-tab" data-tab="tabMore">
-                  <span class="nav-icon">✦</span>
+                  <span class="nav-icon-wrap"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></span>
                   <span class="nav-label">More</span>
                 </button>
               </nav>

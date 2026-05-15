@@ -62,6 +62,33 @@ var momentsRecapStats = document.getElementById("momentsRecapStats");
 var momentsArchiveTimeline = document.getElementById("momentsArchiveTimeline");
 var momentsThisDay = document.getElementById("momentsThisDay");
 var momentsThisDayTimeline = document.getElementById("momentsThisDayTimeline");
+var momentsDateStripRow = document.getElementById("momentsDateStripRow");
+
+// ─── Date Strip ───
+
+function renderDateStrip() {
+  if (!momentsDateStripRow) return;
+  var now = new Date();
+  var dayOfWeek = now.getDay();
+  var monday = new Date(now);
+  monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
+
+  var weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  var todayStr = now.toISOString().split("T")[0];
+  var html = "";
+
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    var dateStr = d.toISOString().split("T")[0];
+    var isToday = dateStr === todayStr;
+    html += '<button type="button" class="moments-date-strip-day' + (isToday ? ' active' : '') + '" data-date="' + dateStr + '">' +
+      '<span class="moments-date-strip-weekday">' + weekdays[i] + '</span>' +
+      '<span class="moments-date-strip-num">' + d.getDate() + '</span>' +
+    '</button>';
+  }
+  momentsDateStripRow.innerHTML = html;
+}
 var momentSheetBackdrop = document.getElementById("momentSheetBackdrop");
 var momentPhotoInput = document.getElementById("momentPhotoInput");
 var momentTextPanel = document.getElementById("momentTextPanel");
@@ -447,6 +474,8 @@ export async function cleanupMomentsChannel() {
 
 export async function initMoments(cbs) {
   callbacks = cbs || {};
+
+  renderDateStrip();
 
   // Mood grid
   if (momentMoodGrid) {
