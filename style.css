@@ -2619,16 +2619,6 @@ h3 {
   line-height: 1;
 }
 
-.streak-bar.active-today .streak-fire,
-.couple-card-stats.active-today .streak-fire {
-  animation: fireGlow 1.5s ease-in-out infinite;
-}
-
-@keyframes fireGlow {
-  0%, 100% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.15); filter: brightness(1.3); }
-}
-
 .streak-heart {
   font-size: 18px;
   line-height: 1;
@@ -3266,6 +3256,42 @@ h3 {
 @keyframes dateStarTwinkle {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
+}
+
+/* ─── Reusable Sparkle Stars ─── */
+
+.sparkle-wrap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sparkle {
+  position: absolute;
+  font-size: 8px;
+  animation: sparkleTwinkle 3s ease-in-out infinite;
+}
+
+@keyframes sparkleTwinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.8); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.sparkle--rose { color: rgba(212, 160, 160, 0.6); }
+.sparkle--lavender { color: rgba(124, 111, 160, 0.5); }
+.sparkle--white { color: rgba(255, 255, 255, 0.5); }
+
+/* ─── Gradient Shift (hero cards) ─── */
+
+.anim-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 /* ─── Date Mode Cards ─── */
@@ -4090,6 +4116,8 @@ h3 {
   border: 1px solid rgba(124, 111, 160, 0.12);
   cursor: pointer;
   transition: transform var(--ease-fast);
+  position: relative;
+  overflow: hidden;
 }
 
 .more-cta-card:active {
@@ -5602,6 +5630,7 @@ h3 {
   border-radius: var(--radius-xl);
   padding: var(--space-xl);
   overflow: hidden;
+  position: relative;
   animation: fadeInUp 0.4s 0.05s ease both;
 }
 
@@ -6203,6 +6232,7 @@ h3 {
   align-items: center;
   gap: var(--space-md);
   overflow: hidden;
+  position: relative;
 }
 
 .moments-prompt-body {
@@ -6421,6 +6451,7 @@ h3 {
   align-items: center;
   gap: var(--space-md);
   overflow: hidden;
+  position: relative;
 }
 
 .moments-recap-body {
@@ -6472,7 +6503,7 @@ h3 {
 
 .moments-recap-illustration {
   flex-shrink: 0;
-  width: 70px;
+  width: 110px;
 }
 
 .moments-recap-img {
