@@ -33,8 +33,9 @@ import { addOrReplaceMessage, formatMessageRow, uploadAndSendPhoto, dataUrlToBlo
 import { cleanupDateCall, onDateStateFromDB, checkExistingDateSession, loadScheduledDate, renderDateLanding, loadDateHistory } from "./date-night.js";
 import { renderProfileTab, initProfile, loadSettings, initSettings, initInviteButtons } from "./profile.js";
 import { initMoments, loadTodayMoments, getMomentsCount, cleanupMomentsChannel } from "./moments.js";
-import { initShop, updateShopBalance } from "./shop.js";
+import { initShop, updateShopBalance, applyEquippedEffects } from "./shop.js";
 import { renderAchievements } from "./achievements.js";
+import { startCall, initCallListener, cleanupCallChannel } from "./call.js";
 
 
 // ─── Supabase ───
@@ -863,21 +864,32 @@ function renderPartnerFeed() {
   }
 
   items.sort(function (a, b) { return new Date(b.time) - new Date(a.time); });
-  items = items.slice(0, 8);
+
+  var stacked = [];
+  for (var s = 0; s < items.length; s++) {
+    var prev = stacked.length > 0 ? stacked[stacked.length - 1] : null;
+    if (prev && prev.text === items[s].text) {
+      prev.count++;
+    } else {
+      stacked.push({ text: items[s].text, time: items[s].time, type: items[s].type, count: 1 });
+    }
+  }
+  stacked = stacked.slice(0, 8);
 
   activityFeedList.innerHTML = "";
-  if (items.length === 0) {
+  if (stacked.length === 0) {
     activityFeedList.innerHTML = '<p class="activity-feed-empty">No activity yet — answer a prompt to get started!</p>';
     return;
   }
 
-  for (var k = 0; k < items.length; k++) {
+  for (var k = 0; k < stacked.length; k++) {
+    var label = stacked[k].text + (stacked[k].count > 1 ? " " + stacked[k].count + "x" : "");
     var row = document.createElement("div");
     row.className = "activity-feed-row";
     row.innerHTML =
-      '<span class="activity-feed-dot type-' + items[k].type + '"></span>' +
-      '<span class="activity-feed-text">' + escapeHTML(items[k].text) + '</span>' +
-      '<span class="activity-feed-time">' + timeAgo(items[k].time) + '</span>';
+      '<span class="activity-feed-dot type-' + stacked[k].type + '"></span>' +
+      '<span class="activity-feed-text">' + escapeHTML(label) + '</span>' +
+      '<span class="activity-feed-time">' + timeAgo(stacked[k].time) + '</span>';
     activityFeedList.appendChild(row);
   }
 }
@@ -1198,6 +1210,7 @@ async function loadCouple() {
   startTimezoneWidget();
   await loadCoupleStats();
   updateShopBalance();
+  applyEquippedEffects();
   var moreHeartsEl = document.getElementById("moreHeartsCount");
   if (moreHeartsEl) moreHeartsEl.textContent = localStorage.getItem("couple_streak_hearts") || "0";
   renderAchievements();
@@ -1231,6 +1244,7 @@ async function loadCouple() {
   await checkExistingDateSession();
   await loadTodayMoments();
   renderDateLanding();
+  initCallListener();
 }
 
 async function loadMessages() {
@@ -1745,20 +1759,14 @@ if (surpriseMeBtn) {
 
 
 // ─── Feature Locks ───
+// All features stay unlocked — hearts unlock bonus extras only, never gate core features
 
 var lockIds = ["lockMore", "lockDate"];
 
 function updateFeatureLocks() {
-  var isUnlocked = true; // TEMP: force unlocked for testing
   for (var i = 0; i < lockIds.length; i++) {
     var el = document.getElementById(lockIds[i]);
-    if (el) {
-      if (isUnlocked) {
-        el.classList.remove("locked");
-      } else {
-        el.classList.add("locked");
-      }
-    }
+    if (el) el.classList.remove("locked");
   }
 }
 
@@ -1781,7 +1789,6 @@ var moreHubMap = [
   ["moreMenuShop", "moreShop"],
   ["moreHubAchievements", "moreAchievements"],
   ["moreHubProfile", "moreProfile"],
-  ["moreHubThemes", "moreThemes"],
   ["moreHubSettings", "moreSettings"]
 ];
 
@@ -1938,6 +1945,16 @@ promptMessageInput.addEventListener("keydown", function (event) {
 });
 
 promptChatBack.addEventListener("click", closePromptChat);
+
+document.getElementById("callVoiceBtn").addEventListener("click", function () {
+  hapticLight();
+  startCall("voice");
+});
+
+document.getElementById("callVideoBtn").addEventListener("click", function () {
+  hapticLight();
+  startCall("video");
+});
 
 // Swipe right to go back
 (function () {

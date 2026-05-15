@@ -209,9 +209,30 @@ async function loadMomentsForRange(startDate, endDate) {
 async function loadThisDayHistory() {
   if (!app.currentCouple || !momentsTableExists) return [];
   var now = new Date();
-  var month = now.getMonth();
-  var day = now.getDate();
   var todayStr = now.toISOString().split("T")[0];
+
+  var windows = [
+    { label: "One week ago", offset: 7 },
+    { label: "One month ago", offset: 30 },
+    { label: "Three months ago", offset: 91 },
+    { label: "Six months ago", offset: 182 },
+    { label: "One year ago", offset: 365 }
+  ];
+
+  var dateRanges = [];
+  for (var i = 0; i < windows.length; i++) {
+    var target = new Date(now);
+    target.setDate(target.getDate() - windows[i].offset);
+    var start = new Date(target);
+    start.setDate(start.getDate() - 1);
+    var end = new Date(target);
+    end.setDate(end.getDate() + 1);
+    dateRanges.push({
+      label: windows[i].label,
+      startStr: start.toISOString().split("T")[0],
+      endStr: end.toISOString().split("T")[0] + "T23:59:59"
+    });
+  }
 
   var result = await app.supabase
     .from("moments")
@@ -221,13 +242,22 @@ async function loadThisDayHistory() {
     .limit(500);
 
   if (result.error) return [];
-  return (result.data || [])
-    .filter(function (row) {
-      var d = new Date(row.created_at);
-      return d.getMonth() === month && d.getDate() === day
-        && row.created_at.split("T")[0] !== todayStr;
-    })
-    .map(formatMomentRow);
+  var all = (result.data || []).filter(function (row) {
+    return row.created_at.split("T")[0] !== todayStr;
+  });
+
+  var groups = [];
+  for (var i = 0; i < dateRanges.length; i++) {
+    var range = dateRanges[i];
+    var matches = all.filter(function (row) {
+      return row.created_at >= range.startStr && row.created_at <= range.endStr;
+    }).map(formatMomentRow);
+    if (matches.length > 0) {
+      groups.push({ label: range.label, moments: matches });
+    }
+  }
+
+  return groups;
 }
 
 // ─── Rendering ───
@@ -705,13 +735,15 @@ export async function initMoments(cbs) {
     await loadTodayMoments();
     await subscribeToMoments();
 
-    // This Day in Our Relationship
-    var thisDayData = await loadThisDayHistory();
-    if (thisDayData.length > 0) {
+    var thisDayGroups = await loadThisDayHistory();
+    if (thisDayGroups.length > 0) {
       momentsThisDay.style.display = "";
       var tdHtml = "";
-      for (var j = 0; j < thisDayData.length; j++) {
-        tdHtml += buildTimelineItem(thisDayData[j]);
+      for (var g = 0; g < thisDayGroups.length; g++) {
+        tdHtml += '<p class="moments-thisday-label">' + escapeHTML(thisDayGroups[g].label) + '</p>';
+        for (var j = 0; j < thisDayGroups[g].moments.length; j++) {
+          tdHtml += buildTimelineItem(thisDayGroups[g].moments[j]);
+        }
       }
       momentsThisDayTimeline.innerHTML = tdHtml;
     }

@@ -414,6 +414,7 @@ export function recordEngagement() {
 
   updateStreakUI();
   saveCoupleStats();
+  window.dispatchEvent(new CustomEvent("heartsChanged"));
 
   if (milestoneHit) {
     showMilestoneCelebration(milestoneHit);
@@ -425,6 +426,7 @@ export function addBonusHearts(amount) {
   localStorage.setItem("couple_streak_hearts", (totalHearts + amount).toString());
   updateStreakUI();
   saveCoupleStats();
+  window.dispatchEvent(new CustomEvent("heartsChanged"));
 }
 
 function updateStreakUI() {
