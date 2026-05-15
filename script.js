@@ -1900,6 +1900,7 @@ if (moreGoToShop) {
   });
 }
 
+
 var profileCopyInviteBtn = document.getElementById("profileCopyInviteBtn");
 if (profileCopyInviteBtn) {
   profileCopyInviteBtn.addEventListener("click", async function () {

@@ -372,12 +372,65 @@ button:disabled {
 }
 
 .brand-mark {
-  margin: 0 0 18px;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 34px;
-  font-weight: 700;
-  color: #1a1a2e;
+  margin: 0 0 14px;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  opacity: 0.75;
 }
+
+.brand-logo {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  object-fit: contain;
+}
+
+.brand-logo-lg {
+  width: 140px;
+  margin-bottom: 12px;
+}
+
+.brand-logo-md {
+  width: 100px;
+  margin-bottom: 16px;
+}
+
+.brand-logo-sm {
+  width: 44px;
+  margin-bottom: 10px;
+}
+
+
+/* ─── Top Header Bar ─── */
+
+.top-header {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 4px;
+  margin: calc(-1 * var(--space-2xl) - env(safe-area-inset-top, 0)) calc(-1 * var(--space-xl)) 16px;
+  padding-top: calc(10px + env(safe-area-inset-top, 0));
+  background: var(--bg-cream);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.top-header-text-logo {
+  height: 52px;
+  object-fit: contain;
+}
+
+.top-header-otter {
+  width: 78px;
+  height: 78px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 
 h1 {
   margin: 0;
