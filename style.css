@@ -3183,6 +3183,9 @@ h3 {
 /* ─── Date Landing Page ─── */
 
 .date-landing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
   padding-bottom: 24px;
 }
 
@@ -3191,7 +3194,7 @@ h3 {
   font-size: 11px;
   letter-spacing: 3px;
   color: var(--text-muted);
-  margin: 0 0 var(--space-sm);
+  margin: 0;
   font-weight: 600;
 }
 
@@ -3992,13 +3995,16 @@ h3 {
 /* ─── More Landing Overview ─── */
 
 .more-landing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
   margin-bottom: var(--space-lg);
 }
 
 /* ─── More Header ─── */
 
 .more-header {
-  padding: 0 0 var(--space-md);
+  padding: 0;
 }
 
 .more-header-title {
