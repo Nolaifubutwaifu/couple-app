@@ -667,6 +667,7 @@ function renderGreeting() {
 
 var coupleCardDot = document.getElementById("coupleCardDot");
 var coupleCardStatusText = document.getElementById("coupleCardStatusText");
+var connectionLabel = document.getElementById("connectionLabel");
 var connectionTitle = document.getElementById("connectionTitle");
 var connectionSubtitle = document.getElementById("connectionSubtitle");
 var connectionAction = document.getElementById("connectionAction");
@@ -695,45 +696,39 @@ setPresenceChangeCallback(function () {
 
 var connectionActionType = null;
 
+function setConnectionCard(type, label, title, subtitle, btn) {
+  connectionActionType = type;
+  connectionLabel.textContent = label;
+  connectionTitle.textContent = title;
+  connectionSubtitle.textContent = subtitle;
+  connectionAction.innerHTML = btn + ' <span class="connection-card-btn-arrow">→</span>';
+}
+
 function renderTodayConnection() {
+  var mc = getMomentsCount();
+  if (mc.myCount === 0 && mc.partnerCount === 0) {
+    setConnectionCard("moment", "tiny moment", "Share a tiny moment", "Even a small one makes the day brighter", "Capture now");
+    return;
+  }
+
   var allPrompts = getTodayPrompts();
   var unansweredCount = 0;
   for (var i = 0; i < allPrompts.length; i++) {
     var rev = getDailyRevealState(allPrompts[i].id);
     if (!rev.hasMe) unansweredCount++;
   }
-
   if (unansweredCount > 0) {
-    connectionActionType = "prompt";
-    connectionTitle.textContent = "Answer today's question";
-    connectionSubtitle.textContent = "You have " + unansweredCount + " unanswered prompt" + (unansweredCount > 1 ? "s" : "") + " waiting";
-    connectionAction.textContent = "Let's go";
+    setConnectionCard("prompt", "today's question", "Answer today's question", "You have " + unansweredCount + " unanswered prompt" + (unansweredCount > 1 ? "s" : "") + " waiting", "Let's go");
     return;
   }
 
-  var lastDate = localStorage.getItem("couple_streak_last_date") || "";
-  var today = new Date().toISOString().split("T")[0];
-  var streak = parseInt(localStorage.getItem("couple_streak_count") || "0");
-  if (lastDate !== today && streak > 2) {
-    connectionActionType = "streak";
-    connectionTitle.textContent = "Keep your streak going!";
-    connectionSubtitle.textContent = streak + "-day streak at risk — do something together";
-    connectionAction.textContent = "Let's go";
+  var scheduled = loadScheduledDate();
+  if (!scheduled || !scheduled.datetime) {
+    setConnectionCard("date", "date night", "Plan your next date", "Pick a night and make it yours", "Plan one");
     return;
   }
 
-  var dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-  var actions = [
-    { type: "hug", title: "Send a hug", subtitle: "A little love goes a long way", btn: "Send" },
-    { type: "moment", title: "Add a moment", subtitle: "Capture something from your day", btn: "Open Moments" },
-    { type: "date", title: "Start a quick date", subtitle: "Spend some quality time together", btn: "Start date" },
-    { type: "game", title: "Play a mini-game", subtitle: "Challenge your partner to a game", btn: "Play" }
-  ];
-  var pick = actions[dayOfYear % actions.length];
-  connectionActionType = pick.type;
-  connectionTitle.textContent = pick.title;
-  connectionSubtitle.textContent = pick.subtitle;
-  connectionAction.textContent = pick.btn;
+  setConnectionCard("chat", "little note", "Send a little note", "A few words go a long way", "Open chat");
 }
 
 function timeAgo(dateStr) {
@@ -1883,6 +1878,8 @@ connectionAction.addEventListener("click", function () {
     document.querySelector('[data-tab="tabDate"]').click();
   } else if (connectionActionType === "game") {
     document.querySelector('[data-tab="tabMore"]').click();
+  } else if (connectionActionType === "chat") {
+    document.querySelector('[data-tab="tabChats"]').click();
   } else if (connectionActionType === "streak") {
     var allPrompts2 = getTodayPrompts();
     for (var j = 0; j < allPrompts2.length; j++) {

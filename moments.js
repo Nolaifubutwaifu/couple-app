@@ -5,6 +5,7 @@ import { compressImage, dataUrlToBlob } from "./chat.js";
 var momentsToday = [];
 var momentsTableExists = null;
 var selectedMood = null;
+var selectedDateStr = new Date().toISOString().split("T")[0];
 var callbacks = {};
 
 var MOOD_EMOJIS = [
@@ -88,6 +89,25 @@ function renderDateStrip() {
     '</button>';
   }
   momentsDateStripRow.innerHTML = html;
+
+  momentsDateStripRow.addEventListener("click", function (e) {
+    var btn = e.target.closest(".moments-date-strip-day");
+    if (!btn) return;
+    var dateStr = btn.getAttribute("data-date");
+    if (!dateStr) return;
+    selectedDateStr = dateStr;
+    var all = momentsDateStripRow.querySelectorAll(".moments-date-strip-day");
+    all.forEach(function (el) { el.classList.remove("active"); });
+    btn.classList.add("active");
+    loadMomentsForSelectedDate(dateStr);
+  });
+}
+
+async function loadMomentsForSelectedDate(dateStr) {
+  var data = await loadMomentsForDate(dateStr);
+  momentsToday = data;
+  renderMomentsTimeline(dateStr);
+  renderDailyRecap(dateStr);
 }
 var momentSheetBackdrop = document.getElementById("momentSheetBackdrop");
 var momentPhotoInput = document.getElementById("momentPhotoInput");
@@ -266,10 +286,10 @@ function buildTimelineItem(moment) {
   '</div>';
 }
 
-function renderMomentsTimeline() {
-  var now = new Date();
+function renderMomentsTimeline(dateStr) {
+  var d = dateStr ? new Date(dateStr + "T12:00:00") : new Date();
   var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  momentsTimelineDate.textContent = months[now.getMonth()] + " " + now.getDate();
+  momentsTimelineDate.textContent = months[d.getMonth()] + " " + d.getDate();
 
   if (momentsToday.length === 0) {
     momentsEmpty.style.display = "";
@@ -289,16 +309,16 @@ function renderMomentsTimeline() {
   momentsTimeline.insertAdjacentHTML("beforeend", html);
 }
 
-function renderDailyRecap() {
+function renderDailyRecap(dateStr) {
   if (momentsToday.length === 0) {
     momentsRecapCard.style.display = "none";
     return;
   }
   momentsRecapCard.style.display = "";
 
-  var now = new Date();
+  var d = dateStr ? new Date(dateStr + "T12:00:00") : new Date();
   var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  momentsRecapDate.textContent = months[now.getMonth()] + " " + now.getDate();
+  momentsRecapDate.textContent = months[d.getMonth()] + " " + d.getDate();
   momentsRecapTitle.textContent = "Our Day";
 
   var myCount = 0;

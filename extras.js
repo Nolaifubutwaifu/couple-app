@@ -446,14 +446,14 @@ function updateStreakUI() {
 
   if (engagedToday) {
     if (streakBar) streakBar.classList.add("active-today");
-    if (streakStatusEl) streakStatusEl.textContent = "Done today!";
+    if (streakStatusEl) streakStatusEl.textContent = "You showed up today ❤️";
     if (streakDetailStatusEl) {
       streakDetailStatusEl.textContent = "You've already engaged today. Come back tomorrow to keep it going!";
       streakDetailStatusEl.classList.add("done-today");
     }
   } else {
     if (streakBar) streakBar.classList.remove("active-today");
-    if (streakStatusEl) streakStatusEl.textContent = "Do something today!";
+    if (streakStatusEl) streakStatusEl.textContent = "One small thing left today";
     if (streakDetailStatusEl) {
       streakDetailStatusEl.textContent = streak > 0
         ? "Don't break your streak! Do something today."
