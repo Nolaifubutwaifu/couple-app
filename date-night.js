@@ -262,7 +262,7 @@ async function startDateNight(mode, theme) {
     theme: dateTheme
   });
 
-  clearScheduledDate();
+  removeScheduledDate(0);
   showDateScreen(dateScreenActive);
   renderDateStep(0);
 }
@@ -588,38 +588,46 @@ export async function checkExistingDateSession() {
 
 // ─── Scheduling ───
 
+function loadAllScheduledDates() {
+  try {
+    var raw = localStorage.getItem("couple_scheduled_dates");
+    if (raw) return JSON.parse(raw);
+    var legacy = localStorage.getItem("couple_scheduled_date");
+    if (legacy) {
+      var obj = JSON.parse(legacy);
+      if (obj && obj.datetime) return [obj];
+    }
+    return [];
+  } catch (e) { return []; }
+}
+
+function saveAllScheduledDates(list) {
+  localStorage.setItem("couple_scheduled_dates", JSON.stringify(list));
+  localStorage.removeItem("couple_scheduled_date");
+}
+
 function scheduleDate(datetime, theme) {
-  var obj = { datetime: datetime, theme: theme || null };
-  localStorage.setItem("couple_scheduled_date", JSON.stringify(obj));
-  renderScheduledDate();
+  var list = loadAllScheduledDates();
+  list.push({ datetime: datetime, theme: theme || null });
+  list.sort(function (a, b) { return new Date(a.datetime) - new Date(b.datetime); });
+  saveAllScheduledDates(list);
+  renderScheduledDates();
   showToast("Date scheduled!");
 }
 
 export function loadScheduledDate() {
-  try {
-    var raw = localStorage.getItem("couple_scheduled_date");
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (e) {
-    return null;
-  }
+  var list = loadAllScheduledDates();
+  return list.length > 0 ? list[0] : null;
 }
 
-function clearScheduledDate() {
-  localStorage.removeItem("couple_scheduled_date");
-  renderScheduledDate();
+function removeScheduledDate(index) {
+  var list = loadAllScheduledDates();
+  list.splice(index, 1);
+  saveAllScheduledDates(list);
+  renderScheduledDates();
 }
 
-function renderScheduledDate() {
-  var indicator = document.getElementById("dateScheduledIndicator");
-  var textEl = document.getElementById("dateScheduledText");
-  var scheduled = loadScheduledDate();
-
-  if (!scheduled || !scheduled.datetime) {
-    indicator.style.display = "none";
-    return;
-  }
-
+function formatScheduledDateStr(scheduled) {
   var d = new Date(scheduled.datetime);
   var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -631,14 +639,33 @@ function renderScheduledDate() {
   var timeStr = hours + ":" + (minutes < 10 ? "0" : "") + minutes + " " + ampm;
   var dateStr = days[d.getDay()] + ", " + months[d.getMonth()] + " " + d.getDate() + " at " + timeStr;
 
-  var themeName = "";
   if (scheduled.theme) {
     var t = dateThemes.find(function (th) { return th.id === scheduled.theme; });
-    if (t) themeName = " · " + t.emoji + " " + t.name;
+    if (t) dateStr += " · " + t.emoji + " " + t.name;
+  }
+  return dateStr;
+}
+
+function renderScheduledDates() {
+  var container = document.getElementById("dateScheduledIndicator");
+  var list = loadAllScheduledDates();
+
+  if (list.length === 0) {
+    container.style.display = "none";
+    container.innerHTML = "";
+    return;
   }
 
-  textEl.textContent = dateStr + themeName;
-  indicator.style.display = "";
+  var html = "";
+  for (var i = 0; i < list.length; i++) {
+    html += '<div class="date-scheduled-row" data-index="' + i + '">' +
+      '<span class="date-scheduled-icon">📅</span>' +
+      '<span class="date-scheduled-text">' + formatScheduledDateStr(list[i]) + '</span>' +
+      '<button type="button" class="date-scheduled-cancel">✕</button>' +
+      '</div>';
+  }
+  container.innerHTML = html;
+  container.style.display = "";
 }
 
 // ─── Date History ───
@@ -728,7 +755,7 @@ function renderDateHistory(rows) {
 
 export function renderDateLanding() {
   renderThemeCards();
-  renderScheduledDate();
+  renderScheduledDates();
   populateThemeSelect();
   loadDateHistory();
 }
@@ -865,21 +892,33 @@ dateThemeModal.addEventListener("click", function (e) {
 });
 
 // Schedule
-document.getElementById("dateScheduleBtn").addEventListener("click", function () {
-  var input = document.getElementById("dateScheduleInput");
-  if (!input.value) {
-    showToast("Pick a date and time first");
-    return;
-  }
-  hapticLight();
-  var theme = document.getElementById("dateScheduleTheme").value || null;
-  scheduleDate(input.value, theme);
-  input.value = "";
+var dateScheduleInput = document.getElementById("dateScheduleInput");
+var dateScheduleBtn = document.getElementById("dateScheduleBtn");
+
+dateScheduleInput.addEventListener("change", function () {
+  dateScheduleBtn.style.display = this.value ? "" : "none";
 });
 
-document.getElementById("dateScheduledCancel").addEventListener("click", function () {
+dateScheduleInput.addEventListener("input", function () {
+  dateScheduleBtn.style.display = this.value ? "" : "none";
+});
+
+dateScheduleBtn.addEventListener("click", function () {
+  if (!dateScheduleInput.value) return;
   hapticLight();
-  clearScheduledDate();
+  var theme = document.getElementById("dateScheduleTheme").value || null;
+  scheduleDate(dateScheduleInput.value, theme);
+  dateScheduleInput.value = "";
+  dateScheduleBtn.style.display = "none";
+});
+
+document.getElementById("dateScheduledIndicator").addEventListener("click", function (e) {
+  var cancelBtn = e.target.closest(".date-scheduled-cancel");
+  if (!cancelBtn) return;
+  var row = cancelBtn.closest(".date-scheduled-row");
+  if (!row) return;
+  hapticLight();
+  removeScheduledDate(parseInt(row.dataset.index));
 });
 
 renderDateLanding();

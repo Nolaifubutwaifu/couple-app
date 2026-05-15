@@ -429,6 +429,7 @@ export async function insertMoment(type, text, imageUrl, mood, locationLabel) {
   closeAddMomentSheet();
   hapticLight();
   if (callbacks.recordEngagement) callbacks.recordEngagement();
+  if (callbacks.onMomentAdded) callbacks.onMomentAdded();
 }
 
 async function addPhotoMoment(fileOrBlob, caption, location) {
@@ -484,7 +485,9 @@ async function subscribeToMoments() {
           showToast("Your partner shared a moment");
           sendLocalNotification("New Moment", "Your partner just shared a moment");
         }
-        loadTodayMoments();
+        loadTodayMoments().then(function () {
+          if (callbacks.onMomentAdded) callbacks.onMomentAdded();
+        });
       }
     )
     .subscribe();

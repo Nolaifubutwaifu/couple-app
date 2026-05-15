@@ -1777,7 +1777,7 @@ import { initGames } from "./games.js";
 import { initCamera } from "./camera.js";
 
 initSettings();
-initMoments({ recordEngagement: recordEngagement });
+initMoments({ recordEngagement: recordEngagement, onMomentAdded: renderHomeScreen });
 initGames(recordEngagement);
 initProfile(logout, renderGreeting);
 initInviteButtons(coupleMessage);

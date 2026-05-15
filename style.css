@@ -3473,13 +3473,19 @@ h3 {
 
 .date-scheduled-indicator {
   display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.date-scheduled-row {
+  display: flex;
   align-items: center;
   gap: 10px;
   background: var(--accent-lavender-light);
   border: 1px solid rgba(124,111,160,0.2);
   border-radius: var(--radius-md);
   padding: 12px 14px;
-  margin-top: var(--space-md);
 }
 
 .date-scheduled-icon {
