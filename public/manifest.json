@@ -1,7 +1,7 @@
 {
-  "name": "Couple",
-  "short_name": "Couple",
-  "description": "Your private space for two — chat, games, and memories.",
+  "name": "Twosome",
+  "short_name": "Twosome",
+  "description": "Your little space for two — chats, games, memories, and date nights.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#faf5f0",

@@ -5253,6 +5253,24 @@ h3 {
   color: #6b7280;
 }
 
+.settings-about-card {
+  text-align: center;
+  padding: 20px;
+}
+
+.settings-about-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.settings-about-tagline {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
 /* ─── Camera Overlay ─── */
 
 .camera-overlay {

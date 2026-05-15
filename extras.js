@@ -230,7 +230,7 @@ const MILESTONES = [
   { days: 7, bonus: 5, name: "Week of Love", emoji: "🌱" },
   { days: 14, bonus: 10, name: "Fortnight of Fire", emoji: "🔥" },
   { days: 30, bonus: 25, name: "Monthly Magic", emoji: "✨" },
-  { days: 50, bonus: 50, name: "Golden Couple", emoji: "💛" },
+  { days: 50, bonus: 50, name: "Golden Twosome", emoji: "💛" },
   { days: 100, bonus: 100, name: "Century of Love", emoji: "💎" },
   { days: 365, bonus: 365, name: "Soulmates", emoji: "👑" }
 ];

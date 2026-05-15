@@ -180,12 +180,12 @@ export function initInviteButtons(coupleMessage) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Join me on Couple",
-          text: "Join me on Couple! Use this invite code: " + code
+          title: "Join me on Twosome",
+          text: "Join me on Twosome! Use this invite code: " + code
         });
       } catch (e) {}
     } else {
-      var ok = await nativeClipboardWrite("Join me on Couple! Use this invite code: " + code);
+      var ok = await nativeClipboardWrite("Join me on Twosome! Use this invite code: " + code);
       if (ok) {
         hapticLight();
         this.textContent = "Copied!";
