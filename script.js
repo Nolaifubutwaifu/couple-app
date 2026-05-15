@@ -36,6 +36,7 @@ import { initMoments, loadTodayMoments, getMomentsCount, cleanupMomentsChannel }
 import { initShop, updateShopBalance, applyEquippedEffects, renderInventory } from "./shop.js";
 import { renderAchievements } from "./achievements.js";
 import { startCall, initCallListener, cleanupCallChannel } from "./call.js";
+import { needsOnboarding, startOnboarding } from "./onboarding.js";
 
 
 // ─── Supabase ───
@@ -121,7 +122,6 @@ var questionPopupSend = document.getElementById("questionPopupSend");
 var questionPopupSkip = document.getElementById("questionPopupSkip");
 const loginScreen = document.getElementById("loginScreen");
 const appScreen = document.getElementById("appScreen");
-const displayNameInput = document.getElementById("displayNameInput");
 const emailInput = document.getElementById("emailInput");
 const passwordInput = document.getElementById("passwordInput");
 const loginButton = document.getElementById("loginButton");
@@ -1143,10 +1143,9 @@ async function loadPartnerTimezone() {
 // ─── Auth + Profile ───
 
 async function ensureProfile(user) {
-  const typedName = displayNameInput.value.trim();
   const metadataName = user.user_metadata && user.user_metadata.display_name;
   const fallbackName = user.email ? user.email.split("@")[0] : "You";
-  const profileName = typedName || metadataName || fallbackName;
+  const profileName = metadataName || fallbackName;
 
   const { data: existingProfile, error: selectError } = await supabase
     .from("profiles")
@@ -1158,7 +1157,7 @@ async function ensureProfile(user) {
     throw selectError;
   }
 
-  if (existingProfile && !typedName) {
+  if (existingProfile) {
     return existingProfile;
   }
 
@@ -1395,6 +1394,17 @@ async function handleSignedIn(user) {
     if (app.settingToggles.settingDailyReminder) {
       scheduleDailyPromptReminder();
     }
+
+    if (needsOnboarding()) {
+      setStatus(appStatusMessage, "", "");
+      startOnboarding({
+        onComplete: async function () {
+          await loadCouple();
+        }
+      });
+      return;
+    }
+
     await loadCouple();
   } catch (error) {
     showCoupleSetup();
@@ -1436,6 +1446,14 @@ async function handleSignedOut() {
   passwordInput.value = "";
   loginScreen.style.display = "flex";
   appScreen.style.display = "none";
+  var obOverlay = document.getElementById("onboardingOverlay");
+  if (obOverlay) obOverlay.style.display = "none";
+  var tourBackdrop = document.getElementById("tourBackdrop");
+  if (tourBackdrop) tourBackdrop.style.display = "none";
+  var tourTooltip = document.getElementById("tourTooltip");
+  if (tourTooltip) tourTooltip.style.display = "none";
+  var tourComplete = document.getElementById("tourCompleteOverlay");
+  if (tourComplete) tourComplete.style.display = "none";
   setStatus(authMessage, "", "");
   setStatus(coupleMessage, "", "");
   renderPromptExperience();
@@ -1443,7 +1461,6 @@ async function handleSignedOut() {
 
 function getAuthFields() {
   return {
-    displayName: displayNameInput.value.trim(),
     email: emailInput.value.trim(),
     password: passwordInput.value
   };
@@ -1507,18 +1524,10 @@ function validatePassword(password) {
 }
 
 async function signup() {
-  if (displayNameInput.style.display === "none") {
-    displayNameInput.style.display = "";
-    displayNameInput.focus();
-    signupButton.textContent = "Sign up";
-    setStatus(authMessage, "Pick a name so your partner knows it's you.", "");
-    return;
-  }
-
   const fields = getAuthFields();
 
-  if (fields.displayName === "" || fields.email === "" || fields.password === "") {
-    setStatus(authMessage, "Enter your name, email, and password.", "error");
+  if (fields.email === "" || fields.password === "") {
+    setStatus(authMessage, "Enter your email and password.", "error");
     return;
   }
 
@@ -1538,12 +1547,7 @@ async function signup() {
 
   const { data, error } = await supabase.auth.signUp({
     email: fields.email,
-    password: fields.password,
-    options: {
-      data: {
-        display_name: fields.displayName
-      }
-    }
+    password: fields.password
   });
 
   setAuthBusy(false);

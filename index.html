@@ -24,7 +24,6 @@
             A private space for you and your partner — chats, games, memories, and date nights. Just the two of you.
           </p>
 
-          <input id="displayNameInput" type="text" placeholder="Your name" style="display:none">
           <input id="emailInput" type="email" placeholder="Email address" autocomplete="email">
           <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password">
 
@@ -1245,6 +1244,101 @@
           <button type="button" class="call-incoming-btn call-incoming-decline" id="callDeclineBtn">Decline</button>
           <button type="button" class="call-incoming-btn call-incoming-accept" id="callAcceptBtn">Accept</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Onboarding Flow -->
+    <div id="onboardingOverlay" class="onboarding-overlay" style="display:none">
+
+      <!-- Step 1: Welcome -->
+      <div class="onboarding-step" id="obStepWelcome">
+        <div class="onboarding-step-inner">
+          <div class="onboarding-hero-icon">💕</div>
+          <h1 class="onboarding-title">Welcome to Couple</h1>
+          <p class="onboarding-subtitle">A private space for you and your partner — answer questions, save little moments, plan dates, and stay close. Even when life gets busy.</p>
+          <button type="button" class="onboarding-primary-btn" id="obWelcomeNext">Create our space</button>
+          <button type="button" class="onboarding-skip-btn" id="obInviteToggle">Have an invite code?</button>
+          <div id="obJoinForm" style="display:none">
+            <input type="text" id="obJoinCodeInput" class="onboarding-input" placeholder="Enter invite code" autocomplete="off" maxlength="12" style="margin-top:12px">
+            <button type="button" class="onboarding-primary-btn" id="obJoinBtn">Join</button>
+            <p id="obJoinMessage" class="onboarding-join-message"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Name -->
+      <div class="onboarding-step" id="obStepName" style="display:none">
+        <div class="onboarding-step-inner">
+          <p class="onboarding-step-label">step 1 of 4</p>
+          <h2 class="onboarding-heading">What should we call you?</h2>
+          <p class="onboarding-hint">This is how your partner will see you inside the app.</p>
+          <input type="text" id="obNameInput" class="onboarding-input" placeholder="Your name" autocomplete="given-name" maxlength="40">
+          <button type="button" class="onboarding-primary-btn" id="obNameNext" disabled>Continue</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Space Name -->
+      <div class="onboarding-step" id="obStepSpaceName" style="display:none">
+        <div class="onboarding-step-inner">
+          <p class="onboarding-step-label">step 2 of 4</p>
+          <h2 class="onboarding-heading">Name your little world</h2>
+          <p class="onboarding-hint">Give your space a name — something only you two would say.</p>
+          <input type="text" id="obSpaceNameInput" class="onboarding-input" placeholder="e.g. Max & Anna" maxlength="60">
+          <div class="onboarding-suggestions" id="obSpaceSuggestions"></div>
+          <button type="button" class="onboarding-primary-btn" id="obSpaceNameNext" disabled>Create space</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Invite Partner -->
+      <div class="onboarding-step" id="obStepInvite" style="display:none">
+        <div class="onboarding-step-inner">
+          <p class="onboarding-step-label">step 3 of 4</p>
+          <h2 class="onboarding-heading">Invite your partner</h2>
+          <p class="onboarding-hint">Send this code so they can join your space.</p>
+          <div class="ob-invite-card">
+            <span class="ob-invite-label">Your invite code</span>
+            <strong class="ob-invite-code" id="obInviteCodeText"></strong>
+          </div>
+          <div class="ob-invite-actions">
+            <button type="button" class="onboarding-primary-btn" id="obCopyInviteBtn">Copy code</button>
+            <button type="button" class="onboarding-primary-btn ob-share-btn" id="obShareInviteBtn">Share</button>
+          </div>
+          <button type="button" class="onboarding-skip-btn" id="obInviteSkip">I'll do this later</button>
+        </div>
+      </div>
+
+      <!-- Step 5: First Action -->
+      <div class="onboarding-step" id="obStepFirstAction" style="display:none">
+        <div class="onboarding-step-inner">
+          <p class="onboarding-step-label">step 4 of 4</p>
+          <h2 class="onboarding-heading">Your first moment together</h2>
+          <div class="onboarding-prompt-text">What's one thing you appreciate about your partner today?</div>
+          <textarea id="obFirstActionInput" class="onboarding-textarea" placeholder="Write something from the heart..." rows="3" maxlength="500"></textarea>
+          <button type="button" class="onboarding-primary-btn" id="obFirstActionSave" disabled>Save & continue</button>
+          <button type="button" class="onboarding-skip-btn" id="obFirstActionSkip">Skip for now</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Tour -->
+    <div id="tourBackdrop" class="tour-backdrop" style="display:none"></div>
+    <div id="tourTooltip" class="tour-tooltip" style="display:none">
+      <p class="tour-tooltip-title" id="tourTitle"></p>
+      <p class="tour-tooltip-text" id="tourText"></p>
+      <div class="tour-tooltip-footer">
+        <span class="tour-tooltip-progress" id="tourProgress"></span>
+        <button type="button" class="tour-tooltip-btn" id="tourNextBtn">Next</button>
+      </div>
+    </div>
+
+    <!-- Tour Complete -->
+    <div id="tourCompleteOverlay" class="tour-complete-overlay" style="display:none">
+      <div class="tour-complete-card">
+        <div class="tour-complete-icon">🌿</div>
+        <h2 class="tour-complete-title">You're ready.</h2>
+        <p class="tour-complete-text">Start small. One question a day is all it takes.</p>
+        <button type="button" class="onboarding-primary-btn" id="tourCompleteBtn">Go to our space</button>
       </div>
     </div>
 
