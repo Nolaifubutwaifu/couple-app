@@ -346,6 +346,10 @@ button:disabled {
   display: none;
 }
 
+.main-experience {
+  padding-top: 90px;
+}
+
 .app {
   width: 100%;
   max-width: 520px;
@@ -406,17 +410,21 @@ button:disabled {
 /* ─── Top Header Bar ─── */
 
 .top-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 520px;
   z-index: 90;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 4px;
-  margin: calc(-1 * var(--space-2xl) - env(safe-area-inset-top, 0)) calc(-1 * var(--space-xl)) 16px;
+  padding: 10px var(--space-xl);
   padding-top: calc(10px + env(safe-area-inset-top, 0));
   background: var(--bg-cream);
   border-bottom: 1px solid var(--border-light);
+  box-sizing: border-box;
 }
 
 .top-header-text-logo {
