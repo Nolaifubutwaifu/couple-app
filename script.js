@@ -698,6 +698,7 @@ var activityFeedEmpty = document.getElementById("activityFeedEmpty");
 
 function renderCoupleCard() {
   renderGreeting();
+  applyEquippedEffects();
 
   var online = isPartnerOnline();
   if (online) {

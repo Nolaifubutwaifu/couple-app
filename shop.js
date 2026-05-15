@@ -90,6 +90,10 @@ function purchaseItem(item) {
       useItem(item);
       return;
     }
+    if (item.type === "own") {
+      triggerReaction(item);
+      return;
+    }
     showToast("You already own this");
     return;
   }
@@ -159,6 +163,42 @@ function useItem(item) {
   }
 }
 
+function triggerReaction(item) {
+  var overlay = document.createElement("div");
+  overlay.className = "reaction-overlay";
+
+  if (item.id === "react-firework") {
+    var emojis = ["✦", "✨", "💥", "⭐", "🌟"];
+    for (var i = 0; i < 25; i++) {
+      var p = document.createElement("span");
+      p.className = "firework-particle";
+      p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      var angle = (Math.PI * 2 * i) / 25;
+      var dist = 60 + Math.random() * 100;
+      p.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+      p.style.setProperty("--dy", Math.sin(angle) * dist + "px");
+      p.style.animationDelay = (Math.random() * 80) + "ms";
+      overlay.appendChild(p);
+    }
+    document.body.appendChild(overlay);
+    setTimeout(function () { overlay.remove(); }, 1000);
+  } else if (item.id === "react-confetti") {
+    var colors = ["#d4a0a0", "#7c6fa0", "#74b08a", "#e6c44d", "#c678b0", "#64c8b4"];
+    for (var j = 0; j < 35; j++) {
+      var piece = document.createElement("span");
+      piece.className = "confetti-piece";
+      piece.style.left = Math.random() * 100 + "%";
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.setProperty("--drift", (Math.random() - 0.5) * 120 + "px");
+      piece.style.setProperty("--spin", Math.floor(Math.random() * 720) + "deg");
+      piece.style.animationDelay = (Math.random() * 400) + "ms";
+      overlay.appendChild(piece);
+    }
+    document.body.appendChild(overlay);
+    setTimeout(function () { overlay.remove(); }, 2500);
+  }
+}
+
 export function initShop() {
   var categories = document.getElementById("shopCategories");
   if (!categories) return;
@@ -181,6 +221,20 @@ export function initShop() {
       var card = e.target.closest(".shop-item");
       if (!card) return;
       var itemId = card.dataset.itemId;
+      var item = SHOP_ITEMS.find(function (i) { return i.id === itemId; });
+      if (item) {
+        hapticLight();
+        purchaseItem(item);
+      }
+    });
+  }
+
+  var invGrid = document.getElementById("moreInventoryGrid");
+  if (invGrid) {
+    invGrid.addEventListener("click", function (e) {
+      var pill = e.target.closest(".more-inventory-item");
+      if (!pill) return;
+      var itemId = pill.dataset.itemId;
       var item = SHOP_ITEMS.find(function (i) { return i.id === itemId; });
       if (item) {
         hapticLight();
@@ -256,6 +310,46 @@ export function applyEquippedEffects() {
     avatars.forEach(function (el) { el.classList.add(borderClass); });
     if (profileAvatarWrap) profileAvatarWrap.classList.add(borderClass);
   }
+
+  var AVATAR_EMOJIS = { "avatar-fox": "🦊", "avatar-cat": "🐱", "avatar-bear": "🐻" };
+  avatars.forEach(function (el) {
+    var existing = el.querySelector(".avatar-emoji-overlay");
+    if (existing) existing.remove();
+
+    if (eq.avatars && AVATAR_EMOJIS[eq.avatars]) {
+      var img = el.querySelector("img");
+      if (img && img.style.display !== "none") {
+        var badge = document.createElement("span");
+        badge.className = "avatar-emoji-overlay";
+        badge.textContent = AVATAR_EMOJIS[eq.avatars];
+        el.appendChild(badge);
+      } else {
+        el.childNodes.forEach(function (n) {
+          if (n.nodeType === 3) n.textContent = AVATAR_EMOJIS[eq.avatars];
+        });
+      }
+    }
+  });
+
+  var profilePlaceholder = document.querySelector(".profile-avatar-placeholder");
+  if (profilePlaceholder) {
+    var existingBadge = profilePlaceholder.closest(".profile-avatar-wrap");
+    if (existingBadge) {
+      var oldOverlay = existingBadge.querySelector(".avatar-emoji-overlay");
+      if (oldOverlay) oldOverlay.remove();
+    }
+    if (eq.avatars && AVATAR_EMOJIS[eq.avatars]) {
+      var profImg = profilePlaceholder.parentElement && profilePlaceholder.parentElement.querySelector("img");
+      if (profImg && profImg.style.display !== "none") {
+        var profBadge = document.createElement("span");
+        profBadge.className = "avatar-emoji-overlay";
+        profBadge.textContent = AVATAR_EMOJIS[eq.avatars];
+        if (existingBadge) existingBadge.appendChild(profBadge);
+      } else {
+        profilePlaceholder.textContent = AVATAR_EMOJIS[eq.avatars];
+      }
+    }
+  }
 }
 
 export function renderInventory() {
@@ -274,7 +368,7 @@ export function renderInventory() {
     var item = SHOP_ITEMS.find(function (it) { return it.id === purchased[i]; });
     if (!item) continue;
     var equipped = isEquipped(item.id);
-    html += '<div class="more-inventory-item' + (equipped ? ' more-inventory-equipped' : '') + '">';
+    html += '<div class="more-inventory-item' + (equipped ? ' more-inventory-equipped' : '') + '" data-item-id="' + item.id + '">';
     html += '<span class="more-inventory-icon">' + item.icon + '</span>';
     html += '<span class="more-inventory-name">' + item.name + '</span>';
     if (equipped) html += '<span class="more-inventory-badge">Equipped</span>';
