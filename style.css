@@ -3550,9 +3550,27 @@ h3 {
 }
 
 .date-theme-card:active {
-  background: var(--bg-cream);
   transform: scale(0.96);
-  box-shadow: var(--shadow-md);
+}
+
+.date-theme-card-active {
+  border-color: var(--accent-lavender);
+  background: var(--accent-lavender-light);
+  box-shadow: 0 0 0 2px var(--accent-lavender);
+}
+
+.date-theme-card-selected-label {
+  display: none;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-lavender);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+}
+
+.date-theme-card-active .date-theme-card-selected-label {
+  display: block;
 }
 
 .date-theme-card-emoji {
@@ -3656,10 +3674,20 @@ h3 {
 }
 
 .date-history-empty {
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 20px 0 4px;
+  margin: 0;
+}
+
+.date-history-empty-hint {
+  font-size: 13px;
   color: var(--text-muted);
   text-align: center;
-  padding: 20px 0 10px;
+  padding: 0 16px 10px;
+  margin: 0;
   line-height: 1.5;
 }
 
@@ -6211,6 +6239,25 @@ h3 {
   font-size: 13px;
   color: var(--text-muted);
   margin: 4px 0 0;
+  max-width: 260px;
+}
+
+.moments-empty-btn {
+  margin-top: 16px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--accent-rose);
+  color: var(--text-on-dark);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--ease-fast), opacity var(--ease-fast);
+}
+
+.moments-empty-btn:active {
+  transform: scale(0.96);
+  opacity: 0.9;
 }
 
 .moments-setup {
@@ -6331,7 +6378,7 @@ h3 {
 .moments-timeline:has(.moment-timeline-item)::before {
   content: '';
   position: absolute;
-  left: 21px;
+  left: 69px;
   top: 0;
   bottom: 0;
   width: 2px;
@@ -6503,12 +6550,16 @@ h3 {
 
 .moments-recap-illustration {
   flex-shrink: 0;
-  width: 110px;
+  width: 140px;
+  margin: calc(var(--space-xl) * -1) calc(var(--space-xl) * -1) calc(var(--space-xl) * -1) 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
 }
 
 .moments-recap-img {
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: contain;
   opacity: 0.85;
 }

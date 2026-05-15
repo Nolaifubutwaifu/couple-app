@@ -682,16 +682,20 @@ export async function loadDateHistory() {
 function renderDateHistory(rows) {
   var list = document.getElementById("dateHistoryList");
   var empty = document.getElementById("dateHistoryEmpty");
+  var emptyHint = document.getElementById("dateHistoryEmptyHint");
 
   if (!rows || rows.length === 0) {
     list.innerHTML = "";
     list.appendChild(empty);
+    if (emptyHint) list.appendChild(emptyHint);
     empty.style.display = "";
+    if (emptyHint) emptyHint.style.display = "";
     return;
   }
 
   list.innerHTML = "";
   empty.style.display = "none";
+  if (emptyHint) emptyHint.style.display = "none";
 
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
@@ -737,19 +741,37 @@ function renderThemeCards() {
     var t = dateThemes[i];
     var card = document.createElement("div");
     card.className = "date-theme-card";
+    card.dataset.theme = t.id;
     card.innerHTML =
       '<span class="date-theme-card-emoji">' + t.emoji + '</span>' +
       '<p class="date-theme-card-name">' + t.name + '</p>' +
-      '<p class="date-theme-card-tagline">' + t.tagline + '</p>';
+      '<p class="date-theme-card-tagline">' + t.tagline + '</p>' +
+      '<span class="date-theme-card-selected-label">Selected</span>';
 
     (function (themeId) {
       card.addEventListener("click", function () {
         hapticLight();
-        openThemeModal(themeId);
+        if (selectedThemeId === themeId) {
+          selectedThemeId = null;
+        } else {
+          selectedThemeId = themeId;
+        }
+        updateThemeSelection();
       });
     })(t.id);
 
     scroll.appendChild(card);
+  }
+}
+
+function updateThemeSelection() {
+  var cards = document.querySelectorAll(".date-theme-card");
+  for (var i = 0; i < cards.length; i++) {
+    if (cards[i].dataset.theme === selectedThemeId) {
+      cards[i].classList.add("date-theme-card-active");
+    } else {
+      cards[i].classList.remove("date-theme-card-active");
+    }
   }
 }
 
@@ -777,19 +799,18 @@ function openThemeModal(themeId) {
 
 function closeThemeModal() {
   dateThemeModal.style.display = "none";
-  selectedThemeId = null;
 }
 
 // ─── Event Listeners ───
 
 document.getElementById("dateStartQuick").addEventListener("click", function () {
   hapticLight();
-  startDateNight("quick", null);
+  startDateNight("quick", selectedThemeId);
 });
 
 document.getElementById("dateStartFull").addEventListener("click", function () {
   hapticLight();
-  startDateNight("full", null);
+  startDateNight("full", selectedThemeId);
 });
 
 dateJoinBtn.addEventListener("click", joinDateNight);

@@ -17,35 +17,13 @@ var MOOD_EMOJIS = [
 
 var MOMENT_PROMPTS = [
   "Show your view right now",
-  "What are you eating?",
+  "What are you drinking?",
   "Send your current mood",
   "Show the sky",
-  "What are you working on?",
-  "Take a photo of something near you",
-  "What does your desk look like?",
-  "Show what you're drinking",
-  "What's making you smile?",
-  "Your outfit today",
-  "Something beautiful you noticed",
-  "Your current view from the window",
-  "What are you reading or watching?",
-  "Show your workspace",
-  "Something that made you think of me",
-  "Your morning so far in one photo",
-  "What's in your hand right now?",
-  "Show me your afternoon vibe",
-  "Something cozy near you",
-  "The weather where you are",
-  "A random detail from your day",
-  "What are you looking forward to?",
-  "Show your evening setup",
-  "Something you're grateful for today",
-  "Your current mood in one emoji",
-  "What song are you listening to?",
-  "A color you see right now",
-  "Your comfort item today",
-  "Something new you tried today",
-  "One word for how you feel"
+  "What's on your desk?",
+  "What are you listening to?",
+  "Share your walk home",
+  "Send a tiny goodnight"
 ];
 
 // ─── DOM Refs ───
@@ -199,6 +177,7 @@ export async function loadTodayMoments() {
   renderMomentsTimeline();
   renderDailyRecap();
   renderCapturePrompt();
+  loadYesterdayArchive();
 }
 
 async function loadMomentsForDate(dateStr) {
@@ -310,16 +289,17 @@ function renderMomentsTimeline(dateStr) {
 }
 
 function renderDailyRecap(dateStr) {
-  if (momentsToday.length === 0) {
-    momentsRecapCard.style.display = "none";
-    return;
-  }
   momentsRecapCard.style.display = "";
 
   var d = dateStr ? new Date(dateStr + "T12:00:00") : new Date();
   var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   momentsRecapDate.textContent = months[d.getMonth()] + " " + d.getDate();
   momentsRecapTitle.textContent = "Our Day";
+
+  if (momentsToday.length === 0) {
+    momentsRecapStats.innerHTML = '<p class="moments-recap-total">Today\'s story is waiting to begin</p>';
+    return;
+  }
 
   var myCount = 0;
   var partnerCount = 0;
@@ -328,14 +308,13 @@ function renderDailyRecap(dateStr) {
     else partnerCount++;
   }
 
-  var myName = (app.currentProfile && app.currentProfile.display_name || "You").split(" ")[0];
-  var partnerName = (app.currentCouple && app.currentCouple.partnerName || "Partner").split(" ")[0];
-
   var total = myCount + partnerCount;
-  var html = '<p class="moments-recap-total">' + total + ' moment' + (total !== 1 ? 's' : '') + ' shared</p>';
-  html += '<p class="moments-recap-breakdown">' + myCount + ' from ' + myName;
-  if (partnerCount > 0) html += ', ' + partnerCount + ' from ' + partnerName;
-  html += '</p>';
+  var story = (myCount > 0 && partnerCount > 0)
+    ? "You both added to today's story"
+    : "You added to today's story";
+
+  var html = '<p class="moments-recap-total">' + story + '</p>';
+  html += '<p class="moments-recap-breakdown">' + total + ' moment' + (total !== 1 ? 's' : '') + ' shared</p>';
   momentsRecapStats.innerHTML = html;
 }
 
@@ -344,9 +323,17 @@ function renderCapturePrompt() {
   momentsPromptCard.style.display = "";
 }
 
+async function loadYesterdayArchive() {
+  var yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  var yStr = yesterday.toISOString().split("T")[0];
+  var data = await loadMomentsForDate(yStr);
+  renderArchiveTimeline(data);
+}
+
 function renderArchiveTimeline(moments) {
   if (!moments || moments.length === 0) {
-    momentsArchiveTimeline.innerHTML = '<p class="moments-archive-empty">No moments for this period</p>';
+    momentsArchiveTimeline.innerHTML = '<p class="moments-archive-empty">No moments to look back on yet</p>';
     return;
   }
 
@@ -516,10 +503,30 @@ export async function initMoments(cbs) {
     });
   }
 
+  // Calendar button — scroll to archive and open date picker
+  var calToggle = document.getElementById("momentsCalToggle");
+  if (calToggle) {
+    calToggle.addEventListener("click", function () {
+      hapticLight();
+      var archive = document.getElementById("momentsArchiveSection");
+      if (archive) archive.scrollIntoView({ behavior: "smooth", block: "start" });
+      var picker = document.getElementById("momentsArchiveDatePicker");
+      if (picker) setTimeout(function () { picker.showPicker(); }, 400);
+    });
+  }
+
   // FAB
   var fab = document.getElementById("momentsFab");
   if (fab) {
     fab.addEventListener("click", function () {
+      hapticLight();
+      openAddMomentSheet();
+    });
+  }
+
+  var emptyAddBtn = document.getElementById("momentsEmptyAdd");
+  if (emptyAddBtn) {
+    emptyAddBtn.addEventListener("click", function () {
       hapticLight();
       openAddMomentSheet();
     });
@@ -661,9 +668,7 @@ export async function initMoments(cbs) {
       var now = new Date();
       var todayStr = now.toISOString().split("T")[0];
 
-      if (filter === "today") {
-        renderArchiveTimeline(momentsToday);
-      } else if (filter === "yesterday") {
+      if (filter === "yesterday") {
         var yesterday = new Date(now);
         yesterday.setDate(yesterday.getDate() - 1);
         var yStr = yesterday.toISOString().split("T")[0];
