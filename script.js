@@ -33,7 +33,7 @@ import { addOrReplaceMessage, formatMessageRow, uploadAndSendPhoto, dataUrlToBlo
 import { cleanupDateCall, onDateStateFromDB, checkExistingDateSession, loadScheduledDate, renderDateLanding, loadDateHistory } from "./date-night.js";
 import { renderProfileTab, initProfile, loadSettings, initSettings, initInviteButtons } from "./profile.js";
 import { initMoments, loadTodayMoments, getMomentsCount, cleanupMomentsChannel } from "./moments.js";
-import { initShop, updateShopBalance, applyEquippedEffects } from "./shop.js";
+import { initShop, updateShopBalance, applyEquippedEffects, renderInventory } from "./shop.js";
 import { renderAchievements } from "./achievements.js";
 import { startCall, initCallListener, cleanupCallChannel } from "./call.js";
 
@@ -386,8 +386,11 @@ function renderActiveConversations() {
 
 // ─── Question Answer Popup ───
 
-function openQuestionPopup(questionId) {
+var popupFromDailyPrompts = false;
+
+function openQuestionPopup(questionId, fromDaily) {
   currentQuestionId = questionId;
+  popupFromDailyPrompts = !!fromDaily;
   var question = getQuestionById(questionId);
   var cat = getCategoryById(question ? question.categoryId : "");
   questionPopupLabel.textContent = cat ? cat.label : "";
@@ -451,12 +454,27 @@ async function sendPopupAnswer() {
     addOrReplaceMessage(result.data);
   }
 
-  closeQuestionPopup();
   renderActiveConversations();
   currentTodayIndex = 0;
   renderTodayCard();
+  renderHomeScreen();
   recordEngagement();
   scheduleMessagesReload();
+
+  if (popupFromDailyPrompts) {
+    var allPrompts = getTodayPrompts();
+    var nextUnanswered = null;
+    for (var i = 0; i < allPrompts.length; i++) {
+      if (allPrompts[i].id === currentQuestionId) continue;
+      var rev = getDailyRevealState(allPrompts[i].id);
+      if (!rev.hasMe) { nextUnanswered = allPrompts[i]; break; }
+    }
+    if (nextUnanswered) {
+      openQuestionPopup(nextUnanswered.id, true);
+      return;
+    }
+  }
+  closeQuestionPopup();
 }
 
 // ─── Prompt Chat Overlay ───
@@ -1029,7 +1047,7 @@ function renderTodayCardInto(stackId, innerId) {
       var catId = this.getAttribute("data-prompt-cat");
       currentCategoryId = catId;
       currentQuestionId = promptId;
-      openQuestionPopup(promptId);
+      openQuestionPopup(promptId, true);
     });
   });
 
@@ -1211,6 +1229,7 @@ async function loadCouple() {
   await loadCoupleStats();
   updateShopBalance();
   applyEquippedEffects();
+  renderInventory();
   var moreHeartsEl = document.getElementById("moreHeartsCount");
   if (moreHeartsEl) moreHeartsEl.textContent = localStorage.getItem("couple_streak_hearts") || "0";
   renderAchievements();
@@ -1681,6 +1700,45 @@ navTabs.forEach(function (tab) {
   });
 });
 
+// ─── Swipe to Switch Tabs ───
+
+var TAB_ORDER = ["tabChat", "tabMoments", "tabDate", "tabChats", "tabMore"];
+
+(function () {
+  var main = document.getElementById("mainExperience");
+  var swipeStartX = 0;
+  var swipeStartY = 0;
+  var swiping = false;
+
+  main.addEventListener("touchstart", function (e) {
+    swipeStartX = e.touches[0].clientX;
+    swipeStartY = e.touches[0].clientY;
+    swiping = true;
+  }, { passive: true });
+
+  main.addEventListener("touchend", function (e) {
+    if (!swiping) return;
+    swiping = false;
+
+    var dx = e.changedTouches[0].clientX - swipeStartX;
+    var dy = e.changedTouches[0].clientY - swipeStartY;
+
+    if (Math.abs(dx) < 80 || Math.abs(dy) > Math.abs(dx) * 0.7) return;
+
+    var activeTab = document.querySelector(".nav-tab-active");
+    if (!activeTab) return;
+    var currentId = activeTab.dataset.tab;
+    var idx = TAB_ORDER.indexOf(currentId);
+    if (idx === -1) return;
+
+    var nextIdx = dx < 0 ? idx + 1 : idx - 1;
+    if (nextIdx < 0 || nextIdx >= TAB_ORDER.length) return;
+
+    var targetBtn = document.querySelector('.nav-tab[data-tab="' + TAB_ORDER[nextIdx] + '"]');
+    if (targetBtn) targetBtn.click();
+  }, { passive: true });
+})();
+
 
 // ─── More Tab Sub-Nav ───
 
@@ -1734,24 +1792,34 @@ var surpriseMeBtn = document.getElementById("surpriseMeBtn");
 if (surpriseMeBtn) {
   surpriseMeBtn.addEventListener("click", function () {
     hapticLight();
-    var allQs = questions;
-    if (allQs.length === 0) return;
-    var unanswered = [];
-    for (var i = 0; i < allQs.length; i++) {
-      var msgs = app.allMessages[allQs[i].id] || [];
+    if (questions.length === 0) return;
+
+    var byCat = {};
+    for (var i = 0; i < questions.length; i++) {
+      var q = questions[i];
+      var msgs = app.allMessages[q.id] || [];
       var iAnswered = false;
       for (var m = 0; m < msgs.length; m++) {
         if (msgs[m].sender === "me") { iAnswered = true; break; }
       }
-      if (!iAnswered) unanswered.push(allQs[i]);
+      if (!iAnswered) {
+        if (!byCat[q.categoryId]) byCat[q.categoryId] = [];
+        byCat[q.categoryId].push(q);
+      }
     }
-    var pool = unanswered.length > 0 ? unanswered : allQs;
-    var pick = pool[Math.floor(Math.random() * pool.length)];
-    currentQuestionId = pick.id;
-    currentCategoryId = pick.categoryId;
-    if (unanswered.length > 0) {
+
+    var catKeys = Object.keys(byCat);
+    if (catKeys.length > 0) {
+      var randomCat = catKeys[Math.floor(Math.random() * catKeys.length)];
+      var pool = byCat[randomCat];
+      var pick = pool[Math.floor(Math.random() * pool.length)];
+      currentQuestionId = pick.id;
+      currentCategoryId = pick.categoryId;
       openQuestionPopup(currentQuestionId);
     } else {
+      var pick = questions[Math.floor(Math.random() * questions.length)];
+      currentQuestionId = pick.id;
+      currentCategoryId = pick.categoryId;
       openPromptChat(currentQuestionId);
     }
   });
@@ -1869,7 +1937,7 @@ connectionAction.addEventListener("click", function () {
       if (!rev.hasMe) {
         currentCategoryId = allPrompts[i].categoryId;
         currentQuestionId = allPrompts[i].id;
-        openQuestionPopup(allPrompts[i].id);
+        openQuestionPopup(allPrompts[i].id, true);
         return;
       }
     }

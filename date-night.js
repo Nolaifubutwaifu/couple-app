@@ -646,6 +646,17 @@ function formatScheduledDateStr(scheduled) {
   return dateStr;
 }
 
+var THEME_COLORS = {
+  cozy: { bg: "rgba(255,220,180,0.25)", border: "rgba(200,160,100,0.35)" },
+  deep: { bg: "rgba(180,200,230,0.25)", border: "rgba(100,130,180,0.35)" },
+  funny: { bg: "rgba(255,240,180,0.25)", border: "rgba(200,180,80,0.35)" },
+  romantic: { bg: "rgba(230,180,200,0.25)", border: "rgba(180,100,130,0.35)" },
+  future: { bg: "rgba(200,180,240,0.25)", border: "rgba(140,110,200,0.35)" },
+  memory: { bg: "rgba(200,230,210,0.25)", border: "rgba(100,170,130,0.35)" },
+  flirty: { bg: "rgba(255,200,220,0.25)", border: "rgba(220,130,160,0.35)" },
+  spicy: { bg: "rgba(255,180,170,0.25)", border: "rgba(220,100,80,0.35)" }
+};
+
 function renderScheduledDates() {
   var container = document.getElementById("dateScheduledIndicator");
   var list = loadAllScheduledDates();
@@ -658,7 +669,9 @@ function renderScheduledDates() {
 
   var html = "";
   for (var i = 0; i < list.length; i++) {
-    html += '<div class="date-scheduled-row" data-index="' + i + '">' +
+    var colors = list[i].theme ? THEME_COLORS[list[i].theme] : null;
+    var style = colors ? ' style="background:' + colors.bg + ';border-color:' + colors.border + '"' : "";
+    html += '<div class="date-scheduled-row"' + style + ' data-index="' + i + '">' +
       '<span class="date-scheduled-icon">📅</span>' +
       '<span class="date-scheduled-text">' + formatScheduledDateStr(list[i]) + '</span>' +
       '<button type="button" class="date-scheduled-cancel">✕</button>' +

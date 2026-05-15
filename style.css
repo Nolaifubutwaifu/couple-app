@@ -2651,10 +2651,9 @@ h3 {
 
 .streak-bar-status,
 .couple-card-stat-status span {
-  font-size: var(--text-sm);
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-muted);
-  white-space: nowrap;
 }
 
 .streak-bar.active-today .streak-bar-status,
@@ -4139,6 +4138,60 @@ h3 {
   opacity: 0.9;
 }
 
+/* ─── Inventory ─── */
+
+.more-inventory {
+  margin-bottom: var(--space-lg);
+}
+
+.more-inventory-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 0 0 var(--space-sm);
+}
+
+.more-inventory-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.more-inventory-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--surface-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.more-inventory-item.more-inventory-equipped {
+  border-color: var(--accent-mint);
+  background: var(--accent-mint-light);
+}
+
+.more-inventory-icon {
+  font-size: 16px;
+}
+
+.more-inventory-name {
+  white-space: nowrap;
+}
+
+.more-inventory-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-mint);
+  text-transform: uppercase;
+}
+
 /* ─── CTA Card ─── */
 
 .more-cta-card {
@@ -4753,6 +4806,46 @@ h3 {
 
 .achievement-card.achievement-complete .achievement-card-status {
   color: var(--accent-mint);
+}
+
+.achievement-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.achievement-card-stars {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.achievement-star {
+  font-size: 10px;
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+.achievement-star-filled {
+  opacity: 1;
+  filter: none;
+}
+
+.achievement-claim-btn {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--accent-rose);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.achievement-claim-btn:active {
+  transform: scale(0.95);
 }
 
 /* ─── Profile Tab ─── */
@@ -6168,8 +6261,8 @@ h3 {
 }
 
 .moments-header-cal-btn {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-md);
   background: var(--surface-white);
   border: 1px solid var(--border-light);

@@ -533,3 +533,7 @@ function showMilestoneCelebration(milestone) {
     milestoneOverlay.classList.remove("visible");
   };
 }
+
+window.addEventListener("heartsChanged", function () {
+  updateStreakUI();
+});

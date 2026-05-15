@@ -250,7 +250,7 @@
                   <div class="moments-header-row">
                     <h2>Our Day</h2>
                     <button type="button" class="moments-header-cal-btn" id="momentsCalToggle">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     </button>
                   </div>
                   <p class="moments-header-subtitle">Share tiny pieces of today, then look back together.</p>
@@ -419,6 +419,11 @@
                       <span class="more-hearts-label">shared hearts</span>
                     </div>
                     <button type="button" class="more-hearts-topup" id="moreHubShop">Top Up</button>
+                  </div>
+
+                  <div class="more-inventory" id="moreInventory" style="display:none">
+                    <p class="more-inventory-title">My Items</p>
+                    <div class="more-inventory-grid" id="moreInventoryGrid"></div>
                   </div>
 
                   <div class="more-cta-card" id="moreGoToShop">
@@ -849,16 +854,6 @@
                         <input type="checkbox" class="settings-toggle" id="settingTypingIndicators" checked>
                         <span class="settings-toggle-slider"></span>
                       </label>
-                    </div>
-                  </div>
-
-                  <div class="settings-group">
-                    <p class="small-text">theme</p>
-                    <div class="settings-card">
-                      <div class="settings-theme-placeholder">
-                        <span>🎨</span>
-                        <span>Theme customization coming soon</span>
-                      </div>
                     </div>
                   </div>
 

@@ -1,16 +1,16 @@
 import { hapticLight, showToast } from "./utils.js";
 
 var SHOP_ITEMS = [
-  { id: "border-gold", category: "borders", icon: "✨", name: "Golden Ring", price: 30, desc: "A shimmering gold border around your avatar", type: "equip" },
-  { id: "border-rose", category: "borders", icon: "🌹", name: "Rose Glow", price: 50, desc: "Soft rose glow around your avatar", type: "equip" },
-  { id: "border-aurora", category: "borders", icon: "🌈", name: "Aurora Ring", price: 75, desc: "Animated gradient border", type: "equip" },
-  { id: "avatar-fox", category: "avatars", icon: "🦊", name: "Fox Avatar", price: 50, desc: "A cute fox default avatar", type: "equip" },
-  { id: "avatar-cat", category: "avatars", icon: "🐱", name: "Cat Avatar", price: 50, desc: "A cozy cat default avatar", type: "equip" },
-  { id: "avatar-bear", category: "avatars", icon: "🐻", name: "Bear Avatar", price: 50, desc: "A warm bear default avatar", type: "equip" },
-  { id: "react-firework", category: "reactions", icon: "💥", name: "Firework React", price: 30, desc: "Send a firework reaction", type: "own" },
-  { id: "react-confetti", category: "reactions", icon: "🎉", name: "Confetti React", price: 30, desc: "Send a confetti reaction", type: "own" },
-  { id: "extra-fortune", category: "extras", icon: "🥠", name: "Fortune Cookie", price: 15, desc: "Get a sweet couple fortune", type: "use" },
-  { id: "extra-dice", category: "extras", icon: "🎲", name: "Love Dice", price: 25, desc: "Roll a fun couple dare", type: "use" }
+  { id: "border-gold", category: "borders", icon: "✨", name: "Golden Ring", price: 1, desc: "A shimmering gold border around your avatar", type: "equip" },
+  { id: "border-rose", category: "borders", icon: "🌹", name: "Rose Glow", price: 1, desc: "Soft rose glow around your avatar", type: "equip" },
+  { id: "border-aurora", category: "borders", icon: "🌈", name: "Aurora Ring", price: 1, desc: "Animated gradient border", type: "equip" },
+  { id: "avatar-fox", category: "avatars", icon: "🦊", name: "Fox Avatar", price: 1, desc: "A cute fox default avatar", type: "equip" },
+  { id: "avatar-cat", category: "avatars", icon: "🐱", name: "Cat Avatar", price: 1, desc: "A cozy cat default avatar", type: "equip" },
+  { id: "avatar-bear", category: "avatars", icon: "🐻", name: "Bear Avatar", price: 1, desc: "A warm bear default avatar", type: "equip" },
+  { id: "react-firework", category: "reactions", icon: "💥", name: "Firework React", price: 1, desc: "Send a firework reaction", type: "own" },
+  { id: "react-confetti", category: "reactions", icon: "🎉", name: "Confetti React", price: 1, desc: "Send a confetti reaction", type: "own" },
+  { id: "extra-fortune", category: "extras", icon: "🥠", name: "Fortune Cookie", price: 1, desc: "Get a sweet couple fortune", type: "use" },
+  { id: "extra-dice", category: "extras", icon: "🎲", name: "Love Dice", price: 1, desc: "Roll a fun couple dare", type: "use" }
 ];
 
 var currentCategory = "all";
@@ -83,6 +83,7 @@ function purchaseItem(item) {
         showToast("Equipped " + item.name + "!");
       }
       renderShopItems();
+      renderInventory();
       return;
     }
     if (item.type === "use") {
@@ -116,6 +117,7 @@ function purchaseItem(item) {
 
   updateShopBalance();
   renderShopItems();
+  renderInventory();
 
   var event = new CustomEvent("heartsChanged");
   window.dispatchEvent(event);
@@ -193,6 +195,7 @@ export function initShop() {
 
   renderShopItems();
   applyEquippedEffects();
+  renderInventory();
 }
 
 function renderShopItems() {
@@ -255,9 +258,37 @@ export function applyEquippedEffects() {
   }
 }
 
-export function updateShopBalance() {
-  var el = document.getElementById("shopHeartsBalance");
-  if (el) {
-    el.textContent = localStorage.getItem("couple_streak_hearts") || "0";
+export function renderInventory() {
+  var container = document.getElementById("moreInventory");
+  var grid = document.getElementById("moreInventoryGrid");
+  if (!container || !grid) return;
+
+  var purchased = getPurchased();
+  if (purchased.length === 0) {
+    container.style.display = "none";
+    return;
   }
+
+  var html = "";
+  for (var i = 0; i < purchased.length; i++) {
+    var item = SHOP_ITEMS.find(function (it) { return it.id === purchased[i]; });
+    if (!item) continue;
+    var equipped = isEquipped(item.id);
+    html += '<div class="more-inventory-item' + (equipped ? ' more-inventory-equipped' : '') + '">';
+    html += '<span class="more-inventory-icon">' + item.icon + '</span>';
+    html += '<span class="more-inventory-name">' + item.name + '</span>';
+    if (equipped) html += '<span class="more-inventory-badge">Equipped</span>';
+    html += '</div>';
+  }
+
+  grid.innerHTML = html;
+  container.style.display = "";
+}
+
+export function updateShopBalance() {
+  var hearts = localStorage.getItem("couple_streak_hearts") || "0";
+  var el = document.getElementById("shopHeartsBalance");
+  if (el) el.textContent = hearts;
+  var moreEl = document.getElementById("moreHeartsCount");
+  if (moreEl) moreEl.textContent = hearts;
 }
