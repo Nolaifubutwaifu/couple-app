@@ -5612,8 +5612,8 @@ h3 {
 
 .connection-card-illustration {
   flex-shrink: 0;
-  width: 80px;
-  height: 80px;
+  width: 110px;
+  height: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5781,7 +5781,7 @@ h3 {
 
 .date-preview-illustration {
   flex-shrink: 0;
-  width: 90px;
+  width: 120px;
   align-self: center;
 }
 
@@ -6253,7 +6253,7 @@ h3 {
 
 .moments-prompt-illustration {
   flex-shrink: 0;
-  width: 80px;
+  width: 110px;
 }
 
 .moments-prompt-img {
