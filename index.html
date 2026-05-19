@@ -26,6 +26,11 @@
           <input id="emailInput" type="email" placeholder="Email address" autocomplete="email">
           <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password">
 
+          <label class="age-confirm-row" id="ageConfirmRow" style="display:none">
+            <input type="checkbox" id="ageConfirmCheck">
+            <span class="age-confirm-label">I confirm I am 17 years or older</span>
+          </label>
+
           <div class="auth-actions">
             <button id="loginButton" type="button">Log in</button>
             <button id="signupButton" type="button" class="secondary-button">Create account</button>
@@ -255,7 +260,7 @@
                 <section class="moments-header">
                   <div class="moments-header-row">
                     <h2>Our Day</h2>
-                    <button type="button" class="moments-header-cal-btn" id="momentsCalToggle">
+                    <button type="button" class="moments-header-cal-btn" id="momentsCalToggle" aria-label="Toggle calendar">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     </button>
                   </div>
@@ -345,7 +350,7 @@
                   </div>
                 </section>
 
-                <button type="button" class="moments-fab" id="momentsFab" style="display:none">
+                <button type="button" class="moments-fab" id="momentsFab" style="display:none" aria-label="Add a moment">
                   <span class="moments-fab-icon">+</span>
                 </button>
               </div>
@@ -779,7 +784,7 @@
                       <div id="profileAvatarPlaceholder" class="profile-avatar-placeholder">
                         <span id="profileAvatarInitials"></span>
                       </div>
-                      <button type="button" id="profileAvatarEditBtn" class="profile-avatar-edit" title="Change photo">📷</button>
+                      <button type="button" id="profileAvatarEditBtn" class="profile-avatar-edit" title="Change photo" aria-label="Change photo">📷</button>
                       <input type="file" id="profileAvatarInput" accept="image/*" style="display:none">
                     </div>
                     <p class="profile-avatar-hint">Tap icon to change photo</p>
@@ -805,7 +810,7 @@
                     <span class="profile-field-label">INVITE CODE</span>
                     <div class="profile-field-row">
                       <span class="profile-field-value profile-field-readonly profile-invite-code" id="profileInviteCode">—</span>
-                      <button type="button" id="profileCopyInviteBtn" class="profile-field-edit" title="Copy code">📋</button>
+                      <button type="button" id="profileCopyInviteBtn" class="profile-field-edit" title="Copy code" aria-label="Copy invite code">📋</button>
                     </div>
                   </div>
 
@@ -867,6 +872,15 @@
                     <p class="small-text">account</p>
                     <div class="settings-card">
                       <p class="settings-account-info" id="settingsAccountInfo">Signed in</p>
+                      <button type="button" class="settings-danger-btn" id="deleteAccountBtn">Delete Account</button>
+                    </div>
+                  </div>
+
+                  <div class="settings-group">
+                    <p class="small-text">safety</p>
+                    <div class="settings-card">
+                      <button type="button" class="settings-link-btn" id="reportProblemBtn">Report a Problem</button>
+                      <button type="button" class="settings-link-btn settings-link-btn-danger" id="leaveCoupleBtn">Leave Twosome Space</button>
                     </div>
                   </div>
 
@@ -875,6 +889,11 @@
                     <div class="settings-card settings-about-card">
                       <p class="settings-about-name">Twosome</p>
                       <p class="settings-about-tagline">Your little space for two</p>
+                      <div class="settings-legal-links">
+                        <button type="button" class="settings-legal-link" id="openPrivacyPolicy">Privacy Policy</button>
+                        <span class="settings-legal-sep">·</span>
+                        <button type="button" class="settings-legal-link" id="openTermsOfService">Terms of Service</button>
+                      </div>
                     </div>
                   </div>
 
@@ -996,9 +1015,9 @@
                   </div>
 
                   <div class="date-controls">
-                    <button type="button" id="dateMuteBtn" class="date-control-btn" title="Mute">🎤</button>
-                    <button type="button" id="dateCameraBtn" class="date-control-btn" title="Camera">📷</button>
-                    <button type="button" id="dateEndBtn" class="date-control-btn date-end-btn" title="End date">✕</button>
+                    <button type="button" id="dateMuteBtn" class="date-control-btn" title="Mute" aria-label="Mute microphone">🎤</button>
+                    <button type="button" id="dateCameraBtn" class="date-control-btn" title="Camera" aria-label="Toggle camera">📷</button>
+                    <button type="button" id="dateEndBtn" class="date-control-btn date-end-btn" title="End date" aria-label="End date">✕</button>
                   </div>
 
                   <div class="date-step-card" id="dateStepCard">
@@ -1186,28 +1205,28 @@
     <div class="prompt-chat-overlay" id="promptChatOverlay">
       <div class="prompt-chat-overlay-inner">
         <div class="prompt-chat-header">
-          <button type="button" class="prompt-chat-back" id="promptChatBack">&#8249;</button>
+          <button type="button" class="prompt-chat-back" id="promptChatBack" aria-label="Go back">&#8249;</button>
           <div class="prompt-chat-avatar" id="promptChatAvatar"></div>
           <div class="prompt-chat-header-info">
             <span class="prompt-chat-partner-name" id="promptChatPartnerName"></span>
             <span class="prompt-chat-label" id="promptChatLabel"></span>
           </div>
           <div class="prompt-chat-header-actions">
-            <button type="button" class="prompt-chat-call-btn" id="callVoiceBtn" title="Voice call">
+            <button type="button" class="prompt-chat-call-btn" id="callVoiceBtn" title="Voice call" aria-label="Voice call">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
             </button>
-            <button type="button" class="prompt-chat-call-btn" id="callVideoBtn" title="Video call">
+            <button type="button" class="prompt-chat-call-btn" id="callVideoBtn" title="Video call" aria-label="Video call">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
             </button>
           </div>
         </div>
         <div class="prompt-chat-messages" id="promptChatMessages"></div>
         <div class="prompt-chat-input">
-          <button type="button" class="prompt-chat-photo-btn" id="promptPhotoButton" title="Send photo">
+          <button type="button" class="prompt-chat-photo-btn" id="promptPhotoButton" title="Send photo" aria-label="Send photo">
             <span>📷</span>
           </button>
           <input id="promptMessageInput" type="text" placeholder="Write your answer...">
-          <button id="promptSendButton" type="button" class="prompt-chat-send-btn">
+          <button id="promptSendButton" type="button" class="prompt-chat-send-btn" aria-label="Send message">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
           <input type="file" id="promptPhotoInput" accept="image/*" style="display:none">
@@ -1238,13 +1257,13 @@
         <p class="call-timer" id="callTimer"></p>
       </div>
       <div class="call-controls">
-        <button type="button" class="call-control-btn" id="callMuteBtn" title="Mute">
+        <button type="button" class="call-control-btn" id="callMuteBtn" title="Mute" aria-label="Mute microphone">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
         </button>
-        <button type="button" class="call-control-btn call-end-btn" id="callEndBtn" title="End call">
+        <button type="button" class="call-control-btn call-end-btn" id="callEndBtn" title="End call" aria-label="End call">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.956.956 0 0 1 0-1.36C3.13 8.89 7.33 7 12 7s8.87 1.89 11.71 4.72a.956.956 0 0 1 0 1.36l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.1-.7-.28a11.27 11.27 0 0 0-2.67-1.85.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
         </button>
-        <button type="button" class="call-control-btn" id="callCameraBtn" title="Camera">
+        <button type="button" class="call-control-btn" id="callCameraBtn" title="Camera" aria-label="Toggle camera">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
         </button>
       </div>
@@ -1354,6 +1373,186 @@
         <h2 class="tour-complete-title">You're ready.</h2>
         <p class="tour-complete-text">Start small. One question a day is all it takes.</p>
         <button type="button" class="onboarding-primary-btn" id="tourCompleteBtn">Go to our space</button>
+      </div>
+    </div>
+
+    <!-- Privacy Policy Overlay -->
+    <div class="legal-overlay" id="privacyPolicyOverlay">
+      <div class="legal-overlay-inner">
+        <div class="legal-header">
+          <button type="button" class="legal-back-btn" id="privacyPolicyBack">&#8249;</button>
+          <h2 class="legal-title">Privacy Policy</h2>
+        </div>
+        <div class="legal-content">
+          <p class="legal-updated">Last updated: May 19, 2025</p>
+
+          <h3>Overview</h3>
+          <p>Twosome ("we", "us", "our") is a private couple communication app. We are committed to protecting your privacy. This policy explains what data we collect, how we use it, and your rights.</p>
+
+          <h3>Data We Collect</h3>
+          <ul>
+            <li><strong>Account information:</strong> email address and password (encrypted)</li>
+            <li><strong>Profile information:</strong> display name, avatar photo, timezone</li>
+            <li><strong>Messages:</strong> text messages and photos you share with your partner</li>
+            <li><strong>Moments:</strong> daily timeline entries including text, photos, and mood selections</li>
+            <li><strong>Game data:</strong> game states and scores shared between you and your partner</li>
+            <li><strong>Date history:</strong> records of completed date night activities</li>
+            <li><strong>Usage data:</strong> streak counts, achievement progress, and app settings (stored locally on your device)</li>
+          </ul>
+
+          <h3>How We Use Your Data</h3>
+          <ul>
+            <li>To provide the core couple communication features</li>
+            <li>To sync your shared content between you and your partner</li>
+            <li>To send local notification reminders (with your permission)</li>
+            <li>To display your online status and typing indicators (configurable in settings)</li>
+          </ul>
+
+          <h3>Data Storage and Security</h3>
+          <p>Your data is stored securely using Supabase, our infrastructure provider. All data is transmitted over encrypted HTTPS connections. Row-level security policies ensure that only you and your partner can access your shared data. No other users or third parties can see your messages, photos, or personal information.</p>
+
+          <h3>Third-Party Sharing</h3>
+          <p>We do not sell, share, or provide your personal data to any third parties for advertising, analytics, or marketing purposes. Our infrastructure provider (Supabase) processes data solely to provide our service.</p>
+
+          <h3>No Tracking or Analytics</h3>
+          <p>Twosome does not use any third-party analytics, advertising, or tracking services. We do not track your behavior across apps or websites.</p>
+
+          <h3>Data Retention</h3>
+          <p>Your data is retained for as long as your account is active. When you delete your account, all associated data — including messages, photos, moments, and profile information — is permanently deleted from our servers.</p>
+
+          <h3>Your Rights</h3>
+          <ul>
+            <li><strong>Access:</strong> you can view all your data within the app</li>
+            <li><strong>Correction:</strong> you can update your profile information at any time</li>
+            <li><strong>Deletion:</strong> you can delete your account and all associated data from Settings</li>
+            <li><strong>Portability:</strong> contact us to request a copy of your data</li>
+            <li><strong>Consent withdrawal:</strong> you can disable notifications, online status, read receipts, and typing indicators in Settings</li>
+          </ul>
+
+          <h3>Children's Privacy</h3>
+          <p>Twosome is not intended for use by anyone under the age of 17. We do not knowingly collect data from children. If you believe a child has created an account, please contact us.</p>
+
+          <h3>Contact Us</h3>
+          <p>If you have questions about this privacy policy or wish to exercise your rights, contact us at: <strong>privacy@twosome.app</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terms of Service Overlay -->
+    <div class="legal-overlay" id="termsOfServiceOverlay">
+      <div class="legal-overlay-inner">
+        <div class="legal-header">
+          <button type="button" class="legal-back-btn" id="termsOfServiceBack">&#8249;</button>
+          <h2 class="legal-title">Terms of Service</h2>
+        </div>
+        <div class="legal-content">
+          <p class="legal-updated">Last updated: May 19, 2025</p>
+
+          <h3>Acceptance of Terms</h3>
+          <p>By creating an account and using Twosome, you agree to these terms. If you do not agree, please do not use the app.</p>
+
+          <h3>Eligibility</h3>
+          <p>You must be at least 17 years old to use Twosome. By creating an account, you confirm that you meet this age requirement.</p>
+
+          <h3>Your Account</h3>
+          <ul>
+            <li>You are responsible for maintaining the security of your account credentials</li>
+            <li>You may only create one account per person</li>
+            <li>You must provide accurate information when creating your account</li>
+            <li>You can delete your account at any time through Settings</li>
+          </ul>
+
+          <h3>Acceptable Use</h3>
+          <p>When using Twosome, you agree not to:</p>
+          <ul>
+            <li>Share content that is illegal, harmful, threatening, abusive, or harassing</li>
+            <li>Upload content that infringes on intellectual property rights</li>
+            <li>Attempt to access another user's account or data</li>
+            <li>Use the app for any commercial or advertising purposes</li>
+            <li>Interfere with or disrupt the service</li>
+            <li>Use the app to distribute malware or harmful content</li>
+          </ul>
+
+          <h3>Content Ownership</h3>
+          <p>You retain ownership of all content you create and share on Twosome (messages, photos, moments). By using the service, you grant us a limited license to store and transmit this content solely to provide the app's features to you and your partner.</p>
+
+          <h3>Couple Spaces</h3>
+          <p>Each couple space is limited to two users. When you create or join a space, you agree that content shared within it is visible to both members. If you leave a couple space, your shared content may remain visible to the other member.</p>
+
+          <h3>Virtual Currency (Hearts)</h3>
+          <p>Hearts are a virtual currency earned through app usage. Hearts have no monetary value and cannot be exchanged for real currency. We reserve the right to modify the hearts system at any time.</p>
+
+          <h3>Service Availability</h3>
+          <p>We strive to keep Twosome available at all times but do not guarantee uninterrupted service. We may modify, suspend, or discontinue features with reasonable notice.</p>
+
+          <h3>Account Termination</h3>
+          <p>We reserve the right to suspend or terminate accounts that violate these terms. You may delete your account at any time, which will permanently remove your data.</p>
+
+          <h3>Limitation of Liability</h3>
+          <p>Twosome is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the app, to the maximum extent permitted by law.</p>
+
+          <h3>Changes to Terms</h3>
+          <p>We may update these terms from time to time. Continued use of Twosome after changes constitutes acceptance of the updated terms.</p>
+
+          <h3>Contact Us</h3>
+          <p>For questions about these terms, contact us at: <strong>support@twosome.app</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Account Confirmation Dialog -->
+    <div class="confirm-dialog-backdrop" id="deleteAccountDialog" style="display:none">
+      <div class="confirm-dialog">
+        <h3 class="confirm-dialog-title">Delete your account?</h3>
+        <p class="confirm-dialog-text">This will permanently delete your account and all associated data, including:</p>
+        <ul class="confirm-dialog-list">
+          <li>All messages and photos</li>
+          <li>All moments and memories</li>
+          <li>Game history and progress</li>
+          <li>Your profile and avatar</li>
+          <li>Your couple space membership</li>
+        </ul>
+        <p class="confirm-dialog-text"><strong>This action cannot be undone.</strong></p>
+        <div class="confirm-dialog-actions">
+          <button type="button" class="confirm-dialog-cancel" id="deleteAccountCancel">Cancel</button>
+          <button type="button" class="confirm-dialog-danger" id="deleteAccountConfirm">Delete My Account</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leave Couple Confirmation Dialog -->
+    <div class="confirm-dialog-backdrop" id="leaveCoupleDialog" style="display:none">
+      <div class="confirm-dialog">
+        <h3 class="confirm-dialog-title">Leave your Twosome space?</h3>
+        <p class="confirm-dialog-text">You will be removed from the couple space. Your partner will remain. Your shared messages and moments will still be visible to your partner.</p>
+        <p class="confirm-dialog-text">You can create or join a new space afterwards.</p>
+        <div class="confirm-dialog-actions">
+          <button type="button" class="confirm-dialog-cancel" id="leaveCoupleCancel">Cancel</button>
+          <button type="button" class="confirm-dialog-danger" id="leaveCoupleConfirm">Leave Space</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report a Problem Dialog -->
+    <div class="confirm-dialog-backdrop" id="reportDialog" style="display:none">
+      <div class="confirm-dialog">
+        <h3 class="confirm-dialog-title">Report a Problem</h3>
+        <p class="confirm-dialog-text">Describe the issue you're experiencing:</p>
+        <textarea class="report-textarea" id="reportTextarea" placeholder="Tell us what happened..." rows="4"></textarea>
+        <div class="report-category">
+          <p class="confirm-dialog-text">Category:</p>
+          <select class="report-select" id="reportCategory">
+            <option value="inappropriate">Inappropriate content</option>
+            <option value="harassment">Harassment or abuse</option>
+            <option value="safety">Safety concern</option>
+            <option value="bug">Bug or technical issue</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="confirm-dialog-actions">
+          <button type="button" class="confirm-dialog-cancel" id="reportCancel">Cancel</button>
+          <button type="button" class="confirm-dialog-primary" id="reportSubmit">Submit Report</button>
+        </div>
       </div>
     </div>
 

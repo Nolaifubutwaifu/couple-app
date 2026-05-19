@@ -80,12 +80,19 @@ function setupCallChannel() {
 }
 
 function createPeerConnection() {
-  var pc = new RTCPeerConnection({
-    iceServers: [
-      { urls: "stun:stun.l.google.com:19302" },
-      { urls: "stun:stun1.l.google.com:19302" }
-    ]
-  });
+  var iceServers = [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" }
+  ];
+
+  var turnUrl = import.meta.env.VITE_TURN_URL;
+  var turnUser = import.meta.env.VITE_TURN_USERNAME;
+  var turnCred = import.meta.env.VITE_TURN_CREDENTIAL;
+  if (turnUrl) {
+    iceServers.push({ urls: turnUrl, username: turnUser || "", credential: turnCred || "" });
+  }
+
+  var pc = new RTCPeerConnection({ iceServers: iceServers });
 
   pc.onicecandidate = function (event) {
     if (event.candidate && callChannel) {

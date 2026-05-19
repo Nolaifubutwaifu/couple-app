@@ -456,3 +456,86 @@ create policy "Members can insert date history" on public.date_history
   with check (completed_by = auth.uid() and public.is_couple_member(couple_id));
 
 grant select, insert on public.date_history to authenticated;
+
+
+-- ═══════════════════════════════════════════════
+-- ACCOUNT MANAGEMENT
+-- ═══════════════════════════════════════════════
+
+create or replace function public.delete_my_account()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  my_couple_id uuid;
+  member_count integer;
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  select cm.couple_id into my_couple_id
+  from public.couple_members cm
+  where cm.user_id = auth.uid()
+  limit 1;
+
+  if my_couple_id is not null then
+    select count(*) into member_count
+    from public.couple_members
+    where couple_id = my_couple_id;
+
+    delete from public.couple_members where couple_id = my_couple_id and user_id = auth.uid();
+
+    if member_count <= 1 then
+      delete from public.couples where id = my_couple_id;
+    end if;
+  end if;
+
+  delete from public.moments where sender_id = auth.uid();
+  delete from public.messages where sender_id = auth.uid();
+  delete from public.date_history where completed_by = auth.uid();
+  delete from public.profiles where id = auth.uid();
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
+grant execute on function public.delete_my_account() to authenticated;
+
+create or replace function public.leave_couple()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  my_couple_id uuid;
+  member_count integer;
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  select cm.couple_id into my_couple_id
+  from public.couple_members cm
+  where cm.user_id = auth.uid()
+  limit 1;
+
+  if my_couple_id is null then
+    raise exception 'Not in a couple space';
+  end if;
+
+  select count(*) into member_count
+  from public.couple_members
+  where couple_id = my_couple_id;
+
+  delete from public.couple_members where couple_id = my_couple_id and user_id = auth.uid();
+
+  if member_count <= 1 then
+    delete from public.couples where id = my_couple_id;
+  end if;
+end;
+$$;
+
+grant execute on function public.leave_couple() to authenticated;
