@@ -37,6 +37,8 @@ import { initShop, updateShopBalance, applyEquippedEffects, renderInventory } fr
 import { renderAchievements } from "./achievements.js";
 import { startCall, initCallListener, cleanupCallChannel } from "./call.js";
 import { needsOnboarding, startOnboarding } from "./onboarding.js";
+import { initNetworkMonitor, isOnline, registerFlushOnReconnect } from "./network.js";
+import { initPushNotifications, removeMyPushTokens } from "./push.js";
 
 
 // ─── Supabase ───
@@ -83,19 +85,7 @@ initNative();
 
 // ─── Offline Detection ───
 
-var offlineBanner = document.getElementById("offlineBanner");
-
-function updateOfflineStatus() {
-  if (navigator.onLine) {
-    offlineBanner.classList.remove("offline-banner-visible");
-  } else {
-    offlineBanner.classList.add("offline-banner-visible");
-  }
-}
-
-window.addEventListener("online", updateOfflineStatus);
-window.addEventListener("offline", updateOfflineStatus);
-updateOfflineStatus();
+initNetworkMonitor();
 
 // ─── DOM Elements ───
 
@@ -506,6 +496,18 @@ function renderPromptChatMessages() {
   var msgs = app.allMessages[currentQuestionId] || [];
   promptChatMessages.innerHTML = "";
 
+  if (app.messagesLoading && msgs.length === 0) {
+    var skel = document.createElement("div");
+    skel.className = "skeleton-chat-container";
+    skel.innerHTML =
+      '<div class="skeleton skeleton-bubble skeleton-bubble-me"></div>' +
+      '<div class="skeleton skeleton-bubble skeleton-bubble-partner"></div>' +
+      '<div class="skeleton skeleton-bubble skeleton-bubble-me" style="width:40%"></div>' +
+      '<div class="skeleton skeleton-bubble skeleton-bubble-partner" style="width:55%"></div>';
+    promptChatMessages.appendChild(skel);
+    return;
+  }
+
   if (msgs.length === 0) {
     var emptyState = document.createElement("div");
     emptyState.classList.add("emotional-empty");
@@ -545,6 +547,8 @@ function renderPromptChatMessages() {
     var newMessage = document.createElement("div");
     newMessage.classList.add("message");
     newMessage.classList.add(message.sender);
+    if (message.pending) newMessage.classList.add("is-pending");
+    if (message.failed) newMessage.classList.add("is-failed");
 
     var isBlurred = shouldBlur && message.sender !== "me";
 
@@ -569,7 +573,27 @@ function renderPromptChatMessages() {
 
     wrapper.appendChild(newMessage);
 
-    if (message.createdAt) {
+    if (message.failed) {
+      var failedNote = document.createElement("span");
+      failedNote.className = "message-status is-failed";
+      failedNote.innerHTML = 'Couldn\'t send · ';
+      var retry = document.createElement("button");
+      retry.type = "button";
+      retry.className = "message-retry-btn";
+      retry.textContent = "Retry";
+      retry.dataset.qid = currentQuestionId;
+      retry.dataset.pid = message.id;
+      retry.addEventListener("click", function () {
+        window.retryPendingMessage(this.dataset.qid, this.dataset.pid);
+      });
+      failedNote.appendChild(retry);
+      wrapper.appendChild(failedNote);
+    } else if (message.pending) {
+      var pendingNote = document.createElement("span");
+      pendingNote.className = "message-status";
+      pendingNote.textContent = "Sending...";
+      wrapper.appendChild(pendingNote);
+    } else if (message.createdAt) {
       var timeEl = document.createElement("span");
       timeEl.classList.add("message-time");
       var d = new Date(message.createdAt);
@@ -1286,6 +1310,7 @@ async function loadMessages() {
   }
 
   if (error) {
+    app.messagesLoading = false;
     setStatus(appStatusMessage, getReadableError(error), "error");
     return;
   }
@@ -1302,6 +1327,7 @@ async function loadMessages() {
     app.allMessages[row.question_id].push(formatMessageRow(row));
   }
 
+  app.messagesLoading = false;
   renderPromptExperience();
   renderHomeScreen();
   renderAchievements();
@@ -1394,6 +1420,7 @@ async function handleSignedIn(user) {
     if (app.settingToggles.settingDailyReminder) {
       scheduleDailyPromptReminder();
     }
+    initPushNotifications(navigateToTab);
 
     if (needsOnboarding()) {
       setStatus(appStatusMessage, "", "");
@@ -1580,8 +1607,15 @@ async function signup() {
 }
 
 async function logout() {
+  await removeMyPushTokens();
   await supabase.auth.signOut();
   await handleSignedOut();
+}
+
+function navigateToTab(tabId) {
+  if (!tabId) return;
+  var btn = document.querySelector('.nav-tab[data-tab="' + tabId + '"]');
+  if (btn) btn.click();
 }
 
 async function createCouple() {
@@ -1636,40 +1670,126 @@ async function joinCouple() {
   await loadCouple();
 }
 
-async function sendMessage() {
-  var messageText = promptMessageInput.value.trim();
-  if (messageText === "" || !app.currentUser || !app.currentCouple) return;
+var pendingOutbox = [];
 
-  promptSendButton.disabled = true;
+function makePendingId() {
+  return "pending-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7);
+}
 
+function pushOptimisticMessage(questionId, text) {
+  var pendingId = makePendingId();
+  if (!Array.isArray(app.allMessages[questionId])) {
+    app.allMessages[questionId] = [];
+  }
+  app.allMessages[questionId].push({
+    id: pendingId,
+    text: text,
+    imageUrl: null,
+    sender: "me",
+    senderName: app.currentProfile ? app.currentProfile.display_name : "You",
+    createdAt: new Date().toISOString(),
+    pending: true,
+    failed: false
+  });
+  return pendingId;
+}
+
+function markMessageFailed(questionId, pendingId) {
+  var arr = app.allMessages[questionId];
+  if (!Array.isArray(arr)) return;
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i].id === pendingId) {
+      arr[i].pending = false;
+      arr[i].failed = true;
+      break;
+    }
+  }
+}
+
+function removePendingMessage(questionId, pendingId) {
+  var arr = app.allMessages[questionId];
+  if (!Array.isArray(arr)) return;
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i].id === pendingId) {
+      arr.splice(i, 1);
+      break;
+    }
+  }
+}
+
+async function trySendMessage(questionId, text, pendingId) {
   var result = await supabase
     .from("messages")
     .insert({
       couple_id: app.currentCouple.id,
-      question_id: currentQuestionId,
+      question_id: questionId,
       sender_id: app.currentUser.id,
-      text: messageText
+      text: text
     })
     .select("id, question_id, text, image_url, sender_id, created_at, profiles:sender_id(display_name)")
     .single();
 
-  promptSendButton.disabled = false;
-
   if (result.error) {
-    setStatus(appStatusMessage, getReadableError(result.error), "error");
-    return;
+    markMessageFailed(questionId, pendingId);
+    renderPromptChatMessages();
+    return false;
   }
 
-  promptMessageInput.value = "";
-
+  removePendingMessage(questionId, pendingId);
   if (result.data) {
     addOrReplaceMessage(result.data);
     renderPromptChatMessages();
     renderTodayCard();
   }
-
   recordEngagement();
   scheduleMessagesReload();
+  return true;
+}
+
+window.retryPendingMessage = function (questionId, pendingId) {
+  var arr = app.allMessages[questionId];
+  if (!Array.isArray(arr)) return;
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i].id === pendingId) {
+      arr[i].pending = true;
+      arr[i].failed = false;
+      var text = arr[i].text;
+      renderPromptChatMessages();
+      trySendMessage(questionId, text, pendingId);
+      return;
+    }
+  }
+};
+
+registerFlushOnReconnect(function () {
+  if (pendingOutbox.length === 0) return;
+  var toFlush = pendingOutbox.slice();
+  pendingOutbox = [];
+  for (var i = 0; i < toFlush.length; i++) {
+    (function (item) {
+      trySendMessage(item.questionId, item.text, item.pendingId).then(function (ok) {
+        if (!ok) pendingOutbox.push(item);
+      });
+    })(toFlush[i]);
+  }
+});
+
+async function sendMessage() {
+  var messageText = promptMessageInput.value.trim();
+  if (messageText === "" || !app.currentUser || !app.currentCouple) return;
+
+  promptMessageInput.value = "";
+
+  var pendingId = pushOptimisticMessage(currentQuestionId, messageText);
+  renderPromptChatMessages();
+  renderTodayCard();
+
+  if (!isOnline()) {
+    pendingOutbox.push({ questionId: currentQuestionId, text: messageText, pendingId: pendingId });
+    return;
+  }
+
+  await trySendMessage(currentQuestionId, messageText, pendingId);
 }
 
 function changeCategory(categoryId) {

@@ -21,5 +21,7 @@ export const app = {
   myMemoryRole: null,
   lastSavedGameState: { tictactoe: null, memory: null, date: null },
   reloadMessagesTimer: null,
-  latestMessagesLoadId: 0
+  latestMessagesLoadId: 0,
+  messagesLoading: true,
+  momentsLoading: true
 };

@@ -539,3 +539,68 @@ end;
 $$;
 
 grant execute on function public.leave_couple() to authenticated;
+
+
+-- ═══════════════════════════════════════════════
+-- PUSH NOTIFICATION TOKENS
+-- One row per device per user. Tokens get refreshed by APNs/FCM occasionally,
+-- so we upsert on (user_id, token). On logout / account delete, rows are removed.
+-- ═══════════════════════════════════════════════
+
+create table if not exists public.user_push_tokens (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  token text not null,
+  platform text not null check (platform in ('ios', 'android', 'web')),
+  updated_at timestamptz not null default now(),
+  unique (user_id, token)
+);
+
+create index if not exists user_push_tokens_user_idx
+  on public.user_push_tokens(user_id);
+
+alter table public.user_push_tokens enable row level security;
+
+drop policy if exists "Users manage their own push tokens" on public.user_push_tokens;
+create policy "Users manage their own push tokens"
+on public.user_push_tokens
+for all
+using (user_id = auth.uid())
+with check (user_id = auth.uid());
+
+
+-- ═══════════════════════════════════════════════
+-- get_partner_push_tokens — used by the Edge Function via service-role
+-- Returns push tokens for the *partner* of the given user.
+-- ═══════════════════════════════════════════════
+
+create or replace function public.get_partner_push_tokens(p_user_id uuid)
+returns table (token text, platform text)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  my_couple_id uuid;
+begin
+  select couple_id into my_couple_id
+  from public.couple_members
+  where user_id = p_user_id
+  limit 1;
+
+  if my_couple_id is null then
+    return;
+  end if;
+
+  return query
+  select t.token, t.platform
+  from public.user_push_tokens t
+  join public.couple_members cm on cm.user_id = t.user_id
+  where cm.couple_id = my_couple_id
+    and t.user_id <> p_user_id;
+end;
+$$;
+
+-- The Edge Function calls this via service_role, so no grant to authenticated.
+
+-- Drop tokens when a user deletes their account (delete_my_account already cascades).

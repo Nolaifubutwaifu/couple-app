@@ -172,8 +172,12 @@ export async function loadTodayMoments() {
     .gte("created_at", todayStart.toISOString())
     .order("created_at", { ascending: true });
 
-  if (result.error) return;
+  if (result.error) {
+    app.momentsLoading = false;
+    return;
+  }
   momentsToday = (result.data || []).map(formatMomentRow);
+  app.momentsLoading = false;
   renderMomentsTimeline();
   renderDailyRecap();
   renderCapturePrompt();
@@ -300,10 +304,27 @@ function renderMomentsTimeline(dateStr) {
   var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   momentsTimelineDate.textContent = months[d.getMonth()] + " " + d.getDate();
 
+  var existingItems = momentsTimeline.querySelectorAll(".moment-timeline-item, .moment-skeleton-item");
+  existingItems.forEach(function (el) { el.remove(); });
+
+  if (app.momentsLoading && momentsToday.length === 0) {
+    momentsEmpty.style.display = "none";
+    var skelHtml = "";
+    for (var s = 0; s < 3; s++) {
+      skelHtml += '<div class="moment-skeleton-item" style="display:flex;gap:12px;padding:12px 0;align-items:flex-start;">' +
+        '<div class="skeleton skeleton-avatar" style="width:36px;height:36px;flex-shrink:0;"></div>' +
+        '<div style="flex:1;">' +
+          '<div class="skeleton skeleton-line skeleton-line-sm"></div>' +
+          '<div class="skeleton skeleton-line skeleton-line-md"></div>' +
+        '</div>' +
+      '</div>';
+    }
+    momentsTimeline.insertAdjacentHTML("beforeend", skelHtml);
+    return;
+  }
+
   if (momentsToday.length === 0) {
     momentsEmpty.style.display = "";
-    var existing = momentsTimeline.querySelectorAll(".moment-timeline-item");
-    existing.forEach(function (el) { el.remove(); });
     return;
   }
 
@@ -312,9 +333,6 @@ function renderMomentsTimeline(dateStr) {
   for (var i = 0; i < momentsToday.length; i++) {
     html += buildTimelineItem(momentsToday[i]);
   }
-
-  var existingItems = momentsTimeline.querySelectorAll(".moment-timeline-item");
-  existingItems.forEach(function (el) { el.remove(); });
   momentsTimeline.insertAdjacentHTML("beforeend", html);
 }
 
@@ -401,6 +419,27 @@ function closeAddMomentSheet() {
 export async function insertMoment(type, text, imageUrl, mood, locationLabel) {
   if (!app.currentUser || !app.currentCouple) return;
 
+  var tempId = "pending-moment-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7);
+  var optimistic = {
+    id: tempId,
+    coupleId: app.currentCouple.id,
+    senderId: app.currentUser.id,
+    senderName: app.currentProfile ? app.currentProfile.display_name : "You",
+    isMe: true,
+    type: type,
+    text: text,
+    imageUrl: imageUrl,
+    mood: mood,
+    locationLabel: locationLabel,
+    createdAt: new Date().toISOString(),
+    pending: true
+  };
+  momentsToday.push(optimistic);
+  renderMomentsTimeline();
+  renderDailyRecap();
+  closeAddMomentSheet();
+  hapticLight();
+
   var result = await app.supabase
     .from("moments")
     .insert({
@@ -415,8 +454,17 @@ export async function insertMoment(type, text, imageUrl, mood, locationLabel) {
     .select("id, couple_id, sender_id, moment_type, text, image_url, mood, location_label, created_at, profiles:sender_id(display_name)")
     .single();
 
+  for (var i = momentsToday.length - 1; i >= 0; i--) {
+    if (momentsToday[i].id === tempId) {
+      momentsToday.splice(i, 1);
+      break;
+    }
+  }
+
   if (result.error) {
     showToast("Could not save moment. Try again.");
+    renderMomentsTimeline();
+    renderDailyRecap();
     return;
   }
 
@@ -425,11 +473,6 @@ export async function insertMoment(type, text, imageUrl, mood, locationLabel) {
     renderMomentsTimeline();
     renderDailyRecap();
   }
-
-  closeAddMomentSheet();
-  hapticLight();
-  if (callbacks.recordEngagement) callbacks.recordEngagement();
-  if (callbacks.onMomentAdded) callbacks.onMomentAdded();
 }
 
 async function addPhotoMoment(fileOrBlob, caption, location) {

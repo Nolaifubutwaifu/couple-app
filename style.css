@@ -8036,3 +8036,175 @@ h3 {
 
 /* ─── More Tab Settings Button ─── */
 
+
+/* ═══════════════════════════════════════════════════════
+   SKELETON LOADERS — shown while data is loading
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes skeletonShimmer {
+  0%   { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+.skeleton {
+  background-color: var(--surface-muted);
+  background-image: linear-gradient(
+    90deg,
+    var(--surface-muted) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    var(--surface-muted) 100%
+  );
+  background-size: 200px 100%;
+  background-repeat: no-repeat;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-md);
+  color: transparent !important;
+  user-select: none;
+  pointer-events: none;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: var(--radius-pill);
+  margin-bottom: var(--space-sm);
+}
+
+.skeleton-line-sm { width: 40%; height: 10px; }
+.skeleton-line-md { width: 70%; }
+.skeleton-line-lg { width: 90%; }
+
+.skeleton-bubble {
+  height: 36px;
+  width: 60%;
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-md);
+}
+
+.skeleton-bubble-me {
+  margin-left: auto;
+  width: 50%;
+}
+
+.skeleton-bubble-partner {
+  margin-right: auto;
+  width: 65%;
+}
+
+.skeleton-card {
+  height: 80px;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-md);
+}
+
+.skeleton-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.skeleton-photo {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  border-radius: var(--radius-md);
+}
+
+.skeleton-container {
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.skeleton-chat-container {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-lg);
+  gap: var(--space-sm);
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   OFFLINE BANNER — gentle warm alert
+   ═══════════════════════════════════════════════════════ */
+
+.offline-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transform: translateY(120%);
+  z-index: 999;
+  background: var(--accent-peach-light);
+  color: #6b4a32;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 240ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+}
+
+.offline-banner-visible {
+  transform: translateY(0);
+}
+
+.offline-banner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c97b4a;
+  animation: offlinePulse 1.6s ease-in-out infinite;
+}
+
+@keyframes offlinePulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.15); }
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   OPTIMISTIC MESSAGE STATES — sending / failed
+   ═══════════════════════════════════════════════════════ */
+
+.message.is-pending {
+  opacity: 0.65;
+}
+
+.message.is-failed {
+  background: var(--accent-rose-light) !important;
+  color: #7c3a3a !important;
+  border: 1px solid rgba(212, 160, 160, 0.5);
+}
+
+.message-status {
+  font-size: 10px;
+  margin-top: 2px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.message-status.is-failed {
+  color: #b85c5c;
+}
+
+.message-retry-btn {
+  background: none;
+  border: none;
+  color: var(--accent-rose);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 4px;
+  text-decoration: underline;
+}
+
+.message-retry-btn:hover {
+  color: var(--accent-lavender);
+}

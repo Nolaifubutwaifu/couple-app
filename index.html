@@ -8,7 +8,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Twosome">
     <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icon-192.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
     <title>Twosome — Your little space for two</title>
     <link rel="stylesheet" href="style.css">
   </head>
@@ -1184,6 +1186,12 @@
 
     <!-- Toast Notification -->
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Offline Banner -->
+    <div class="offline-banner" id="offlineBanner" role="status" aria-live="polite">
+      <span class="offline-banner-dot"></span>
+      <span id="offlineBannerText">You're offline — messages will send when you're back.</span>
+    </div>
 
     <!-- Question Answer Popup -->
     <div class="question-popup-backdrop" id="questionPopupBackdrop">
