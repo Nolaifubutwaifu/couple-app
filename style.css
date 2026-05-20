@@ -897,8 +897,9 @@ h3 {
 }
 
 :focus-visible {
-  outline: 2px solid #1a1a2e;
+  outline: 2px solid var(--accent-lavender, #7c6fa0);
   outline-offset: 3px;
+  border-radius: 4px;
 }
 
 .chat {
@@ -8207,4 +8208,98 @@ h3 {
 
 .message-retry-btn:hover {
   color: var(--accent-lavender);
+}
+
+/* ═══════════════════════════════════════════════════════
+   BOOT LOADER — full-screen branded splash on first paint
+   ═══════════════════════════════════════════════════════ */
+
+.boot-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #faf5f0;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 360ms ease;
+  pointer-events: auto;
+}
+
+.boot-loader.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boot-loader-logo {
+  width: 124px;
+  height: 124px;
+  object-fit: contain;
+  animation: bootLoaderPulse 1.6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes bootLoaderPulse {
+  0%, 100% { transform: scale(1);    opacity: 0.92; }
+  50%      { transform: scale(1.06); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot-loader-logo { animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   ERROR BOUNDARY — friendly crash overlay
+   ═══════════════════════════════════════════════════════ */
+
+.error-boundary {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(250, 245, 240, 0.97);
+  z-index: 10000;
+  padding: 32px;
+  animation: errorBoundaryFadeIn 220ms ease;
+}
+
+.error-boundary[hidden] {
+  display: none;
+}
+
+@keyframes errorBoundaryFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.error-boundary-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 320px;
+}
+
+.error-boundary-logo {
+  width: 96px;
+  height: 96px;
+  margin-bottom: 16px;
+  object-fit: contain;
+  opacity: 0.92;
+}
+
+.error-boundary-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.error-boundary-text {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0 0 24px;
 }

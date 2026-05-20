@@ -17,6 +17,18 @@
 
   <body>
 
+    <div id="bootLoader" class="boot-loader" role="status" aria-label="Loading Twosome">
+      <img src="/graphics/otter-only-logo.png" alt="" class="boot-loader-logo">
+    </div>
+
+    <div id="errorBoundary" class="error-boundary" hidden role="alert" aria-live="assertive">
+      <div class="error-boundary-card">
+        <img src="/graphics/otter-only-logo.png" alt="" class="error-boundary-logo">
+        <h2 class="error-boundary-title">Something went wrong</h2>
+        <p class="error-boundary-text">A little hiccup on our side. Reloading usually fixes it — your messages and moments are safe.</p>
+        <button id="errorBoundaryReload" type="button" class="primary-wide-button">Reload Twosome</button>
+      </div>
+    </div>
 
     <section id="loginScreen" class="login-screen">
         <div class="login-card">
@@ -112,7 +124,7 @@
               <p id="appStatusMessage" class="status-message" aria-live="polite"></p>
 
               <!-- TAB: Home -->
-              <div id="tabChat" class="tab-content tab-active">
+              <div id="tabChat" class="tab-content tab-active" role="tabpanel" aria-label="Home">
 
                 <!-- Home tab label -->
                 <!-- 1. Couple Status Card -->
@@ -258,7 +270,7 @@
               </div>
 
               <!-- TAB: Our Day -->
-              <div id="tabMoments" class="tab-content">
+              <div id="tabMoments" class="tab-content" role="tabpanel" aria-label="Our Day">
                 <section class="moments-header">
                   <div class="moments-header-row">
                     <h2>Our Day</h2>
@@ -357,7 +369,7 @@
                 </button>
               </div>
 
-              <div id="tabChats" class="tab-content">
+              <div id="tabChats" class="tab-content" role="tabpanel" aria-label="Chats">
 
                 <section class="chats-header">
                   <div class="chats-header-row">
@@ -410,7 +422,7 @@
               </div>
 
               <!-- TAB: More -->
-              <div id="tabMore" class="tab-content">
+              <div id="tabMore" class="tab-content" role="tabpanel" aria-label="More">
                 <div class="tab-lock-overlay" id="lockMore">
                   <span class="tab-lock-icon">✦</span>
                   <p class="tab-lock-text">Twosome works best with two. Invite your partner to unlock games, shop, and more.</p>
@@ -904,7 +916,7 @@
               </div>
 
               <!-- TAB: Date -->
-              <div id="tabDate" class="tab-content">
+              <div id="tabDate" class="tab-content" role="tabpanel" aria-label="Date Night">
                 <div class="tab-lock-overlay" id="lockDate">
                   <span class="tab-lock-icon">🌙</span>
                   <p class="tab-lock-text">Twosome works best with two. Invite your partner to unlock date nights.</p>
@@ -1074,25 +1086,25 @@
               <!-- Settings Overlay (accessed from More tab) -->
 
               <!-- Bottom Navigation -->
-              <nav class="bottom-nav" id="bottomNav">
-                <button type="button" class="nav-tab nav-tab-active" data-tab="tabChat">
-                  <span class="nav-icon-wrap"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 4l9 5.5"/><path d="M19 9.5v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8"/></svg></span>
+              <nav class="bottom-nav" id="bottomNav" role="tablist" aria-label="Main navigation">
+                <button type="button" class="nav-tab nav-tab-active" data-tab="tabChat" role="tab" aria-selected="true" aria-controls="tabChat">
+                  <span class="nav-icon-wrap" aria-hidden="true"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 4l9 5.5"/><path d="M19 9.5v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8"/></svg></span>
                   <span class="nav-label">Home</span>
                 </button>
-                <button type="button" class="nav-tab" data-tab="tabMoments">
-                  <span class="nav-icon-wrap"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg></span>
+                <button type="button" class="nav-tab" data-tab="tabMoments" role="tab" aria-selected="false" aria-controls="tabMoments">
+                  <span class="nav-icon-wrap" aria-hidden="true"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg></span>
                   <span class="nav-label">Our Day</span>
                 </button>
-                <button type="button" class="nav-tab" data-tab="tabDate">
-                  <span class="nav-icon-wrap"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></span>
+                <button type="button" class="nav-tab" data-tab="tabDate" role="tab" aria-selected="false" aria-controls="tabDate">
+                  <span class="nav-icon-wrap" aria-hidden="true"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></span>
                   <span class="nav-label">Date Night</span>
                 </button>
-                <button type="button" class="nav-tab" data-tab="tabChats">
-                  <span class="nav-icon-wrap"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <button type="button" class="nav-tab" data-tab="tabChats" role="tab" aria-selected="false" aria-controls="tabChats">
+                  <span class="nav-icon-wrap" aria-hidden="true"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                   <span class="nav-label">Chats</span>
                 </button>
-                <button type="button" class="nav-tab" data-tab="tabMore">
-                  <span class="nav-icon-wrap"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></span>
+                <button type="button" class="nav-tab" data-tab="tabMore" role="tab" aria-selected="false" aria-controls="tabMore">
+                  <span class="nav-icon-wrap" aria-hidden="true"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></span>
                   <span class="nav-label">More</span>
                 </button>
               </nav>
@@ -1156,7 +1168,7 @@
     <div class="camera-overlay" id="cameraOverlay" style="display:none">
       <div class="camera-container">
         <div class="camera-header">
-          <button type="button" id="cameraCloseBtn" class="camera-close-btn">&#10005;</button>
+          <button type="button" id="cameraCloseBtn" class="camera-close-btn" aria-label="Close camera">&#10005;</button>
           <span class="camera-step-label" id="cameraStepLabel">Back camera</span>
           <span></span>
         </div>
@@ -1196,13 +1208,13 @@
     <!-- Question Answer Popup -->
     <div class="question-popup-backdrop" id="questionPopupBackdrop">
       <div class="question-popup" id="questionPopup">
-        <button type="button" class="question-popup-close" id="questionPopupClose">&times;</button>
+        <button type="button" class="question-popup-close" id="questionPopupClose" aria-label="Close">&times;</button>
         <p class="question-popup-label" id="questionPopupLabel"></p>
         <p class="question-popup-text" id="questionPopupText"></p>
         <div class="question-popup-input-row">
           <input id="questionPopupInput" type="text" placeholder="Type your answer...">
-          <button id="questionPopupSend" type="button" class="question-popup-send-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          <button id="questionPopupSend" type="button" class="question-popup-send-btn" aria-label="Send answer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </div>
         <button type="button" class="question-popup-skip" id="questionPopupSkip">Skip question</button>
@@ -1388,7 +1400,7 @@
     <div class="legal-overlay" id="privacyPolicyOverlay">
       <div class="legal-overlay-inner">
         <div class="legal-header">
-          <button type="button" class="legal-back-btn" id="privacyPolicyBack">&#8249;</button>
+          <button type="button" class="legal-back-btn" id="privacyPolicyBack" aria-label="Go back">&#8249;</button>
           <h2 class="legal-title">Privacy Policy</h2>
         </div>
         <div class="legal-content">
@@ -1450,7 +1462,7 @@
     <div class="legal-overlay" id="termsOfServiceOverlay">
       <div class="legal-overlay-inner">
         <div class="legal-header">
-          <button type="button" class="legal-back-btn" id="termsOfServiceBack">&#8249;</button>
+          <button type="button" class="legal-back-btn" id="termsOfServiceBack" aria-label="Go back">&#8249;</button>
           <h2 class="legal-title">Terms of Service</h2>
         </div>
         <div class="legal-content">

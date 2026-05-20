@@ -2099,3 +2099,29 @@ export const diceMoods = [
   "...as fast as possible",
   "...in slow motion"
 ];
+
+export function getQuestionById(questionId) {
+  for (let i = 0; i < questions.length; i++) {
+    if (questions[i].id === questionId) return questions[i];
+  }
+  return null;
+}
+
+export function getQuestionsForCategory(categoryId) {
+  const out = [];
+  for (let i = 0; i < questions.length; i++) {
+    if (questions[i].categoryId === categoryId) out.push(questions[i]);
+  }
+  return out;
+}
+
+export function getTodayPrompts() {
+  const today = new Date();
+  const dayIndex = today.getFullYear() * 366 + today.getMonth() * 31 + today.getDate();
+  const prompts = [];
+  for (let i = 0; i < 3; i++) {
+    prompts.push(questions[(dayIndex * 3 + i) % questions.length]);
+  }
+  return prompts;
+}
+

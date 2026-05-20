@@ -23,5 +23,7 @@ export const app = {
   reloadMessagesTimer: null,
   latestMessagesLoadId: 0,
   messagesLoading: true,
-  momentsLoading: true
+  momentsLoading: true,
+  currentQuestionId: null,
+  dailyRevealed: {}
 };

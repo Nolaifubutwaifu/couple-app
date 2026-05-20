@@ -3,7 +3,10 @@ import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style as StatusBarStyle } from "@capacitor/status-bar";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { Keyboard } from "@capacitor/keyboard";
-import { promptCategorySections, questions, dateThemes } from "./data.js";
+import {
+  promptCategorySections, questions, dateThemes,
+  getQuestionById, getQuestionsForCategory, getTodayPrompts
+} from "./data.js";
 import { app } from "./state.js";
 import {
   hapticLight,
@@ -39,6 +42,11 @@ import { startCall, initCallListener, cleanupCallChannel } from "./call.js";
 import { needsOnboarding, startOnboarding } from "./onboarding.js";
 import { initNetworkMonitor, isOnline, registerFlushOnReconnect } from "./network.js";
 import { initPushNotifications, removeMyPushTokens } from "./push.js";
+import { initLegal } from "./legal.js";
+import {
+  openPromptChat, closePromptChat, renderPromptChatMessages,
+  isDailyPrompt, getDailyRevealState
+} from "./prompt-chat.js";
 
 
 // ─── Supabase ───
@@ -83,6 +91,44 @@ async function initNative() {
 
 initNative();
 
+// ─── Global Error Boundary ───
+// Catches uncaught exceptions and unhandled rejections. To avoid showing the
+// crash screen for transient noise (network blips, channel disconnects), we
+// only trigger after 2 errors land within a 5-second window.
+
+let errorBoundaryShown = false;
+let errorWindowCount = 0;
+let errorWindowTimer = null;
+
+function showErrorBoundary() {
+  if (errorBoundaryShown) return;
+  errorBoundaryShown = true;
+  const eb = document.getElementById("errorBoundary");
+  if (eb) eb.hidden = false;
+}
+
+function recordBoundaryError(label, detail) {
+  try { console.error("[boundary:" + label + "]", detail); } catch (_) {}
+  errorWindowCount += 1;
+  if (errorWindowTimer) window.clearTimeout(errorWindowTimer);
+  errorWindowTimer = window.setTimeout(function () { errorWindowCount = 0; }, 5000);
+  if (errorWindowCount >= 2) showErrorBoundary();
+}
+
+window.addEventListener("error", function (event) {
+  recordBoundaryError("error", event.error || event.message);
+});
+window.addEventListener("unhandledrejection", function (event) {
+  recordBoundaryError("rejection", event.reason);
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const reloadBtn = document.getElementById("errorBoundaryReload");
+  if (reloadBtn) {
+    reloadBtn.addEventListener("click", function () { window.location.reload(); });
+  }
+});
+
 // ─── Offline Detection ───
 
 initNetworkMonitor();
@@ -112,6 +158,19 @@ var questionPopupSend = document.getElementById("questionPopupSend");
 var questionPopupSkip = document.getElementById("questionPopupSkip");
 const loginScreen = document.getElementById("loginScreen");
 const appScreen = document.getElementById("appScreen");
+const bootLoader = document.getElementById("bootLoader");
+
+let bootLoaderHidden = false;
+function hideBootLoader() {
+  if (bootLoaderHidden || !bootLoader) return;
+  bootLoaderHidden = true;
+  bootLoader.classList.add("is-hidden");
+  window.setTimeout(function () {
+    if (bootLoader && bootLoader.parentNode) {
+      bootLoader.parentNode.removeChild(bootLoader);
+    }
+  }, 500);
+}
 const emailInput = document.getElementById("emailInput");
 const passwordInput = document.getElementById("passwordInput");
 const loginButton = document.getElementById("loginButton");
@@ -140,7 +199,7 @@ const tzPartnerLabel = document.getElementById("tzPartnerLabel");
 const tzPartnerTime = document.getElementById("tzPartnerTime");
 
 let currentCategoryId = promptCategorySections[0].categories[0].id;
-let currentQuestionId = getQuestionsForCategory(currentCategoryId)[0].id;
+app.currentQuestionId = getQuestionsForCategory(currentCategoryId)[0].id;
 
 app.allMessages = createEmptyMessages();
 
@@ -174,28 +233,6 @@ function getCategoryById(categoryId) {
   }
 
   return null;
-}
-
-function getQuestionById(questionId) {
-  for (let i = 0; i < questions.length; i++) {
-    if (questions[i].id === questionId) {
-      return questions[i];
-    }
-  }
-
-  return null;
-}
-
-function getQuestionsForCategory(categoryId) {
-  const matchingQuestions = [];
-
-  for (let i = 0; i < questions.length; i++) {
-    if (questions[i].categoryId === categoryId) {
-      matchingQuestions.push(questions[i]);
-    }
-  }
-
-  return matchingQuestions;
 }
 
 function getCategoryProgress(categoryId) {
@@ -266,11 +303,11 @@ function showCategories() {
             if (!iAnswered) unanswered.push(qs[k]);
           }
           var target = unanswered.length > 0 ? unanswered[0] : qs[0];
-          currentQuestionId = target.id;
+          app.currentQuestionId = target.id;
           if (unanswered.length > 0) {
-            openQuestionPopup(currentQuestionId);
+            openQuestionPopup(app.currentQuestionId);
           } else {
-            openPromptChat(currentQuestionId);
+            openPromptChat(app.currentQuestionId);
           }
         });
       })(cat.id);
@@ -288,6 +325,17 @@ function showCategories() {
 function renderActiveConversations() {
   activeChatsList.innerHTML = "";
 
+  var emptyEl = document.getElementById("activeChatsEmpty");
+
+  if (app.messagesLoading) {
+    if (emptyEl) emptyEl.style.display = "none";
+    activeChatsList.innerHTML =
+      '<div class="skeleton skeleton-card"></div>' +
+      '<div class="skeleton skeleton-card"></div>' +
+      '<div class="skeleton skeleton-card"></div>';
+    return;
+  }
+
   var answered = [];
   for (var i = 0; i < questions.length; i++) {
     var msgs = app.allMessages[questions[i].id] || [];
@@ -296,7 +344,6 @@ function renderActiveConversations() {
     }
   }
 
-  var emptyEl = document.getElementById("activeChatsEmpty");
   if (answered.length === 0) {
     if (emptyEl) emptyEl.style.display = "";
     return;
@@ -365,7 +412,7 @@ function renderActiveConversations() {
 
     (function (questionId) {
       row.addEventListener("click", function () {
-        currentQuestionId = questionId;
+        app.currentQuestionId = questionId;
         var qObj = getQuestionById(questionId);
         if (qObj) currentCategoryId = qObj.categoryId;
         openPromptChat(questionId);
@@ -379,7 +426,7 @@ function renderActiveConversations() {
 var popupFromDailyPrompts = false;
 
 function openQuestionPopup(questionId, fromDaily) {
-  currentQuestionId = questionId;
+  app.currentQuestionId = questionId;
   popupFromDailyPrompts = !!fromDaily;
   var question = getQuestionById(questionId);
   var cat = getCategoryById(question ? question.categoryId : "");
@@ -396,12 +443,12 @@ function closeQuestionPopup() {
 }
 
 function skipPopupQuestion() {
-  var question = getQuestionById(currentQuestionId);
+  var question = getQuestionById(app.currentQuestionId);
   if (!question) return;
   var qs = getQuestionsForCategory(question.categoryId);
   var currentIdx = -1;
   for (var i = 0; i < qs.length; i++) {
-    if (qs[i].id === currentQuestionId) { currentIdx = i; break; }
+    if (qs[i].id === app.currentQuestionId) { currentIdx = i; break; }
   }
   var nextId = null;
   for (var j = 1; j < qs.length; j++) {
@@ -424,7 +471,7 @@ async function sendPopupAnswer() {
     .from("messages")
     .insert({
       couple_id: app.currentCouple.id,
-      question_id: currentQuestionId,
+      question_id: app.currentQuestionId,
       sender_id: app.currentUser.id,
       text: text
     })
@@ -455,7 +502,7 @@ async function sendPopupAnswer() {
     var allPrompts = getTodayPrompts();
     var nextUnanswered = null;
     for (var i = 0; i < allPrompts.length; i++) {
-      if (allPrompts[i].id === currentQuestionId) continue;
+      if (allPrompts[i].id === app.currentQuestionId) continue;
       var rev = getDailyRevealState(allPrompts[i].id);
       if (!rev.hasMe) { nextUnanswered = allPrompts[i]; break; }
     }
@@ -465,191 +512,6 @@ async function sendPopupAnswer() {
     }
   }
   closeQuestionPopup();
-}
-
-// ─── Prompt Chat Overlay ───
-
-function openPromptChat(questionId) {
-  currentQuestionId = questionId;
-  var question = getQuestionById(questionId);
-
-  var partnerName = (app.currentCouple && app.currentCouple.partnerName) || "Partner";
-  var initial = partnerName.charAt(0).toUpperCase();
-  promptChatAvatar.textContent = initial;
-  promptChatPartnerName.textContent = partnerName.split(" ")[0];
-  promptChatLabel.textContent = question ? question.text : "";
-
-  renderPromptChatMessages();
-
-  requestAnimationFrame(function () {
-    promptChatOverlay.classList.add("prompt-chat-visible");
-  });
-
-  setTimeout(function () { promptMessageInput.focus(); }, 350);
-}
-
-function closePromptChat() {
-  promptChatOverlay.classList.remove("prompt-chat-visible");
-}
-
-function renderPromptChatMessages() {
-  var msgs = app.allMessages[currentQuestionId] || [];
-  promptChatMessages.innerHTML = "";
-
-  if (app.messagesLoading && msgs.length === 0) {
-    var skel = document.createElement("div");
-    skel.className = "skeleton-chat-container";
-    skel.innerHTML =
-      '<div class="skeleton skeleton-bubble skeleton-bubble-me"></div>' +
-      '<div class="skeleton skeleton-bubble skeleton-bubble-partner"></div>' +
-      '<div class="skeleton skeleton-bubble skeleton-bubble-me" style="width:40%"></div>' +
-      '<div class="skeleton skeleton-bubble skeleton-bubble-partner" style="width:55%"></div>';
-    promptChatMessages.appendChild(skel);
-    return;
-  }
-
-  if (msgs.length === 0) {
-    var emptyState = document.createElement("div");
-    emptyState.classList.add("emotional-empty");
-
-    if (isDailyPrompt(currentQuestionId)) {
-      emptyState.innerHTML = '<span class="emotional-empty-icon">🤫</span><p class="emotional-empty-title">Today\'s prompt</p><p class="emotional-empty-text">Answer first — your partner\'s response will be revealed once you both reply.</p>';
-    } else {
-      emptyState.innerHTML = '<span class="emotional-empty-icon">✨</span><p class="emotional-empty-title">No answers yet</p><p class="emotional-empty-text">Be the first to share your thoughts — your partner will see them here.</p>';
-    }
-    promptChatMessages.appendChild(emptyState);
-    return;
-  }
-
-  var isDaily = isDailyPrompt(currentQuestionId);
-  var reveal = isDaily ? getDailyRevealState(currentQuestionId) : null;
-  var shouldBlur = isDaily && reveal && !reveal.bothAnswered && !dailyRevealed[currentQuestionId];
-
-  if (isDaily && reveal && reveal.bothAnswered && !dailyRevealed[currentQuestionId]) {
-    dailyRevealed[currentQuestionId] = true;
-  }
-
-  if (isDaily && !shouldBlur) {
-    var revealBanner = document.createElement("div");
-    revealBanner.classList.add("reveal-banner");
-    if (reveal && reveal.bothAnswered) {
-      revealBanner.innerHTML = '<span class="reveal-banner-icon">💕</span> Both answered — here are your thoughts';
-    }
-    if (revealBanner.innerHTML) promptChatMessages.appendChild(revealBanner);
-  }
-
-  for (var i = 0; i < msgs.length; i++) {
-    var message = msgs[i];
-    var wrapper = document.createElement("div");
-    wrapper.classList.add("message-wrapper");
-    wrapper.classList.add(message.sender);
-
-    var newMessage = document.createElement("div");
-    newMessage.classList.add("message");
-    newMessage.classList.add(message.sender);
-    if (message.pending) newMessage.classList.add("is-pending");
-    if (message.failed) newMessage.classList.add("is-failed");
-
-    var isBlurred = shouldBlur && message.sender !== "me";
-
-    if (message.imageUrl) {
-      var img = document.createElement("img");
-      img.src = message.imageUrl;
-      img.alt = "Photo";
-      img.loading = "lazy";
-      img.classList.add("prompt-chat-photo");
-      img.addEventListener("click", (function (src) {
-        return function () { openGalleryViewerForPhoto(src); };
-      })(message.imageUrl));
-      newMessage.appendChild(img);
-    } else {
-      var messageParagraph = document.createElement("p");
-      messageParagraph.textContent = message.text;
-      if (isBlurred) {
-        newMessage.classList.add("message-blurred");
-      }
-      newMessage.appendChild(messageParagraph);
-    }
-
-    wrapper.appendChild(newMessage);
-
-    if (message.failed) {
-      var failedNote = document.createElement("span");
-      failedNote.className = "message-status is-failed";
-      failedNote.innerHTML = 'Couldn\'t send · ';
-      var retry = document.createElement("button");
-      retry.type = "button";
-      retry.className = "message-retry-btn";
-      retry.textContent = "Retry";
-      retry.dataset.qid = currentQuestionId;
-      retry.dataset.pid = message.id;
-      retry.addEventListener("click", function () {
-        window.retryPendingMessage(this.dataset.qid, this.dataset.pid);
-      });
-      failedNote.appendChild(retry);
-      wrapper.appendChild(failedNote);
-    } else if (message.pending) {
-      var pendingNote = document.createElement("span");
-      pendingNote.className = "message-status";
-      pendingNote.textContent = "Sending...";
-      wrapper.appendChild(pendingNote);
-    } else if (message.createdAt) {
-      var timeEl = document.createElement("span");
-      timeEl.classList.add("message-time");
-      var d = new Date(message.createdAt);
-      var hours = d.getHours();
-      var minutes = d.getMinutes();
-      var ampm = hours >= 12 ? "PM" : "AM";
-      hours = hours % 12;
-      if (hours === 0) hours = 12;
-      timeEl.textContent = (hours < 10 ? "0" : "") + hours + ":" + (minutes < 10 ? "0" : "") + minutes + " " + ampm;
-      wrapper.appendChild(timeEl);
-    }
-
-    promptChatMessages.appendChild(wrapper);
-  }
-
-  if (isDaily && shouldBlur) {
-    var hint = document.createElement("div");
-    hint.classList.add("reveal-hint");
-    if (reveal.hasMe && !reveal.hasPartner) {
-      hint.innerHTML = '<span class="reveal-hint-icon">⏳</span> Waiting for your partner to answer...';
-    } else if (!reveal.hasMe && reveal.hasPartner) {
-      hint.innerHTML = '<span class="reveal-hint-icon">🤫</span> Your partner answered — share yours to reveal!';
-    }
-    promptChatMessages.appendChild(hint);
-  }
-
-  promptChatMessages.scrollTop = promptChatMessages.scrollHeight;
-}
-
-function openGalleryViewerForPhoto(src) {
-  var viewer = document.getElementById("galleryViewer");
-  var viewerImg = document.getElementById("galleryViewerImg");
-  var viewerSender = document.getElementById("galleryViewerSender");
-  var viewerDate = document.getElementById("galleryViewerDate");
-  viewerImg.src = src;
-  viewerSender.textContent = "";
-  viewerDate.textContent = "";
-  viewer.style.display = "flex";
-}
-
-var dailyRevealed = {};
-
-function isDailyPrompt(questionId) {
-  var prompts = getTodayPrompts();
-  return prompts.some(function (p) { return p.id === questionId; });
-}
-
-function getDailyRevealState(questionId) {
-  var msgs = app.allMessages[questionId] || [];
-  var hasMe = false;
-  var hasPartner = false;
-  for (var i = 0; i < msgs.length; i++) {
-    if (msgs[i].sender === "me") hasMe = true;
-    else hasPartner = true;
-  }
-  return { hasMe: hasMe, hasPartner: hasPartner, bothAnswered: hasMe && hasPartner };
 }
 
 function renderPromptExperience() {
@@ -791,6 +653,13 @@ function renderCoupleLog() {
   var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   coupleLogDate.textContent = months[now.getMonth()] + " " + now.getDate();
 
+  if (app.messagesLoading || app.momentsLoading) {
+    coupleLogSummary.innerHTML =
+      '<div class="skeleton skeleton-line skeleton-line-md"></div>' +
+      '<div class="skeleton skeleton-line skeleton-line-sm"></div>';
+    return;
+  }
+
   var todayStr = now.toISOString().split("T")[0];
   var myCount = 0;
   var partnerCount = 0;
@@ -891,6 +760,14 @@ function renderDateNightPreview() {
 }
 
 function renderPartnerFeed() {
+  if (app.messagesLoading) {
+    activityFeedList.innerHTML =
+      '<div class="skeleton skeleton-line skeleton-line-lg"></div>' +
+      '<div class="skeleton skeleton-line skeleton-line-md"></div>' +
+      '<div class="skeleton skeleton-line skeleton-line-md"></div>';
+    return;
+  }
+
   var items = [];
   var keys = Object.keys(app.allMessages);
   for (var i = 0; i < keys.length; i++) {
@@ -964,16 +841,6 @@ function renderHomeScreen() {
   renderRelationshipStats();
 }
 
-
-function getTodayPrompts() {
-  var today = new Date();
-  var dayIndex = today.getFullYear() * 366 + today.getMonth() * 31 + today.getDate();
-  var prompts = [];
-  for (var i = 0; i < 3; i++) {
-    prompts.push(questions[(dayIndex * 3 + i) % questions.length]);
-  }
-  return prompts;
-}
 
 var currentTodayIndex = 0;
 
@@ -1071,7 +938,7 @@ function renderTodayCardInto(stackId, innerId) {
       var promptId = this.getAttribute("data-prompt-id");
       var catId = this.getAttribute("data-prompt-cat");
       currentCategoryId = catId;
-      currentQuestionId = promptId;
+      app.currentQuestionId = promptId;
       openQuestionPopup(promptId, true);
     });
   });
@@ -1407,7 +1274,7 @@ async function handleSignedIn(user) {
   loginScreen.style.display = "none";
   appScreen.style.display = "block";
   setStatus(authMessage, "", "");
-  setStatus(appStatusMessage, "Loading your shared space...", "");
+  setStatus(appStatusMessage, "", "");
 
   try {
     app.currentProfile = await ensureProfile(user);
@@ -1429,6 +1296,7 @@ async function handleSignedIn(user) {
           await loadCouple();
         }
       });
+      hideBootLoader();
       return;
     }
 
@@ -1436,6 +1304,8 @@ async function handleSignedIn(user) {
   } catch (error) {
     showCoupleSetup();
     setStatus(appStatusMessage, getReadableError(error), "error");
+  } finally {
+    hideBootLoader();
   }
 }
 
@@ -1484,6 +1354,7 @@ async function handleSignedOut() {
   setStatus(authMessage, "", "");
   setStatus(coupleMessage, "", "");
   renderPromptExperience();
+  hideBootLoader();
 }
 
 function getAuthFields() {
@@ -1780,16 +1651,16 @@ async function sendMessage() {
 
   promptMessageInput.value = "";
 
-  var pendingId = pushOptimisticMessage(currentQuestionId, messageText);
+  var pendingId = pushOptimisticMessage(app.currentQuestionId, messageText);
   renderPromptChatMessages();
   renderTodayCard();
 
   if (!isOnline()) {
-    pendingOutbox.push({ questionId: currentQuestionId, text: messageText, pendingId: pendingId });
+    pendingOutbox.push({ questionId: app.currentQuestionId, text: messageText, pendingId: pendingId });
     return;
   }
 
-  await trySendMessage(currentQuestionId, messageText, pendingId);
+  await trySendMessage(app.currentQuestionId, messageText, pendingId);
 }
 
 function changeCategory(categoryId) {
@@ -1800,13 +1671,13 @@ function changeCategory(categoryId) {
   }
 
   currentCategoryId = categoryId;
-  currentQuestionId = questionsForCategory[0].id;
+  app.currentQuestionId = questionsForCategory[0].id;
 
   renderPromptExperience();
 }
 
 function changeQuestion(questionId) {
-  currentQuestionId = questionId;
+  app.currentQuestionId = questionId;
   renderPromptExperience();
   openPromptChat(questionId);
 }
@@ -1824,8 +1695,10 @@ navTabs.forEach(function (tab) {
 
     navTabs.forEach(function (t) {
       t.classList.remove("nav-tab-active");
+      t.setAttribute("aria-selected", "false");
     });
     tab.classList.add("nav-tab-active");
+    tab.setAttribute("aria-selected", "true");
 
     document.querySelectorAll(".tab-content").forEach(function (panel) {
       panel.classList.remove("tab-active");
@@ -1952,14 +1825,14 @@ if (surpriseMeBtn) {
       var randomCat = catKeys[Math.floor(Math.random() * catKeys.length)];
       var pool = byCat[randomCat];
       var pick = pool[Math.floor(Math.random() * pool.length)];
-      currentQuestionId = pick.id;
+      app.currentQuestionId = pick.id;
       currentCategoryId = pick.categoryId;
-      openQuestionPopup(currentQuestionId);
+      openQuestionPopup(app.currentQuestionId);
     } else {
       var pick = questions[Math.floor(Math.random() * questions.length)];
-      currentQuestionId = pick.id;
+      app.currentQuestionId = pick.id;
       currentCategoryId = pick.categoryId;
-      openPromptChat(currentQuestionId);
+      openPromptChat(app.currentQuestionId);
     }
   });
 }
@@ -2048,7 +1921,7 @@ if (profileCopyInviteBtn) {
   });
 }
 initCamera(
-  function () { return currentQuestionId; },
+  function () { return app.currentQuestionId; },
   {
     recordEngagement: recordEngagement,
     scheduleMessagesReload: scheduleMessagesReload,
@@ -2076,7 +1949,7 @@ connectionAction.addEventListener("click", function () {
       var rev = getDailyRevealState(allPrompts[i].id);
       if (!rev.hasMe) {
         currentCategoryId = allPrompts[i].categoryId;
-        currentQuestionId = allPrompts[i].id;
+        app.currentQuestionId = allPrompts[i].id;
         openQuestionPopup(allPrompts[i].id, true);
         return;
       }
@@ -2101,7 +1974,7 @@ connectionAction.addEventListener("click", function () {
       var rev2 = getDailyRevealState(allPrompts2[j].id);
       if (!rev2.hasMe) {
         currentCategoryId = allPrompts2[j].categoryId;
-        currentQuestionId = allPrompts2[j].id;
+        app.currentQuestionId = allPrompts2[j].id;
         openQuestionPopup(allPrompts2[j].id);
         return;
       }
@@ -2198,7 +2071,7 @@ promptPhotoButton.addEventListener("click", async function () {
     var dataUrl = await nativePickPhoto();
     if (dataUrl) {
       var blob = dataUrlToBlob(dataUrl);
-      await uploadAndSendPhoto(blob, currentQuestionId, getPhotoCallbacks());
+      await uploadAndSendPhoto(blob, app.currentQuestionId, getPhotoCallbacks());
     }
   } else {
     promptPhotoInput.click();
@@ -2207,7 +2080,7 @@ promptPhotoButton.addEventListener("click", async function () {
 
 promptPhotoInput.addEventListener("change", async function () {
   if (promptPhotoInput.files && promptPhotoInput.files[0]) {
-    await uploadAndSendPhoto(promptPhotoInput.files[0], currentQuestionId, getPhotoCallbacks());
+    await uploadAndSendPhoto(promptPhotoInput.files[0], app.currentQuestionId, getPhotoCallbacks());
     promptPhotoInput.value = "";
   }
 });
@@ -2221,137 +2094,7 @@ document.addEventListener("visibilitychange", function () {
 });
 
 
-// ─── Legal & Compliance ───
-
-var privacyPolicyOverlay = document.getElementById("privacyPolicyOverlay");
-var termsOfServiceOverlay = document.getElementById("termsOfServiceOverlay");
-
-document.getElementById("openPrivacyPolicy").addEventListener("click", function () {
-  privacyPolicyOverlay.classList.add("visible");
-});
-
-document.getElementById("privacyPolicyBack").addEventListener("click", function () {
-  privacyPolicyOverlay.classList.remove("visible");
-});
-
-document.getElementById("openTermsOfService").addEventListener("click", function () {
-  termsOfServiceOverlay.classList.add("visible");
-});
-
-document.getElementById("termsOfServiceBack").addEventListener("click", function () {
-  termsOfServiceOverlay.classList.remove("visible");
-});
-
-// ─── Account Deletion ───
-
-var deleteAccountDialog = document.getElementById("deleteAccountDialog");
-
-document.getElementById("deleteAccountBtn").addEventListener("click", function () {
-  deleteAccountDialog.style.display = "flex";
-});
-
-document.getElementById("deleteAccountCancel").addEventListener("click", function () {
-  deleteAccountDialog.style.display = "none";
-});
-
-document.getElementById("deleteAccountConfirm").addEventListener("click", async function () {
-  this.disabled = true;
-  this.textContent = "Deleting...";
-
-  var storageKeys = [
-    "couple_countdown_date", "couple_achievement_claimed", "couple_scheduled_dates",
-    "couple_hug_count", "couple_streak_count", "couple_streak_hearts",
-    "couple_streak_last_date", "couple_streak_milestones_reached", "couple_longest_streak",
-    "couple_shop_purchased", "couple_shop_equipped", "couple_onboarding_done",
-    "couple_tour_done", "couple_space_name", "coupleAppSettings"
-  ];
-
-  try {
-    var { error } = await supabase.rpc("delete_my_account");
-    if (error) throw error;
-  } catch (err) {
-    this.disabled = false;
-    this.textContent = "Delete My Account";
-    deleteAccountDialog.style.display = "none";
-    showToast("Failed to delete account. Please try again.");
-    return;
-  }
-
-  storageKeys.forEach(function (key) { localStorage.removeItem(key); });
-  deleteAccountDialog.style.display = "none";
-
-  await supabase.auth.signOut();
-  await handleSignedOut();
-  showToast("Your account has been deleted.");
-});
-
-// ─── Leave Couple ───
-
-var leaveCoupleDialog = document.getElementById("leaveCoupleDialog");
-
-document.getElementById("leaveCoupleBtn").addEventListener("click", function () {
-  if (!app.currentCouple) {
-    showToast("You are not in a couple space.");
-    return;
-  }
-  leaveCoupleDialog.style.display = "flex";
-});
-
-document.getElementById("leaveCoupleCancel").addEventListener("click", function () {
-  leaveCoupleDialog.style.display = "none";
-});
-
-document.getElementById("leaveCoupleConfirm").addEventListener("click", async function () {
-  this.disabled = true;
-  this.textContent = "Leaving...";
-
-  try {
-    var { error } = await supabase.rpc("leave_couple");
-    if (error) throw error;
-  } catch (err) {
-    this.disabled = false;
-    this.textContent = "Leave Space";
-    leaveCoupleDialog.style.display = "none";
-    showToast("Failed to leave space. Please try again.");
-    return;
-  }
-
-  leaveCoupleDialog.style.display = "none";
-  this.disabled = false;
-  this.textContent = "Leave Space";
-  window.location.reload();
-});
-
-// ─── Report ───
-
-var reportDialog = document.getElementById("reportDialog");
-
-document.getElementById("reportProblemBtn").addEventListener("click", function () {
-  reportDialog.style.display = "flex";
-});
-
-document.getElementById("reportCancel").addEventListener("click", function () {
-  reportDialog.style.display = "none";
-  document.getElementById("reportTextarea").value = "";
-});
-
-document.getElementById("reportSubmit").addEventListener("click", function () {
-  var text = document.getElementById("reportTextarea").value.trim();
-  var category = document.getElementById("reportCategory").value;
-
-  if (!text) {
-    showToast("Please describe the problem.");
-    return;
-  }
-
-  var subject = encodeURIComponent("Twosome Report: " + category);
-  var body = encodeURIComponent("Category: " + category + "\n\n" + text + "\n\nUser: " + (app.currentUser ? app.currentUser.email : "unknown"));
-  window.open("mailto:support@twosome.app?subject=" + subject + "&body=" + body);
-
-  reportDialog.style.display = "none";
-  document.getElementById("reportTextarea").value = "";
-  showToast("Thank you for your report.");
-});
+initLegal({ onSignedOut: handleSignedOut });
 
 // ─── Init ───
 
@@ -2363,6 +2106,7 @@ async function init() {
 
   if (error) {
     setStatus(authMessage, getReadableError(error), "error");
+    hideBootLoader();
     return;
   }
 
@@ -2371,6 +2115,7 @@ async function init() {
   } else {
     await handleSignedOut();
   }
+  hideBootLoader();
 
   supabase.auth.onAuthStateChange(function (_event, session) {
     if (session && session.user) {
