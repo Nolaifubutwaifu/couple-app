@@ -42,7 +42,8 @@ export function initLegal(callbacks) {
       "couple_hug_count", "couple_streak_count", "couple_streak_hearts",
       "couple_streak_last_date", "couple_streak_milestones_reached", "couple_longest_streak",
       "couple_shop_purchased", "couple_shop_equipped", "couple_onboarding_done",
-      "couple_tour_done", "couple_space_name", "coupleAppSettings"
+      "couple_tour_done", "couple_space_name", "coupleAppSettings",
+      "couple_daily_reminder_shown"
     ];
 
     try {

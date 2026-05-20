@@ -1,5 +1,6 @@
 import { app } from "./state.js";
 import { hapticLight, showToast, sendLocalNotification, escapeHTML, nativePickPhoto } from "./utils.js";
+import { isPushActive } from "./push.js";
 import { compressImage, dataUrlToBlob } from "./chat.js";
 
 var momentsToday = [];
@@ -526,7 +527,9 @@ async function subscribeToMoments() {
       function (payload) {
         if (payload.new && app.currentUser && payload.new.sender_id !== app.currentUser.id) {
           showToast("Your partner shared a moment");
-          sendLocalNotification("New Moment", "Your partner just shared a moment");
+          if (!isPushActive()) {
+            sendLocalNotification("New Moment", "Your partner just shared a moment");
+          }
         }
         loadTodayMoments().then(function () {
           if (callbacks.onMomentAdded) callbacks.onMomentAdded();

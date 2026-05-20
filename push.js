@@ -6,8 +6,13 @@ import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { app } from "./state.js";
 
-var registered = false;
+var initialized = false;
+var pushActive = false;
 var pendingNavigation = null;
+
+export function isPushActive() {
+  return pushActive;
+}
 
 function platformName() {
   try {
@@ -34,10 +39,10 @@ async function upsertPushToken(token) {
 }
 
 export async function initPushNotifications(navigate) {
-  if (!app.isNative || registered) return;
+  if (!app.isNative || initialized) return;
   if (platformName() === "web") return;
 
-  registered = true;
+  initialized = true;
 
   try {
     var perm = await PushNotifications.checkPermissions();
@@ -45,16 +50,20 @@ export async function initPushNotifications(navigate) {
       perm = await PushNotifications.requestPermissions();
     }
     if (perm.receive !== "granted") {
-      registered = false;
+      initialized = false;
       return;
     }
 
     PushNotifications.addListener("registration", function (token) {
-      if (token && token.value) upsertPushToken(token.value);
+      if (token && token.value) {
+        pushActive = true;
+        upsertPushToken(token.value);
+      }
     });
 
     PushNotifications.addListener("registrationError", function () {
-      registered = false;
+      pushActive = false;
+      initialized = false;
     });
 
     PushNotifications.addListener("pushNotificationReceived", function () {
@@ -73,7 +82,8 @@ export async function initPushNotifications(navigate) {
 
     await PushNotifications.register();
   } catch (e) {
-    registered = false;
+    pushActive = false;
+    initialized = false;
   }
 }
 

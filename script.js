@@ -41,7 +41,7 @@ import { renderAchievements } from "./achievements.js";
 import { startCall, initCallListener, cleanupCallChannel } from "./call.js";
 import { needsOnboarding, startOnboarding } from "./onboarding.js";
 import { initNetworkMonitor, isOnline, registerFlushOnReconnect } from "./network.js";
-import { initPushNotifications, removeMyPushTokens } from "./push.js";
+import { initPushNotifications, removeMyPushTokens, isPushActive } from "./push.js";
 import { initLegal } from "./legal.js";
 import {
   openPromptChat, closePromptChat, renderPromptChatMessages,
@@ -1137,14 +1137,21 @@ async function loadCouple() {
   await loadMessages();
 
   if (app.settingToggles.settingDailyReminder) {
-    var todayPrompts = getTodayPrompts();
-    var hasUnanswered = todayPrompts.some(function (p) {
-      var msgs = app.allMessages[p.id] || [];
-      return !msgs.some(function (m) { return m.sender === "me"; });
-    });
-    if (hasUnanswered) {
-      showToast("You have unanswered daily prompts waiting for you");
-      sendLocalNotification("Daily Prompts", "Answer today's questions — your partner is waiting");
+    var todayKey = new Date().toISOString().split("T")[0];
+    var lastShown = localStorage.getItem("couple_daily_reminder_shown");
+    if (lastShown !== todayKey) {
+      var todayPrompts = getTodayPrompts();
+      var hasUnanswered = todayPrompts.some(function (p) {
+        var msgs = app.allMessages[p.id] || [];
+        return !msgs.some(function (m) { return m.sender === "me"; });
+      });
+      if (hasUnanswered) {
+        showToast("You have unanswered daily prompts waiting for you");
+        if (!isPushActive()) {
+          sendLocalNotification("Daily Prompts", "Answer today's questions — your partner is waiting");
+        }
+        localStorage.setItem("couple_daily_reminder_shown", todayKey);
+      }
     }
   }
 
@@ -1236,7 +1243,9 @@ async function subscribeToMessages() {
             var isOnChat = document.getElementById("tabChat").classList.contains("tab-active");
             if (!isOnChat) {
               showToast("New message from your partner");
-              sendLocalNotification("New Message", "Your partner sent you a message");
+              if (!isPushActive()) {
+                sendLocalNotification("New Message", "Your partner sent you a message");
+              }
             }
           }
           scheduleMessagesReload();
